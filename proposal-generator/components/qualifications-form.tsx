@@ -12,7 +12,12 @@ import { HelpButton } from "@/components/help-button"
 
 export function QualificationsForm({ data, updateData }) {
   const [qualifications, setQualifications] = useState(data)
-  const [newTeamMember, setNewTeamMember] = useState({ name: "", role: "", bio: "" })
+  const [newTeamMember, setNewTeamMember] = useState({
+    name: "",
+    role: "",
+    bio: "",
+    contact: { phone: "", email: "", linkedin: "" },
+  })
   const [newExperience, setNewExperience] = useState("")
   const [newTestimonial, setNewTestimonial] = useState({ quote: "", author: "", company: "" })
   const [activeForm, setActiveForm] = useState(null)
@@ -32,7 +37,7 @@ export function QualificationsForm({ data, updateData }) {
         ...prev,
         teamMembers: [...prev.teamMembers, newTeamMember],
       }))
-      setNewTeamMember({ name: "", role: "", bio: "" })
+      setNewTeamMember({ name: "", role: "", bio: "", contact: { phone: "", email: "", linkedin: "" } })
       setActiveForm(null)
     }
   }
@@ -135,13 +140,31 @@ export function QualificationsForm({ data, updateData }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="memberBio">Bio (Optional)</Label>
+                <Label htmlFor="memberBio">Bio </Label>
                 <Textarea
                   id="memberBio"
-                  placeholder="Brief bio"
+                  placeholder="One paragraph bio"
                   rows={2}
                   value={newTeamMember.bio}
                   onChange={(e) => setNewTeamMember((prev) => ({ ...prev, bio: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Contact</Label>
+                <Input
+                  placeholder="📞Phone"
+                  value={newTeamMember.contact.phone}
+                  onChange={(e) => setNewTeamMember((prev) => ({ ...prev, contact: { ...prev.contact, phone: e.target.value } }))}
+                />
+                <Input
+                  placeholder="✉️Email"
+                  value={newTeamMember.contact.email}
+                  onChange={(e) => setNewTeamMember((prev) => ({ ...prev, contact: { ...prev.contact, email: e.target.value } }))}
+                />
+                <Input
+                  placeholder="LinkedIn Profile URL"
+                  value={newTeamMember.contact.linkedin}
+                  onChange={(e) => setNewTeamMember((prev) => ({ ...prev, contact: { ...prev.contact, linkedin: e.target.value } }))}
                 />
               </div>
               <Button type="button" onClick={addTeamMember}>
@@ -162,6 +185,19 @@ export function QualificationsForm({ data, updateData }) {
                         <h4 className="font-medium">{member.name}</h4>
                         <p className="text-sm text-muted-foreground">{member.role}</p>
                         {member.bio && <p className="text-sm mt-1">{member.bio}</p>}
+                        {member.contact && (
+                          <div className="text-xs mt-2">
+                            {member.contact.phone && <div>📞 {member.contact.phone}</div>}
+                            {member.contact.email && <div>✉️ {member.contact.email}</div>}
+                            {member.contact.linkedin && (
+                              <div>
+                                <a href={member.contact.linkedin} target="_blank" rel="noopener noreferrer">
+                                  LinkedIn
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <Button variant="ghost" size="icon" onClick={() => removeTeamMember(index)}>
                         <X className="h-4 w-4" />
