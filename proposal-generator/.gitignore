@@ -26,5 +26,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# todo list
-propongo-to-do.md
+# app todo list
+app-todo.md

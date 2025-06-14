@@ -1,5 +1,6 @@
 # Proposal Builder App Development To-Do List
 This to-do list outlines the steps to build the SaaS Proposal Builder app, a web-based application for creating professional proposals with a multi-step form, real-time preview, AI text generation, and PDF/Word export functionality.
+
 ## Phase 1: Project Setup and Planning
 
 - Define project scope and finalize requirements based on user feedback.
@@ -120,7 +121,7 @@ ARIA labels.
 
  Write unit tests for components using React Testing Library.
 
-Phase 4: Integration and Testing
+## Phase 4: Integration and Testing
 
  Connect frontend to backend APIs.
  Test AI integration with xAI API for text generation accuracy.
@@ -143,7 +144,7 @@ Test authentication and role-based access.
  Conduct cross-browser testing (Chrome, Firefox, Safari, Edge).
  Perform usability testing with sample users.
 
-Phase 5: Deployment
+## Phase 5: Deployment
 
  Deploy backend to hosting platform (e.g., AWS, Firebase).
  Deploy frontend to Vercel or Firebase Hosting.
@@ -152,7 +153,7 @@ Phase 5: Deployment
  Set up monitoring and logging (e.g., AWS CloudWatch, Firebase Analytics).
  Perform final production testing.
 
-Phase 6: Post-Launch
+## Phase 6: Post-Launch
 
  Create user documentation (e.g., help center, FAQs).
  Implement onboarding:
