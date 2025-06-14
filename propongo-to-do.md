@@ -1,34 +1,30 @@
-Proposal Builder App Development To-Do List
+# Proposal Builder App Development To-Do List
 This to-do list outlines the steps to build the SaaS Proposal Builder app, a web-based application for creating professional proposals with a multi-step form, real-time preview, AI text generation, and PDF/Word export functionality.
-Phase 1: Project Setup and Planning
+## Phase 1: Project Setup and Planning
 
- Define project scope and finalize requirements based on user feedback.
- Set up a project management tool (e.g., Trello, Jira) to track tasks.
- Create a Git repository for version control (e.g., GitHub).
- Choose the technology stack:
-Frontend: React, Tailwind CSS, React Router.
-Backend: Node.js with Express.js or Firebase.
-Database: MongoDB or Firebase Firestore.
-AI: xAI API for text generation.
-Export: jsPDF (PDF), docx.js (Word).
+- Define project scope and finalize requirements based on user feedback.
+- Set up a project management tool (e.g., Trello, Jira) to track tasks.
+- Create a Git repository for version control (e.g., GitHub).
+- Choose the technology stack:
+    - Frontend: React, Tailwind CSS, React Router.
+    - Backend: Node.js with Express.js or Firebase.
+    - Database: MongoDB or Firebase Firestore.
+    - AI: xAI API for text generation.
+    - Export: jsPDF (PDF), docx.js (Word).
+- Set up development environment (e.g., VS Code, Node.js, npm).
+- Configure hosting platform (e.g., AWS, Vercel, Firebase Hosting).
+- Create a basic project structure with folders for frontend, backend, and shared utilities.
 
+## Phase 2: Backend Development
 
- Set up development environment (e.g., VS Code, Node.js, npm).
- Configure hosting platform (e.g., AWS, Vercel, Firebase Hosting).
- Create a basic project structure with folders for frontend, backend, and shared utilities.
-
-Phase 2: Backend Development
-
- Set up the backend server (Node.js/Express or Firebase).
- Configure the database (MongoDB or Firestore) with schemas for:
-Users (email, password, profile).
-Proposals (form data, metadata, draft status).
-Templates (predefined styles/content).
-
-
- Implement user authentication:
-Email/password login/signup.
-OAuth integration (Google, Microsoft).
+- Set up the backend server (Node.js/Express or Firebase).
+- Configure the database (MongoDB or Firestore) with schemas for:
+- Users (email, password, profile).
+- Proposals (form data, metadata, draft status).
+- Templates (predefined styles/content).
+- Implement user authentication:
+- Email/password login/signup.
+- OAuth integration (Google, Microsoft).
 
 
  Create API endpoints for:
@@ -47,7 +43,7 @@ Add error handling for API failures.
  Set up data encryption (HTTPS, database encryption).
  Write unit tests for API endpoints using a framework like Jest.
 
-Phase 3: Frontend Development
+## Phase 3: Frontend Development
 
  Set up React project with Vite or Create React App.
  Configure Tailwind CSS for styling.
