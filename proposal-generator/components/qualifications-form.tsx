@@ -10,7 +10,36 @@ import { Plus, X } from "lucide-react"
 import { useHelp } from "@/contexts/help-context"
 import { HelpButton } from "@/components/help-button"
 
-export function QualificationsForm({ data, updateData }) {
+interface TeamMember {
+  name: string
+  role: string
+  bio: string
+  contact: {
+    phone: string
+    email: string
+    linkedin: string
+  }
+}
+
+interface Testimonial {
+  quote: string
+  author: string
+  company: string
+}
+
+interface QualificationsData {
+  companyBackground: string
+  teamMembers: TeamMember[]
+  relevantExperience: string[]
+  testimonials: Testimonial[]
+}
+
+interface QualificationsFormProps {
+  data: QualificationsData
+  updateData: (data: QualificationsData) => void
+}
+
+export function QualificationsForm({ data, updateData }: QualificationsFormProps) {
   const [qualifications, setQualifications] = useState(data)
   const [newTeamMember, setNewTeamMember] = useState({
     name: "",
@@ -20,7 +49,7 @@ export function QualificationsForm({ data, updateData }) {
   })
   const [newExperience, setNewExperience] = useState("")
   const [newTestimonial, setNewTestimonial] = useState({ quote: "", author: "", company: "" })
-  const [activeForm, setActiveForm] = useState(null)
+  const [activeForm, setActiveForm] = useState<"team" | "experience" | "testimonial" | null>(null)
   const { helpResources } = useHelp()
 
   // Only update parent when local state changes, not on every render
@@ -42,7 +71,7 @@ export function QualificationsForm({ data, updateData }) {
     }
   }
 
-  const removeTeamMember = (index) => {
+  const removeTeamMember = (index: number) => {
     setQualifications((prev) => ({
       ...prev,
       teamMembers: prev.teamMembers.filter((_, i) => i !== index),
@@ -60,7 +89,7 @@ export function QualificationsForm({ data, updateData }) {
     }
   }
 
-  const removeExperience = (index) => {
+  const removeExperience = (index: number) => {
     setQualifications((prev) => ({
       ...prev,
       relevantExperience: prev.relevantExperience.filter((_, i) => i !== index),
@@ -78,7 +107,7 @@ export function QualificationsForm({ data, updateData }) {
     }
   }
 
-  const removeTestimonial = (index) => {
+  const removeTestimonial = (index: number) => {
     setQualifications((prev) => ({
       ...prev,
       testimonials: prev.testimonials.filter((_, i) => i !== index),
