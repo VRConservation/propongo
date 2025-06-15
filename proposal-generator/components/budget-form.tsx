@@ -216,7 +216,8 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }: BudgetF
       deliverableGroups: {
         ...(prev.deliverableGroups || {}),
         [groupId]: {
-          ...(prev.deliverableGroups?.[groupId] || {}),
+          // Always provide both name and id
+          id: groupId,
           name,
         },
       },
