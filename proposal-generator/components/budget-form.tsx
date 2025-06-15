@@ -11,35 +11,63 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useHelp } from "@/contexts/help-context"
 import { HelpButton } from "@/components/help-button"
 
+// Type definitions for better safety
+type BudgetItem = {
+  description: string
+  units: string
+  costPerUnit: string
+  amount: string
+  deliverableId?: string
+}
+
+type DeliverableGroup = {
+  name: string
+  id: string
+}
+
+type BudgetData = {
+  breakdown: BudgetItem[]
+  deliverableGroups?: { [key: string]: DeliverableGroup }
+  totalAmount?: string
+  paymentSchedule?: string
+  additionalCosts?: string
+}
+
+type BudgetFormProps = {
+  data: BudgetData
+  updateData: (data: BudgetData) => void
+  scopeDeliverables?: string[]
+}
+
 // Helper function to format numbers with commas
-const formatNumber = (num) => {
+const formatNumber = (num: string | number) => {
   return new Intl.NumberFormat("en-US").format(Number(num) || 0)
 }
 
 // Helper function to parse formatted numbers back to raw numbers
-const parseFormattedNumber = (str) => {
+const parseFormattedNumber = (str: string) => {
   return Number.parseFloat(str.replace(/,/g, "")) || 0
 }
 
-export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
-  const [budget, setBudget] = useState(data)
-  const [newItem, setNewItem] = useState({
+export function BudgetForm({ data, updateData, scopeDeliverables = [] }: BudgetFormProps) {
+  const [budget, setBudget] = useState<BudgetData>(data)
+  const [newItem, setNewItem] = useState<BudgetItem>({
     description: "",
     units: "1",
     costPerUnit: "",
     amount: "0",
     deliverableId: "",
   })
-  const [expandedGroups, setExpandedGroups] = useState({})
+  const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({})
   const { helpResources } = useHelp()
 
-  // Only update parent when local state changes, not on every render
+  // Sync local state with parent
   useEffect(() => {
-    // This prevents the infinite loop by not updating if the data is the same
     if (JSON.stringify(budget) !== JSON.stringify(data)) {
       updateData(budget)
     }
-  }, [budget, data, updateData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budget])
 
   // Calculate item amount when units or costPerUnit changes
   useEffect(() => {
@@ -53,6 +81,7 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
         amount,
       }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newItem.units, newItem.costPerUnit])
 
   const addBudgetItem = () => {
@@ -74,12 +103,12 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
         units: "1",
         costPerUnit: "",
         amount: "0",
-        deliverableId: newItem.deliverableId,
+        deliverableId: newItem.deliverableId || "",
       })
     }
   }
 
-  const removeBudgetItem = (index) => {
+  const removeBudgetItem = (index: number) => {
     setBudget((prev) => ({
       ...prev,
       breakdown: prev.breakdown.filter((_, i) => i !== index),
@@ -100,14 +129,15 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
       ...prev,
       totalAmount: calculateTotal(),
     }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [budget.breakdown])
 
   const importDeliverables = () => {
     // Create deliverable groups if they don't exist
     if (!budget.deliverableGroups) {
-      const groups = {}
+      const groups: { [key: string]: DeliverableGroup } = {}
       scopeDeliverables.forEach((deliverable, index) => {
-        groups[index] = {
+        groups[`del-${index}`] = {
           name: deliverable,
           id: `del-${index}`,
         }
@@ -117,12 +147,20 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
         ...prev,
         deliverableGroups: groups,
       }))
+
+      // Initialize expanded state for all groups
+      const expanded: { [key: string]: boolean } = {}
+      Object.keys(groups).forEach((key) => {
+        expanded[key] = true
+      })
+      setExpandedGroups(expanded)
     } else {
       // Update existing groups and add new ones
       const updatedGroups = { ...budget.deliverableGroups }
       scopeDeliverables.forEach((deliverable, index) => {
-        const existingGroupIndex = Object.keys(updatedGroups).find((key) => updatedGroups[key].name === deliverable)
-
+        const existingGroupIndex = Object.keys(updatedGroups).find(
+          (key) => updatedGroups[key].name === deliverable
+        )
         if (!existingGroupIndex) {
           const newId = `del-${Date.now()}-${index}`
           updatedGroups[newId] = {
@@ -136,17 +174,17 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
         ...prev,
         deliverableGroups: updatedGroups,
       }))
-    }
 
-    // Initialize expanded state for all groups
-    const expanded = {}
-    Object.keys(budget.deliverableGroups || {}).forEach((key) => {
-      expanded[key] = true
-    })
-    setExpandedGroups(expanded)
+      // Initialize expanded state for all groups
+      const expanded: { [key: string]: boolean } = {}
+      Object.keys(updatedGroups).forEach((key) => {
+        expanded[key] = true
+      })
+      setExpandedGroups(expanded)
+    }
   }
 
-  const toggleGroup = (groupId) => {
+  const toggleGroup = (groupId: string) => {
     setExpandedGroups((prev) => ({
       ...prev,
       [groupId]: !prev[groupId],
@@ -172,20 +210,20 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
     }))
   }
 
-  const updateDeliverableGroupName = (groupId, name) => {
+  const updateDeliverableGroupName = (groupId: string, name: string) => {
     setBudget((prev) => ({
       ...prev,
       deliverableGroups: {
         ...(prev.deliverableGroups || {}),
         [groupId]: {
-          ...(prev.deliverableGroups[groupId] || {}),
+          ...(prev.deliverableGroups?.[groupId] || {}),
           name,
         },
       },
     }))
   }
 
-  const removeDeliverableGroup = (groupId) => {
+  const removeDeliverableGroup = (groupId: string) => {
     const updatedGroups = { ...(budget.deliverableGroups || {}) }
     delete updatedGroups[groupId]
 
@@ -210,11 +248,15 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
   }
 
   // Group budget items by deliverable
-  const groupedItems = {}
-  const ungroupedItems = []
+  const groupedItems: { [key: string]: BudgetItem[] } = {}
+  const ungroupedItems: BudgetItem[] = []
 
   budget.breakdown.forEach((item) => {
-    if (item.deliverableId && budget.deliverableGroups && budget.deliverableGroups[item.deliverableId]) {
+    if (
+      item.deliverableId &&
+      budget.deliverableGroups &&
+      budget.deliverableGroups[item.deliverableId]
+    ) {
       if (!groupedItems[item.deliverableId]) {
         groupedItems[item.deliverableId] = []
       }
@@ -232,7 +274,7 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <span className="text-gray-500">$</span>
           </div>
-          <Input id="totalAmount" className="pl-7" value={formatNumber(budget.totalAmount)} readOnly />
+          <Input id="totalAmount" className="pl-7" value={formatNumber(budget.totalAmount || "0")} readOnly />
         </div>
         <p className="text-sm text-muted-foreground">This amount is calculated from the budget tasks below</p>
       </div>
@@ -241,7 +283,7 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Label>Budget Tasks</Label>
-            <HelpButton resource={helpResources.budget.breakdown} />
+            <HelpButton resource={helpResources?.budget?.breakdown} />
           </div>
           <div className="flex gap-2">
             <Button
@@ -307,8 +349,13 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
                 <div className="col-span-8 md:col-span-2">
                   <Label htmlFor="itemDeliverable">Group</Label>
                   <Select
-                    value={newItem.deliverableId}
-                    onValueChange={(value) => setNewItem((prev) => ({ ...prev, deliverableId: value }))}
+                    value={newItem.deliverableId || ""}
+                    onValueChange={(value) =>
+                      setNewItem((prev) => ({
+                        ...prev,
+                        deliverableId: value === "none" ? "" : value,
+                      }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select group" />
@@ -467,7 +514,7 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
             <CardContent className="p-4">
               <div className="flex items-center justify-between p-3 border-t mt-2">
                 <span className="font-bold">Total Budget</span>
-                <span className="font-bold">${formatNumber(budget.totalAmount)}</span>
+                <span className="font-bold">${formatNumber(budget.totalAmount || "0")}</span>
               </div>
             </CardContent>
           </Card>
@@ -477,13 +524,13 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="budgetNarrative">Budget Narrative</Label>
-          <HelpButton resource={helpResources.budget.narrative} />
+          <HelpButton resource={helpResources?.budget?.narrative} />
         </div>
         <Textarea
           id="budgetNarrative"
           placeholder="Describe each item of the budget"
           rows={4}
-          value={budget.paymentSchedule}
+          value={budget.paymentSchedule || ""}
           onChange={(e) => setBudget((prev) => ({ ...prev, paymentSchedule: e.target.value }))}
         />
       </div>
@@ -491,13 +538,13 @@ export function BudgetForm({ data, updateData, scopeDeliverables = [] }) {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="contingencyCosts">Contingency Costs</Label>
-          <HelpButton resource={helpResources.budget.contingency} />
+          <HelpButton resource={helpResources?.budget?.contingency} />
         </div>
         <Textarea
           id="contingencyCosts"
           placeholder="Describe and justify any contingency costs"
           rows={3}
-          value={budget.additionalCosts}
+          value={budget.additionalCosts || ""}
           onChange={(e) => setBudget((prev) => ({ ...prev, additionalCosts: e.target.value }))}
         />
       </div>
