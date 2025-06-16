@@ -6,6 +6,33 @@ import { Download, Printer } from "lucide-react"
 import { useRef } from "react"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+
+// add button to export proposal as .docx, Google Drive, and HTML
+type ExportDropdownProps = {
+  onExportDocx: () => void
+  onExportGoogle: () => void
+  onExportHtml: () => void
+}
+
+function ExportDropdown({ onExportDocx, onExportGoogle, onExportHtml }: ExportDropdownProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button>
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={onExportDocx}>Export as .docx</DropdownMenuItem>
+        <DropdownMenuItem onClick={onExportGoogle}>Export to Google Drive</DropdownMenuItem>
+        <DropdownMenuItem onClick={onExportHtml}>Export as HTML</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 
 // Helper function to format numbers with commas
 const formatNumber = (num: number | string) => {
@@ -177,6 +204,17 @@ export function ProposalPreview({ data }: ProposalPreviewProps) {
     })
   }
 
+  // Handler stubs for ExportDropdown
+const handleExportDocx = () => {
+  // TODO: Implement .docx export
+}
+const handleExportGoogle = () => {
+  // TODO: Implement Google Drive export
+}
+const handleExportHtml = () => {
+  // TODO: Implement HTML export
+}
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end gap-2">
@@ -188,6 +226,11 @@ export function ProposalPreview({ data }: ProposalPreviewProps) {
           <Download className="mr-2 h-4 w-4" />
           Download PDF
         </Button>
+        <ExportDropdown
+          onExportDocx={handleExportDocx}
+          onExportGoogle={handleExportGoogle}
+          onExportHtml={handleExportHtml}
+        />
       </div>
 
       <Card className="border-2">
