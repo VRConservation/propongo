@@ -4,58 +4,151 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Download, Printer } from "lucide-react"
 import { useRef } from "react"
+import jsPDF from "jspdf"
+import html2canvas from "html2canvas"
 
 // Helper function to format numbers with commas
-const formatNumber = (num) => {
+const formatNumber = (num: number | string) => {
   return new Intl.NumberFormat("en-US").format(Number(num) || 0)
 }
 
-export function ProposalPreview({ data }) {
-  const printRef = useRef(null)
+interface ProposalPreviewProps {
+  data: {
+    projectTitle?: string
+    clientName?: string
+    scope: {
+      overview?: string
+      objectives: string[]
+      deliverables: string[]
+      deliverableDates?: { startDate?: string; endDate?: string }[]
+      customSections?: {
+        [sectionId: string]: { name: string; content: string }
+      }
+      timelineNotes?: string
+      limitations?: string
+    }
+    budget: {
+      totalAmount?: string
+      breakdown?: {
+        description: string
+        units: string | number
+        costPerUnit: string
+        amount: string
+        deliverableId?: string
+      }[]
+      deliverableGroups?: {
+        [groupId: string]: { name: string }
+      }
+      paymentSchedule?: string
+      additionalCosts?: string
+    }
+    qualifications: {
+      companyBackground?: string
+      teamMembers: {
+        name: string
+        role: string
+        bio?: string
+      }[]
+      relevantExperience: string[]
+      testimonials: {
+        quote: string
+        author: string
+        company?: string
+      }[]
+    }
+  }
+}
+
+export function ProposalPreview({ data }: ProposalPreviewProps) {
+  const printRef = useRef<HTMLDivElement>(null)
 
   const handlePrint = () => {
     const content = printRef.current
     const printWindow = window.open("", "_blank")
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Business Proposal - ${data.projectTitle}</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            h1 { font-size: 24px; margin-bottom: 20px; }
-            h2 { font-size: 20px; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-            h3 { font-size: 18px; margin-top: 20px; }
-            h4 { font-size: 16px; margin-top: 15px; font-weight: bold; }
-            ul { margin-bottom: 20px; }
-            li { margin-bottom: 8px; }
-            .section { margin-bottom: 30px; }
-            .budget-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
-            .testimonial { font-style: italic; margin-bottom: 15px; }
-            .testimonial-author { font-weight: bold; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { padding: 8px; text-align: left; }
-            th { border-bottom: 1px solid #ddd; }
-            td { border-bottom: 1px solid #eee; }
-            .group-header { background-color: #f5f5f5; font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          ${content.innerHTML}
-        </body>
-      </html>
-    `)
+    if (printWindow && content) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Business Proposal - ${data.projectTitle}</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+              }
+              h1 { font-size: 24px; margin-bottom: 20px; }
+              h2 { font-size: 20px; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+              h3 { font-size: 18px; margin-top: 20px; }
+              h4 { font-size: 16px; margin-top: 15px; font-weight: bold; }
+              ul { margin-bottom: 20px; }
+              li { margin-bottom: 8px; }
+              .section { margin-bottom: 30px; }
+              .budget-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
+              .testimonial { font-style: italic; margin-bottom: 15px; }
+              .testimonial-author { font-weight: bold; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { padding: 8px; text-align: left; }
+              th { border-bottom: 1px solid #ddd; }
+              td { border-bottom: 1px solid #eee; }
+              .group-header { background-color: #f5f5f5; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            ${content.innerHTML}
+          </body>
+        </html>
+      `)
 
-    printWindow.document.close()
-    printWindow.focus()
-    printWindow.print()
+      printWindow.document.close()
+      printWindow.focus()
+      printWindow.print()
+    }
+  }
+
+  // PDF download with multi-page support
+  const handleDownloadPDF = async () => {
+    if (!printRef.current) return
+
+    const element = printRef.current
+    const canvas = await html2canvas(element, { scale: 2 })
+    const imgData = canvas.toDataURL("image/png")
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    })
+
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+
+    // Calculate the image dimensions in PDF units
+    const imgProps = pdf.getImageProperties(imgData)
+    const pdfWidth = pageWidth
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
+
+    let position = 0
+    let remainingHeight = pdfHeight
+
+    // Add first page
+    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight)
+    remainingHeight -= pageHeight
+
+    // Add more pages if needed
+    while (remainingHeight > 0) {
+      position -= pageHeight
+      pdf.addPage()
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight)
+      remainingHeight -= pageHeight
+    }
+
+    pdf.save(
+      `proposal-${data.projectTitle ? data.projectTitle.replace(/\s+/g, "-").toLowerCase() : "download"}.pdf`
+    )
   }
 
   const formatDate = () => {
@@ -68,8 +161,8 @@ export function ProposalPreview({ data }) {
   }
 
   // Group budget items by deliverable
-  const groupedItems = {}
-  const ungroupedItems = []
+  const groupedItems: { [key: string]: NonNullable<ProposalPreviewProps["data"]["budget"]["breakdown"]> } = {}
+  const ungroupedItems: NonNullable<ProposalPreviewProps["data"]["budget"]["breakdown"]>[number][] = []
 
   if (data.budget.breakdown) {
     data.budget.breakdown.forEach((item) => {
@@ -91,7 +184,7 @@ export function ProposalPreview({ data }) {
           <Printer className="mr-2 h-4 w-4" />
           Print
         </Button>
-        <Button>
+        <Button onClick={handleDownloadPDF}>
           <Download className="mr-2 h-4 w-4" />
           Download PDF
         </Button>
@@ -203,7 +296,7 @@ export function ProposalPreview({ data }) {
                 <div className="space-y-2">
                   <h3 className="text-xl font-semibold">Total Budget</h3>
                   <p className="text-2xl font-bold">
-                    ${formatNumber(Number.parseFloat(data.budget.totalAmount).toFixed(2))}
+                    ${formatNumber(Number.parseFloat(data.budget.totalAmount ?? "0").toFixed(2))}
                   </p>
                 </div>
               )}
@@ -318,7 +411,7 @@ export function ProposalPreview({ data }) {
                         <tr className="font-bold text-lg">
                           <td>Total Budget</td>
                           <td className="text-right">
-                            ${formatNumber(Number.parseFloat(data.budget.totalAmount).toFixed(2))}
+                            ${formatNumber(Number.parseFloat(data.budget.totalAmount ?? "0").toFixed(2))}
                           </td>
                         </tr>
                       </tbody>
