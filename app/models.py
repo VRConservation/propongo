@@ -51,6 +51,7 @@ def ensure_dirs() -> None:
 
 @dataclass
 class Proposal:
+    """A project proposal containing tasks, budget items, and custom sections."""
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     title: str = "Untitled Proposal"
     client_name: str = ""
@@ -82,13 +83,16 @@ class Proposal:
     reports: list = field(default_factory=list)
 
     def to_dict(self) -> dict:
+        """Serialize the proposal to a dictionary."""
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Proposal":
+        """Create a Proposal from a dictionary, ignoring unknown fields."""
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
     def save(self):
+        """Save the proposal to disk as a JSON file."""
         ensure_dirs()
         self.updated_at = datetime.now().isoformat()
         target_dir = TEMPLATES_DIR if self.is_template else PROPOSALS_DIR
@@ -101,6 +105,7 @@ class Proposal:
 
     @classmethod
     def load(cls, proposal_id: str, is_template: bool = False) -> Optional["Proposal"]:
+        """Load a proposal or template by ID from disk."""
         target_dir = TEMPLATES_DIR if is_template else PROPOSALS_DIR
         filepath = os.path.join(target_dir, f"{proposal_id}.json")
         if not os.path.exists(filepath):
@@ -113,6 +118,7 @@ class Proposal:
 
     @classmethod
     def list_all(cls) -> list:
+        """List all proposals, returning summaries sorted by most recent."""
         ensure_dirs()
         proposals = []
         for filename in sorted(os.listdir(PROPOSALS_DIR)):
@@ -132,6 +138,7 @@ class Proposal:
 
     @classmethod
     def list_templates(cls) -> list:
+        """List all templates, returning summaries sorted by most recent."""
         ensure_dirs()
         templates = []
         for filename in sorted(os.listdir(TEMPLATES_DIR)):
@@ -152,6 +159,7 @@ class Proposal:
 
     @classmethod
     def delete(cls, proposal_id: str, is_template: bool = False) -> bool:
+        """Delete a proposal or template by ID. Returns True if deleted."""
         target_dir = TEMPLATES_DIR if is_template else PROPOSALS_DIR
         filepath = os.path.join(target_dir, f"{proposal_id}.json")
         if os.path.exists(filepath):
@@ -161,6 +169,7 @@ class Proposal:
 
     @property
     def total_budget(self) -> float:
+        """Compute total budget as the sum of cost_per_unit * units for all items."""
         return sum(
             item.get("cost_per_unit", 0) * item.get("units", 0)
             for item in self.budget_items

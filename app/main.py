@@ -89,6 +89,7 @@ def create_app() -> Flask:
 
     @app.context_processor
     def inject_version():
+        """Inject application version into all templates."""
         return {"app_version": __version__}
 
     app.jinja_env.filters["md"] = lambda text: Markup(markdown_to_html(text))
@@ -96,11 +97,13 @@ def create_app() -> Flask:
 
     @app.route("/")
     def index():
+        """List all proposals on the homepage."""
         proposals = Proposal.list_all()
         return render_template("index.html", proposals=proposals)
 
     @app.route("/new")
     def new_proposal():
+        """Create a new proposal and redirect to its editor."""
         proposal = Proposal()
         proposal.save()
         logger.info(f"Created new proposal: {proposal.id}")
@@ -108,6 +111,7 @@ def create_app() -> Flask:
 
     @app.route("/editor/<proposal_id>")
     def editor(proposal_id):
+        """Render the proposal editor page."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return redirect(url_for("index"))
@@ -120,6 +124,7 @@ def create_app() -> Flask:
 
     @app.route("/api/proposal/<proposal_id>", methods=["GET"])
     def get_proposal(proposal_id: str) -> Tuple[Response, int]:
+        """Return a proposal as JSON."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             logger.warning(f"Proposal not found: {proposal_id}")
@@ -128,6 +133,7 @@ def create_app() -> Flask:
 
     @app.route("/api/proposal/<proposal_id>", methods=["PUT"])
     def save_proposal(proposal_id: str) -> Tuple[Response, int]:
+        """Update and save an existing proposal."""
         data = request.get_json()
         if not data:
             return jsonify(ERROR_MESSAGES['NO_DATA']), 400
@@ -169,11 +175,13 @@ def create_app() -> Flask:
 
     @app.route("/api/proposal/<proposal_id>", methods=["DELETE"])
     def delete_proposal(proposal_id):
+        """Delete a proposal by ID."""
         Proposal.delete(proposal_id)
         return jsonify({"ok": True})
 
     @app.route("/api/proposal/<proposal_id>/save-as", methods=["POST"])
     def save_proposal_as(proposal_id):
+        """Create a copy of a proposal with a new title."""
         data = request.get_json()
         title = data.get("title", "").strip()
         if not title:
@@ -219,24 +227,29 @@ def create_app() -> Flask:
 
     @app.route("/api/proposals", methods=["GET"])
     def list_proposals():
+        """Return all proposals as JSON."""
         return jsonify(Proposal.list_all())
 
     @app.route("/templates")
     def templates_page():
+        """Render the templates listing page."""
         templates = Proposal.list_templates()
         return render_template("templates.html", templates=templates)
 
     @app.route("/api/templates", methods=["GET"])
     def list_templates():
+        """Return all templates as JSON."""
         return jsonify(Proposal.list_templates())
 
     @app.route("/api/template/<template_id>", methods=["DELETE"])
     def delete_template(template_id):
+        """Delete a template by ID."""
         Proposal.delete(template_id, is_template=True)
         return jsonify({"ok": True})
 
     @app.route("/api/proposal/<proposal_id>/save-as-template", methods=["POST"])
     def save_as_template(proposal_id):
+        """Save a proposal as a reusable template."""
         data = request.get_json()
         template_name = data.get("template_name", "").strip()
         template_category = data.get("template_category", "").strip()
@@ -282,6 +295,7 @@ def create_app() -> Flask:
 
     @app.route("/templates/new-from/<template_id>")
     def new_from_template(template_id):
+        """Create a new proposal from a template and redirect to editor."""
         tmpl = Proposal.load(template_id, is_template=True)
         if not tmpl:
             return redirect(url_for("templates_page"))
@@ -308,6 +322,7 @@ def create_app() -> Flask:
 
     @app.route("/scope/<proposal_id>")
     def scope_tab(proposal_id: str) -> Tuple[str, int] | Tuple[Response, int]:
+        """Render the scope/editing tab for a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -315,6 +330,7 @@ def create_app() -> Flask:
 
     @app.route("/budget/<proposal_id>")
     def budget_tab(proposal_id):
+        """Render the budget tab with cost breakdowns per task."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -347,6 +363,7 @@ def create_app() -> Flask:
 
     @app.route("/qualifications/<proposal_id>")
     def qualifications_tab(proposal_id):
+        """Render the qualifications tab for a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -354,6 +371,7 @@ def create_app() -> Flask:
 
     @app.route("/timeline/<proposal_id>")
     def timeline_tab(proposal_id):
+        """Render the timeline tab with scheduling information."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -410,6 +428,7 @@ def create_app() -> Flask:
 
     @app.route("/custom-sections/<proposal_id>")
     def custom_sections_tab(proposal_id):
+        """Render the custom sections tab for a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -423,6 +442,7 @@ def create_app() -> Flask:
 
     @app.route("/api/section/<proposal_id>", methods=["POST"])
     def add_section(proposal_id):
+        """Add a new custom section to a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -443,6 +463,7 @@ def create_app() -> Flask:
 
     @app.route("/api/section/<proposal_id>/<section_id>", methods=["PUT"])
     def update_section(proposal_id, section_id):
+        """Update an existing custom section."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -463,6 +484,7 @@ def create_app() -> Flask:
 
     @app.route("/api/section/<proposal_id>/<section_id>", methods=["DELETE"])
     def delete_section(proposal_id, section_id):
+        """Delete a custom section from a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -476,6 +498,7 @@ def create_app() -> Flask:
 
     @app.route("/api/section/<proposal_id>/import-excel", methods=["POST"])
     def import_excel_section(proposal_id):
+        """Import an Excel file as a markdown table custom section."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -532,6 +555,7 @@ def create_app() -> Flask:
 
     @app.route("/api/section/<proposal_id>/reorder", methods=["PUT"])
     def reorder_sections(proposal_id):
+        """Reorder custom sections within a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -555,6 +579,7 @@ def create_app() -> Flask:
 
     @app.route("/preview/<proposal_id>")
     def preview_tab(proposal_id):
+        """Render the proposal preview page."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -564,6 +589,7 @@ def create_app() -> Flask:
 
     @app.route("/api/task/<proposal_id>", methods=["POST"])
     def add_task(proposal_id):
+        """Add a new task to a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -587,6 +613,7 @@ def create_app() -> Flask:
 
     @app.route("/api/task/<proposal_id>/<task_id>", methods=["DELETE"])
     def delete_task(proposal_id, task_id):
+        """Delete a task and its associated budget items."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -598,6 +625,7 @@ def create_app() -> Flask:
 
     @app.route("/api/budget/<proposal_id>", methods=["POST"])
     def add_budget_item(proposal_id):
+        """Add a new budget item to a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -622,6 +650,7 @@ def create_app() -> Flask:
 
     @app.route("/api/budget/<proposal_id>/<item_id>", methods=["DELETE"])
     def delete_budget_item(proposal_id, item_id):
+        """Delete a budget item from a proposal."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -632,6 +661,7 @@ def create_app() -> Flask:
 
     @app.route("/api/budget/<proposal_id>/<item_id>", methods=["PUT"])
     def update_budget_item(proposal_id: str, item_id: str) -> Tuple[Response, int]:
+        """Update an existing budget item."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -668,6 +698,7 @@ def create_app() -> Flask:
 
     @app.route("/api/proposal/<proposal_id>/import-budget", methods=["POST"])
     def import_budget(proposal_id):
+        """Import budget items and tasks from an Excel file."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
@@ -763,6 +794,7 @@ def create_app() -> Flask:
 
     @app.route("/api/budget-template", methods=["GET"])
     def download_budget_template():
+        """Download a sample Excel budget template."""
         from openpyxl import Workbook
         import io
 
@@ -787,6 +819,7 @@ def create_app() -> Flask:
 
     @app.route("/tracker/<proposal_id>")
     def tracker(proposal_id):
+        """Render the project tracker page with progress and milestones."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return redirect(url_for("index"))
@@ -835,6 +868,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/task/<task_id>", methods=["PUT"])
     def update_tracker_task(proposal_id, task_id):
+        """Update task progress, status, or notes in the tracker."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -861,6 +895,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/budget/<item_id>", methods=["PUT"])
     def update_tracker_budget(proposal_id, item_id):
+        """Update the actual cost for a budget item in the tracker."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -877,6 +912,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/milestone", methods=["POST"])
     def add_milestone(proposal_id):
+        """Add a new milestone to the tracker."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -896,6 +932,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/milestone/<milestone_id>", methods=["PUT"])
     def update_milestone(proposal_id, milestone_id):
+        """Update a milestone's name, date, or completion status."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -920,6 +957,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/milestone/<milestone_id>", methods=["DELETE"])
     def delete_milestone(proposal_id, milestone_id):
+        """Delete a milestone from the tracker."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -931,6 +969,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/report", methods=["POST"])
     def add_report(proposal_id):
+        """Add a new progress report to the tracker."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -950,6 +989,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/report/<report_id>", methods=["PUT"])
     def update_report(proposal_id, report_id):
+        """Update a progress report's content, title, or date."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404
@@ -974,6 +1014,7 @@ def create_app() -> Flask:
 
     @app.route("/api/tracker/<proposal_id>/report/<report_id>", methods=["DELETE"])
     def delete_report(proposal_id, report_id):
+        """Delete a progress report from the tracker."""
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify({"error": "Not found"}), 404

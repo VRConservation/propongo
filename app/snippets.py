@@ -17,11 +17,13 @@ CUSTOM_DIR = os.path.join(SNIPPETS_DIR, "custom")
 
 
 def ensure_dirs():
+    """Ensure snippet directories exist."""
     os.makedirs(SNIPPETS_DIR, exist_ok=True)
     os.makedirs(CUSTOM_DIR, exist_ok=True)
 
 
 def load_snippets(filename):
+    """Load snippets from a JSON file."""
     filepath = os.path.join(SNIPPETS_DIR, filename)
     if os.path.exists(filepath):
         with open(filepath, "r") as f:
@@ -30,6 +32,7 @@ def load_snippets(filename):
 
 
 def save_snippets(filename, data):
+    """Save snippets to a JSON file."""
     ensure_dirs()
     filepath = os.path.join(SNIPPETS_DIR, filename)
     with open(filepath, "w") as f:
@@ -37,6 +40,7 @@ def save_snippets(filename, data):
 
 
 def load_custom_snippets():
+    """Load all user-created custom snippets."""
     ensure_dirs()
     snippets = []
     for filename in sorted(os.listdir(CUSTOM_DIR)):
@@ -48,6 +52,7 @@ def load_custom_snippets():
 
 @snippets_bp.route("/snippets")
 def get_all_snippets():
+    """Return all snippets grouped by category."""
     return jsonify({
         "organization": load_snippets("organization.json"),
         "deliverables": load_snippets("deliverables.json"),
@@ -57,6 +62,7 @@ def get_all_snippets():
 
 @snippets_bp.route("/snippets/<category>", methods=["POST"])
 def add_snippet(category):
+    """Add a new snippet to the given category."""
     data = request.get_json()
     if not data or "title" not in data or "content" not in data:
         return jsonify({"error": "title and content required"}), 400
@@ -85,6 +91,7 @@ def add_snippet(category):
 
 @snippets_bp.route("/snippets/<category>/<snippet_id>", methods=["DELETE"])
 def delete_snippet(category, snippet_id):
+    """Delete a snippet by category and ID."""
     if category == "custom":
         filepath = os.path.join(CUSTOM_DIR, f"{snippet_id}.json")
         if os.path.exists(filepath):
@@ -101,6 +108,7 @@ def delete_snippet(category, snippet_id):
 
 @snippets_bp.route("/snippets/import", methods=["POST"])
 def import_snippet():
+    """Import a snippet from a .md, .txt, or .docx file."""
     if "file" not in request.files:
         return jsonify(ERROR_MESSAGES['NO_FILE']), 400
 
