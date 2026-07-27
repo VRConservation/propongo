@@ -17,3 +17,11 @@ Documentation for the propongo2 Python modules.
 ::: app.snippets
     options:
       show_source: true
+
+::: app.config
+    options:
+      show_source: true
+
+::: app.utils
+    options:
+      show_source: true
