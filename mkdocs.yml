@@ -44,13 +44,7 @@ plugins:
         enable_creation_date: true
         type: timeago
     # - pdf-export
-    - mkdocs-jupyter:
-        include_source: True
-        ignore_h1_titles: True
-        execute: True
-        allow_errors: false
-        ignore: ["conf.py"]
-        execute_ignore: ["*ignore.ipynb"]
+    # - mkdocs-jupyter
 
 markdown_extensions:
     - admonition
@@ -79,12 +73,5 @@ nav:
     - FAQ: faq.md
     - Changelog: changelog.md
     - Report Issues: https://github.com/VRConservation/propongo2/issues
-    - Examples:
-        - examples/intro.ipynb
-        - examples/pdf.ipynb
-    - API Reference:
-        - autorpt module: autorpt.md
-        - common module: common.md
-        - pdf module: pdf.md
-        - gen_auto module: gen_auto.md
+    - API Reference: api.md
 
