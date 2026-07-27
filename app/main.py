@@ -991,6 +991,8 @@ def run_server() -> None:
     import logging as _logging
     _logging.getLogger("werkzeug").setLevel(_logging.WARNING)
     app = create_app()
+    print("\n ✨✨✨ 🔌 Server started ✨✨✨")
+    print(f"  👉  http://localhost:{Config.PORT}  👈\n")
     app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT)
 
 
