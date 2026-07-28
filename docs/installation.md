@@ -16,17 +16,17 @@ Opens at [http://localhost:5000](http://localhost:5000)
 1. **Create virtual environment with Anaconda/Miniconda** (recommended)
    ```powershell
    # Install Miniconda from: https://docs.conda.io/en/latest/miniconda.html
-   conda create -n propongo python=3.10
+   conda create -n propongo python=3.13
    conda activate propongo
    ```
    
    !!! warning
-       Installing to base Python can cause package conflicts. [Learn about Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management.
+       Installing to base Python can cause package conflicts. [Learn about Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management or use [this](http://3point.xyz/geo2/appendix1/) mini guide to install a virtual environment on your machine.
 
-2. **Install GTK3 Runtime** (required for PDF export)
-   - Download: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases
-   - Run installer, choose "Full installation"
-   - Restart your computer
+2. **Install GTK3 Runtime** (Windows users: required for PDF export)
+   a. Download: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/
+   b. Run installer, choose "Full installation"
+   c. Restart your computer
 
 3. **Install Propongo2**
    ```powershell
@@ -38,7 +38,7 @@ Opens at [http://localhost:5000](http://localhost:5000)
    propongo2
    ```
    
-5. **Open browser** to http://localhost:5000
+5. **Open browser** to http://localhost:5000 or control click on the link to the localhost browser in your terminal.
 
 !!! note "Troubleshooting"
     If PDF export fails, ensure GTK3 is in your PATH. If Excel import doesn't work, run: `pip install pandas openpyxl tabulate`

@@ -40,8 +40,8 @@ Opens at [http://localhost:5000](http://localhost:5000)
    
    ⚠️ **Warning:** Installing to base Python can cause package conflicts. [Learn about Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management.
 
-2. **Install GTK3 Runtime** (required for PDF export)
-   - Download: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases
+2. **Install GTK3 Runtime** (for MS Windows users: required for PDF export)
+   - Download: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/
    - Run installer, choose "Full installation"
    - Restart your computer
 

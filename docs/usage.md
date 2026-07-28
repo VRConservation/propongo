@@ -16,7 +16,7 @@
 
     **Custom Sections** - Add unlimited custom sections with Markdown formatting. Import Excel spreadsheets as formatted tables.
 
-    **Preview** - Review the complete proposal with task-grouped budget and timeline before exporting
+    **Preview** - Review the complete proposal with task-grouped budget and timeline before exporting as a pdf, word, or html file.
 
 ## Using Custom Sections
 
@@ -27,7 +27,7 @@ Add custom sections to your proposal for any additional content:
 3. Enter a title and content using Markdown formatting
 4. See a live preview of your formatted content
 5. Use ↑ and ↓ buttons to reorder sections
-6. Click **📊 Import Excel** to import spreadsheet data as tables
+6. Click **Import Excel** to import spreadsheet data as tables
 
 **Excel Import:** Import `.xlsx` or `.xls` files and they'll be automatically converted to Markdown tables. Perfect for budget details, personnel lists, equipment inventories, or any tabular data.
 
