@@ -1,40 +1,54 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-- **Custom Sections** - Add unlimited custom sections to proposals with Markdown formatting
-- **Excel Import** - Import Excel spreadsheets (.xlsx, .xls) as formatted tables into custom sections
-- Live Markdown preview for custom section content
-- Section reordering with up/down buttons
-- Custom sections appear in PDF and HTML exports
-- New dependencies: pandas, openpyxl, tabulate for Excel support
-
-### Changed
-- Added "Custom Sections" tab to proposal editor
-- Updated export templates to include custom sections
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-07-15
+## [Unreleased]
+
+## [1.3.3] - 2026-07-27
+
+### Fixed
+- Include templates, static files, and snippets in installed package (missing in 1.3.2)
+
+## [1.3.2] - 2026-07-27
+
+### Fixed
+- Graceful WeasyPrint failure on Windows with GTK3 install link
+- Store proposals, templates, and snippets in `Documents/Propongo2/` instead of site-packages
 
 ### Added
-- Scope of Work editor with task/deliverable management
-- Budget editor with cost-per-unit calculations and totals
-- Qualifications text editor
-- Timeline editor with Gantt chart visualization
-- Proposal preview with formatted document view
+- Docstrings to all public functions and classes
+- API reference documentation via mkdocstrings
+- MkDocs documentation site at 3point.xyz/propongo2
+
+## [1.3.1] - 2026-07-27
+
+### Added
+- Startup message when running `propongo2` command
+
+## [1.3.0] - 2026-07-27
+
+### Added
+- Custom sections with Markdown formatting
+- Excel import for spreadsheets
+- Snippet library for reusable text blocks
+- Live Markdown preview for custom sections
+- Section reordering with up/down buttons
+
+## [1.2.0] - 2026-07-25
+
+### Added
+- Gantt chart timeline visualization
+- HTML export
+
+## [1.1.0] - 2026-07-24
+
+### Added
 - PDF export via WeasyPrint
-- HTML export as standalone file
-- Stock markdown snippet library (Organization, Deliverables, Custom)
-- Snippet sidebar with insert-at-cursor functionality
-- Save/load proposals as JSON files on disk
-- Proposal list dashboard with create/edit/delete
-- HTMX-powered dynamic tab switching
-- Clean professional PDF export styling
-- Flask application with Blueprint architecture
-- PyPI-ready packaging with pyproject.toml
-- Version bumping via bump2version
+
+## [1.0.0] - 2026-07-23
+
+### Added
+- Initial release
