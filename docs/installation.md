@@ -45,6 +45,31 @@ Opens at [http://localhost:5000](http://localhost:5000)
 !!! note "Troubleshooting"
     If PDF export fails, ensure GTK3 is in your PATH. If Excel import doesn't work, run: `pip install pandas openpyxl tabulate`
 
+## Install using uv
+Installing propongo using uv is faster and simpler than using conda and keeps everything in the same folder. The package also handles virtual environments automatically. If you're using windows, make sure to install GTK3 first, as described above.
+
+1. Install uv. Go to https://docs.astral.sh/uv and click on installation in the left panel. For linux and mac:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+For windows:
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+2. Install git by following the instructions at https://git-scm.com/install/windows. Or if you don't want to do that go to https://github.com/VRConservation/propongo2, click on the green code button and select download zip, unzip, and save the file where you want it.
+3. After installing git, go to the folder where you want the propongo files, right click and select open in terminal.
+4. Go to https://github.com/VRConservation/propongo2, click the green code button and copy the url under clone.
+5. Run git clone https://github.com/VRConservation/propongo2.git in your terminal
+6. In the same open terminal run:
+```bash
+uv sync
+uv run propongo2
+```
+7. Open propongo2 at http://localhost:5000 or ctrl + click in the server link in the terminal
+8. Start using the app.
+
 ## Install from source
 
 ```bash

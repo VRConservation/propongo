@@ -53,7 +53,16 @@ Click a snippet to insert it at the cursor position in any text field.
 - Click "Proposals" in the header to see all saved proposals
 - Create, edit, or delete proposals from the dashboard
 
-## Updating
+## Using Templates
+
+Reuse proposal structures by saving them as templates:
+
+1. **Save a template** — In the editor, click the menu (&#9776;) and select **Save as Template**. Give it a name and optional category.
+2. **Browse templates** — Click **Templates** from the dashboard or the editor menu to see all saved templates.
+3. **Create from template** — Click **Use Template** on any template card to create a new proposal pre-populated with all tasks, budget items, sections, and timeline settings from that template.
+4. **Delete templates** — Click **Delete** on any template card to remove it.
+
+Templates preserve: scope, tasks, budget items, qualifications, custom sections, timeline settings, and budget timing. Client-specific fields like title and client name are left blank for the new proposal.
 
 ### From PyPI
 

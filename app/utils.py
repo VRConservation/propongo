@@ -63,7 +63,7 @@ def build_export_context(proposal) -> Dict[str, Any]:
         proj_end_year = proj_start_year + 1
 
     if proposal.end_date:
-        timeline_total_months = max((proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month), 12)
+        timeline_total_months = max((proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1)
     else:
         max_end = 0
         for t in tasks_with_timing:
@@ -100,7 +100,7 @@ def build_export_context(proposal) -> Dict[str, Any]:
                 end = offset + dur
                 if end > max_end:
                     max_end = end
-        timeline_total_months = max(max_end, 12)
+        timeline_total_months = max(max_end, 1)
     if timeline_total_months <= 12:
         timeline_granularity = "months"
     elif timeline_total_months <= 36:

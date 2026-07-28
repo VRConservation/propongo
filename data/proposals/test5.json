@@ -1,10 +1,10 @@
 {
   "id": "test5",
   "title": "test5",
-  "client_name": "CALFIRE",
-  "subtitle": "BWD",
+  "client_name": "Programs-r-Us",
+  "subtitle": "New",
   "created_at": "2026-07-16T10:36:23.446377",
-  "updated_at": "2026-07-17T18:42:45.423189",
+  "updated_at": "2026-07-28T18:15:51.512216",
   "project_summary": "### Background\nSlow-carb keffiyeh fernet red light therapy y2k enamel pin. Zines pitchfork rams varda vegan, jianbing chambray master cleanse leggings typewriter birkenstocks pork belly bluesky. Nduja sartorial cold plunge cortado reading series tinned fish dog dad wolf vaporware bauhaus kitsch. Vibe check freegan pinterest, supreme bone broth braun ramps stereolab rams scenester ice bath man braid austin bicycle rights. Wide-leg kickstarter la croix Brooklyn tattooed. Fam conservas master cleanse, garum dirtbag pop-up fernet ethical. Yorgos kale chips beard stussy, thrifted letterboxd vinyl capitalist realism.\n\n### Details\nSelfies pour-over 3 wolf moon deschooling wolf cut supper club van life. Migas sartorial tilde forage needle felting breadcrumbing hammock pothos cortado praxis doomscroll lynch. Carhartt crudo slugging coloring book, cliche single-origin coffee umami narwhal nduja moss wall deep v health goth sriracha pickled. Thrifted muji sriracha, leggings black garlic marxism bola\u00f1o visible mending beard. Tarkovsky chili crisp synth lyft fam gorpcore kickstarter jonas mekas +1 third place tote bag iykyk mixtape hipster runoff.",
   "scope": "",
   "tasks": [
@@ -120,10 +120,16 @@
     }
   },
   "start_date": "2026-07-01",
+  "end_date": "",
   "indirect_percent": 15,
   "show_budget_description": false,
   "budget_description": "",
   "timeline_use_days": false,
   "timeline_show_budget": true,
-  "custom_sections": []
+  "custom_sections": [],
+  "is_template": false,
+  "template_name": "",
+  "template_category": "",
+  "milestones": [],
+  "reports": []
 }

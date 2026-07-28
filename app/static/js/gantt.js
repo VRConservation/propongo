@@ -126,11 +126,7 @@ let autoSaveTimelineTimer = null;
 function autoSaveTimeline(proposalId) {
     clearTimeout(autoSaveTimelineTimer);
     autoSaveTimelineTimer = setTimeout(function() {
-        const inputs = document.getElementById('timeline-inputs');
-        if (!inputs) return;
-
         const useDays = document.getElementById('timeline-use-days')?.checked;
-        const showBudget = document.getElementById('timeline-show-budget')?.checked;
         const projectStartMonth = parseInt(document.getElementById('start-month').value) || 1;
         const projectStartYear = parseInt(document.getElementById('start-year').value) || 2025;
         const startDate = projectStartYear + '-' + String(projectStartMonth).padStart(2, '0') + '-01';
@@ -138,15 +134,24 @@ function autoSaveTimeline(proposalId) {
         const projectEndYear = parseInt(document.getElementById('end-year')?.value) || projectStartYear + 1;
         const endDate = projectEndYear + '-' + String(projectEndMonth).padStart(2, '0') + '-01';
 
-        const saveTasks = [];
-        const budgetTimings = {};
-        const taskBudgetItems = {};
+        const body = {
+            start_date: startDate,
+            end_date: endDate,
+            timeline_use_days: !!document.getElementById('timeline-use-days')?.checked,
+            timeline_show_budget: !!document.getElementById('timeline-show-budget')?.checked
+        };
 
-        inputs.querySelectorAll('.timeline-input-card:not(.budget-timeline-item)').forEach(card => {
-            taskBudgetItems[card.dataset.taskId] = [];
-        });
+        const inputs = document.getElementById('timeline-inputs');
+        if (inputs) {
+            const saveTasks = [];
+            const budgetTimings = {};
+            const taskBudgetItems = {};
 
-        inputs.querySelectorAll('.budget-timeline-item').forEach(sub => {
+            inputs.querySelectorAll('.timeline-input-card:not(.budget-timeline-item)').forEach(card => {
+                taskBudgetItems[card.dataset.taskId] = [];
+            });
+
+            inputs.querySelectorAll('.budget-timeline-item').forEach(sub => {
                 const taskId = sub.dataset.taskId;
                 if (!taskBudgetItems[taskId]) taskBudgetItems[taskId] = [];
                 let itemDuration = parseInt(sub.querySelector('.duration-months').value) || 1;
@@ -168,54 +173,53 @@ function autoSaveTimeline(proposalId) {
                 };
             });
 
-        inputs.querySelectorAll('.timeline-input-card:not(.budget-timeline-item)').forEach(card => {
-            const taskId = card.dataset.taskId;
-            const leadEntity = card.querySelector('.lead-entity')?.value || '';
-            const items = taskBudgetItems[taskId] || [];
+            inputs.querySelectorAll('.timeline-input-card:not(.budget-timeline-item)').forEach(card => {
+                const taskId = card.dataset.taskId;
+                const leadEntity = card.querySelector('.lead-entity')?.value || '';
+                const items = taskBudgetItems[taskId] || [];
 
-            let taskStartMonth = projectStartMonth;
-            let taskStartYear = projectStartYear;
-            let taskDuration = 1;
+                let taskStartMonth = projectStartMonth;
+                let taskStartYear = projectStartYear;
+                let taskDuration = 1;
 
-            if (items.length > 0) {
-                let minOffset = Infinity;
-                let maxEnd = -Infinity;
-                items.forEach(item => {
-                    const offset = (item.start_year - projectStartYear) * 12 + (item.start_month - projectStartMonth);
-                    const end = offset + item.duration_months;
-                    if (offset < minOffset) minOffset = offset;
-                    if (end > maxEnd) maxEnd = end;
+                if (items.length > 0) {
+                    let minOffset = Infinity;
+                    let maxEnd = -Infinity;
+                    items.forEach(item => {
+                        const offset = (item.start_year - projectStartYear) * 12 + (item.start_month - projectStartMonth);
+                        const end = offset + item.duration_months;
+                        if (offset < minOffset) minOffset = offset;
+                        if (end > maxEnd) maxEnd = end;
+                    });
+                    const absStart = projectStartMonth + minOffset - 1;
+                    taskStartMonth = (absStart % 12) + 1;
+                    taskStartYear = projectStartYear + Math.floor(absStart / 12);
+                    taskDuration = maxEnd - minOffset;
+                    if (taskDuration < 1) taskDuration = 1;
+                }
+
+                saveTasks.push({
+                    id: taskId,
+                    name: card.querySelector('.timeline-task-name').textContent,
+                    lead_entity: leadEntity,
+                    start_month: taskStartMonth,
+                    start_year: taskStartYear,
+                    duration_months: taskDuration,
+                    recurring: !!card.querySelector('.task-recurring')?.checked,
+                    recurring_interval: parseInt(card.querySelector('.task-recurring-interval')?.value) || 3
                 });
-                const absStart = projectStartMonth + minOffset - 1;
-                taskStartMonth = (absStart % 12) + 1;
-                taskStartYear = projectStartYear + Math.floor(absStart / 12);
-                taskDuration = maxEnd - minOffset;
-                if (taskDuration < 1) taskDuration = 1;
-            }
-
-            saveTasks.push({
-                id: taskId,
-                name: card.querySelector('.timeline-task-name').textContent,
-                lead_entity: leadEntity,
-                start_month: taskStartMonth,
-                start_year: taskStartYear,
-                duration_months: taskDuration,
-                recurring: !!card.querySelector('.task-recurring')?.checked,
-                recurring_interval: parseInt(card.querySelector('.task-recurring-interval')?.value) || 3
             });
-        });
+
+            body.tasks = saveTasks;
+            body.budget_item_timings = budgetTimings;
+        }
 
         fetch('/api/proposal/' + proposalId, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tasks: saveTasks,
-                budget_item_timings: budgetTimings,
-                start_date: startDate,
-                end_date: endDate,
-                timeline_use_days: !!document.getElementById('timeline-use-days')?.checked,
-                timeline_show_budget: !!document.getElementById('timeline-show-budget')?.checked
-            })
+            body: JSON.stringify(body)
+        }).then(function() {
+            autoInitGantt();
         });
     }, 500);
 }
@@ -373,7 +377,7 @@ function renderGantt(tasks) {
     const endYear = parseInt(document.getElementById('end-year')?.value);
     let maxEnd;
     if (endMonth && endYear) {
-        maxEnd = monthsBetween(projectStartYear, projectStartMonth, endYear, endMonth);
+        maxEnd = monthsBetween(projectStartYear, projectStartMonth, endYear, endMonth) + 1;
     } else {
         maxEnd = 0;
         tasks.forEach(t => {
@@ -382,7 +386,7 @@ function renderGantt(tasks) {
             if (end > maxEnd) maxEnd = end;
         });
     }
-    const maxMonths = Math.max(12, Math.min(60, maxEnd));
+    const maxMonths = Math.max(1, Math.min(60, maxEnd));
     const monthWidth = 60;
 
     const startDate = new Date(projectStartYear, projectStartMonth - 1, 1);

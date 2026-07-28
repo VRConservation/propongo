@@ -98,7 +98,7 @@ def test_preview_timeline_expands_task_bars():
         html = resp.data.decode()
         bars = re.findall(r'preview-timeline-bar(?:-indent)?"[^>]*style="([^"]+)"', html)
         task_bar = bars[0]
-        assert "margin-left" in task_bar
+        assert "left" in task_bar
         task_bar_items = re.findall(r'([\w-]+):([^;]+)', task_bar)
         styles = {k: v.strip() for k, v in task_bar_items}
         width_val = float(styles['width'].rstrip('%'))

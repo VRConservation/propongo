@@ -121,7 +121,7 @@
         {% if proposal.end_date and proposal.end_date|length >= 7 %}
             {% set proj_end_month = proposal.end_date[5:7]|int %}
             {% set proj_end_year = proposal.end_date[:4]|int %}
-            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month), 12]|max %}
+            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
         {% else %}
             {% set max_end = 0 %}
             {% for r in all_rows %}
@@ -130,7 +130,7 @@
                 {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
                 {% endfor %}
             {% endfor %}
-            {% set total_project_months = [max_end, 12]|max %}
+            {% set total_project_months = [max_end, 1]|max %}
         {% endif %}
 
         <div class="preview-timeline-chart">
