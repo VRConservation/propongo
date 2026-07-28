@@ -50,5 +50,8 @@ Repository = "https://github.com/VRConservation/propongo2"
 [tool.setuptools.packages.find]
 include = ["app*"]
 
+[tool.setuptools.package-data]
+app = ["templates/**/*", "static/**/*", "snippets/**/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
