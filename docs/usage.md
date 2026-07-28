@@ -64,6 +64,7 @@ Reuse proposal structures by saving them as templates:
 
 Templates preserve: scope, tasks, budget items, qualifications, custom sections, timeline settings, and budget timing. Client-specific fields like title and client name are left blank for the new proposal.
 
+## Updating
 ### From PyPI
 
 ```bash
