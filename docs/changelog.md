@@ -1,6 +1,15 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.3.4
+## 1.3.4
+
+Fixed <br>
+- End date now saves correctly even when no tasks exist (timeline dropdowns were guarded on `#timeline-inputs` which only renders with tasks)
+- Timeline Gantt chart, preview, and export no longer enforce a 12-month minimum — actual project duration is respected
+- End month now included in chart/preview/export (was off by one)
+
+Changed <br>
+- PDF export: reduced landscape margins (1.5cm → 0.8cm), widened task label column (70px → 160px)
+- Added Templates section to usage documentation
 
 ## 1.3.3
 
