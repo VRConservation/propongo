@@ -21,7 +21,7 @@ Opens at [http://localhost:5000](http://localhost:5000)
    ```
    
 !!! note "Warning"
-   Installing to base Python can cause package conflicts. Learn about [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management or use [this](http://3point.xyz/geo2/appendix1/) mini guide to install a virtual environment on your machine.
+      Installing to base Python can cause package conflicts. Learn about [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management or use [this](http://3point.xyz/geo2/appendix1/) mini guide to install a virtual environment on your machine.
 
 2. **Install GTK3 Runtime** (Required for PDF export and any Windows OS users) <br>
    a. Download: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/
