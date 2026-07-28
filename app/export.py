@@ -5,7 +5,16 @@ import logging
 import re as _re
 from io import BytesIO
 from typing import Tuple
-from weasyprint import HTML
+try:
+    from weasyprint import HTML
+except (OSError, ImportError):
+    HTML = None
+
+GTK3_MISSING_MSG = (
+    "PDF export requires GTK3. Download the installer: "
+    "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/"
+    "releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe"
+)
 from flask import Blueprint, render_template, request, send_file, jsonify, Response
 from markupsafe import Markup
 from .models import Proposal
@@ -343,6 +352,9 @@ def _build_tracker_docx(proposal, ctx) -> BytesIO:
 @export_bp.route("/export/pdf/<proposal_id>")
 def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
     """Export proposal as PDF."""
+    if HTML is None:
+        return jsonify({"error": GTK3_MISSING_MSG}), 500
+
     proposal = Proposal.load(proposal_id)
     if not proposal:
         logger.warning(f"Proposal not found for PDF export: {proposal_id}")
@@ -408,6 +420,9 @@ def export_docx(proposal_id: str) -> Tuple[Response, int] | Response:
 @export_bp.route("/export/tracker/pdf/<proposal_id>")
 def export_tracker_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
     """Export tracker as PDF."""
+    if HTML is None:
+        return jsonify({"error": GTK3_MISSING_MSG}), 500
+
     proposal = Proposal.load(proposal_id)
     if not proposal:
         return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
