@@ -15,7 +15,7 @@ class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', os.urandom(24).hex())
     
     # File paths
-    DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+    DATA_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
     PROPOSALS_DIR = os.path.join(DATA_DIR, 'proposals')
     EXPORTS_DIR = os.path.join(DATA_DIR, 'exports')
     

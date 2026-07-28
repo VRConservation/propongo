@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 snippets_bp = Blueprint("snippets", __name__)
 
-SNIPPETS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "snippets")
+SNIPPETS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2", "snippets")
 CUSTOM_DIR = os.path.join(SNIPPETS_DIR, "custom")
 
 

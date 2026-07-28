@@ -39,8 +39,9 @@ from datetime import datetime
 import uuid
 
 
-PROPOSALS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "proposals")
-TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "templates")
+_DATA_ROOT = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
+PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
+TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")
 
 
 def ensure_dirs() -> None:
