@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 import uuid
 import logging
 from typing import Tuple, Dict, List, Any
@@ -12,7 +13,11 @@ logger = logging.getLogger(__name__)
 
 snippets_bp = Blueprint("snippets", __name__)
 
-SNIPPETS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2", "snippets")
+_PKG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "snippets")
+if sys.platform == "win32":
+    SNIPPETS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2", "snippets")
+else:
+    SNIPPETS_DIR = _PKG_DIR
 CUSTOM_DIR = os.path.join(SNIPPETS_DIR, "custom")
 
 
@@ -23,8 +28,8 @@ def ensure_dirs():
 
 
 def load_snippets(filename):
-    """Load snippets from a JSON file."""
-    filepath = os.path.join(SNIPPETS_DIR, filename)
+    """Load stock snippets from the package directory."""
+    filepath = os.path.join(_PKG_DIR, filename)
     if os.path.exists(filepath):
         with open(filepath, "r") as f:
             return json.load(f)

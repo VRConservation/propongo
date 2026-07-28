@@ -33,13 +33,17 @@ Custom Section dict:
 
 import json
 import os
+import sys
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 from datetime import datetime
 import uuid
 
 
-_DATA_ROOT = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
+if sys.platform == "win32":
+    _DATA_ROOT = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
+else:
+    _DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
 TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")
 
