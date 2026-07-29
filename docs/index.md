@@ -1,4 +1,6 @@
-# Propongo 2
+[![image](https://img.shields.io/pypi/v/geodev.svg)](https://pypi.org/project/propongo2/)
+
+# Welcome to Propongo
 
 A local proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML.
 
