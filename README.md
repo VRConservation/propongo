@@ -18,7 +18,7 @@ A proposal generator for conservation and natural resource projects. Create prof
 
 ## Quick Start
 
-### Install from PyPI (Linux/Mac)
+### Linux/Mac
 
 ```bash
 pip install propongo
@@ -27,7 +27,7 @@ propongo
 
 Opens at [http://localhost:5000](http://localhost:5000)
 
-### Windows Installation
+### Windows
 
 **Recommended:** Use a virtual environment to avoid conflicts with system Python.
 

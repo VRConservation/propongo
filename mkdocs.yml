@@ -70,7 +70,7 @@ nav:
     - Installation: installation.md
     - Usage: usage.md
     - Examples:
-        - Overview: examples/index.md
+        - Overview: examples/intro.md
         - Walkthrough: examples/walkthrough.md
         - Budget: examples/budget.md
         - Timeline: examples/timeline.md
