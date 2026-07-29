@@ -1,6 +1,35 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.3.6\n\n## 1.3.5
+## [Unreleased]
+
+
+## 1.3.6
+
+Fixed <br>
+- Data directory now uses `~/Documents/Propongo/` consistently across all platforms (was `data/` relative to app source on Linux)
+- Existing proposals in old `data/` directory are automatically migrated to the new path on first run
+- Subtitle field missing from proposal list display on homepage and Switch Proposal modal
+
+Changed <br>
+- `_DATA_ROOT` path unified — no more platform-dependent divergence
+
+
+## 1.3.5
+
+Security <br>
+- Replaced hardcoded secret key with `FLASK_SECRET_KEY` env var or secure random fallback
+
+Fixed <br>
+- Memory leak from unbounded proposal lock dictionary (switched to `WeakValueDictionary`)
+- Duplicate export context code extracted to shared `utils.py`
+- Standardized all error messages across the app
+- Specific HTTP status codes for Excel import errors (400 vs 500)
+
+Changed <br>
+- Custom regex markdown parser replaced with standard `markdown` library
+- Centralized configuration in new `app/config.py`
+- Comprehensive logging, type hints, and numeric input validation added
+- Removed unused `Task` and `BudgetItem` dataclasses
 
 ## 1.3.4
 
