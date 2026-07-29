@@ -2,7 +2,7 @@
 
 # Welcome to Propongo
 
-A local proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML.
+A proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF, word, or HTML.
 
 ## Features
 
