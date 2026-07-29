@@ -1,4 +1,4 @@
-[![image](https://img.shields.io/pypi/v/geodev.svg)](https://pypi.org/project/propongo2/)
+[![image](https://img.shields.io/pypi/v/propongo2.svg)](https://pypi.org/project/propongo2/)
 
 # Welcome to Propongo
 
