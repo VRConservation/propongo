@@ -17,6 +17,7 @@ A proposal generator for conservation and natural resource projects. Create prof
 - **HTML Export** - Standalone HTML file with embedded styles
 - **Snippet Library** - Reusable markdown components for organization descriptions, deliverable templates, and custom content
 - **Save/Load** - Proposals stored as JSON files on disk, auto-save as you work
+- **Project tracking** - Once proposal is funded, use to track project status, budget spending, and dashboard to manage the project.
 
 ## Tech Stack
 
