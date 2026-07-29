@@ -1,6 +1,5 @@
 # Propongo
-billy, billy, billy
-A local proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
+A proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
 
 ## Features
 
@@ -15,6 +14,7 @@ A local proposal generator for conservation and natural resource projects. Creat
 - **HTML Export** - Standalone HTML file with embedded styles
 - **Snippet Library** - Reusable markdown components for organization descriptions, deliverable templates, and custom content
 - **Save/Load** - Proposals stored as JSON files on disk, auto-save as you work
+- **Project tracking** - When proposals is secured, using the tracking feature to manage project deliverables, timeline, and budget spend.
 
 ## Quick Start
 
