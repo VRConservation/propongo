@@ -68,6 +68,16 @@ nav:
     - Home: index.md
     - Installation: installation.md
     - Usage: usage.md
+    - Examples:
+        - Overview: examples/index.md
+        - Full Walkthrough: examples/full-walkthrough.md
+        - Budget: examples/budget.md
+        - Timeline & Gantt Chart: examples/timeline.md
+        - Excel Import: examples/excel-import.md
+        - Custom Sections: examples/custom-sections.md
+        - Snippet Library: examples/snippets.md
+        - Templates: examples/templates.md
+        - Project Tracker: examples/tracker.md
     - Contributing: contributing.md
     - FAQ: faq.md
     - Changelog: changelog.md
