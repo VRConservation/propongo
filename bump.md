@@ -1,4 +1,6 @@
 # Bumpversion changes
+Write release notes in changelog.md
+
 1. push any changes
 
 2. in the terminal:
