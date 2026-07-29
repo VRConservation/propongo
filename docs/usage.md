@@ -68,13 +68,13 @@ Templates preserve: scope, tasks, budget items, qualifications, custom sections,
 ### From PyPI
 
 ```bash
-pip install --upgrade propongo2
+pip install --upgrade propongo
 ```
 
 ### From source
 
 ```bash
-cd propongo2
+cd propongo
 git pull
 pip install -e .
 ```

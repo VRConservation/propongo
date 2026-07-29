@@ -1,4 +1,4 @@
-"""Utility functions for Propongo2."""
+"""Utility functions for Propongo."""
 
 from typing import Dict, Any
 

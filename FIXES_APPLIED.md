@@ -16,7 +16,7 @@ Applied **all critical, high, medium, and low priority** fixes from the code aud
 
 **Before:**
 ```python
-app.secret_key = "propongo2-dev-key-change-in-production"
+app.secret_key = "propongo-dev-key-change-in-production"
 ```
 
 **After:**

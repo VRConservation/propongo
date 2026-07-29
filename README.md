@@ -1,6 +1,6 @@
-# Propongo 2
-
-A local proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo2. 
+# Propongo
+billy, billy, billy
+A local proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
 
 ## Features
 
@@ -21,8 +21,8 @@ A local proposal generator for conservation and natural resource projects. Creat
 ### Install from PyPI (Linux/Mac)
 
 ```bash
-pip install propongo2
-propongo2
+pip install propongo
+propongo
 ```
 
 Opens at [http://localhost:5000](http://localhost:5000)
@@ -45,14 +45,14 @@ Opens at [http://localhost:5000](http://localhost:5000)
    - Run installer, choose "Full installation"
    - Restart your computer
 
-3. **Install Propongo2**
+3. **Install Propongo**
    ```powershell
-   pip install propongo2
+   pip install propongo
    ```
 
 4. **Run the application**
    ```powershell
-   propongo2
+   propongo
    ```
    
 5. **Open browser** to http://localhost:5000
@@ -62,17 +62,17 @@ Opens at [http://localhost:5000](http://localhost:5000)
 ### Install from source
 
 ```bash
-git clone https://github.com/VRConservation/propongo2.git
-cd propongo2
+git clone https://github.com/VRConservation/propongo.git
+cd propongo
 pip install -e .
-propongo2
+propongo
 ```
 
 ### Development setup
 
 ```bash
-git clone https://github.com/VRConservation/propongo2.git
-cd propongo2
+git clone https://github.com/VRConservation/propongo.git
+cd propongo
 pip install -e ".[dev]"
 python run.py
 ```
@@ -137,13 +137,13 @@ Click a snippet to insert it at the cursor position in any text field.
 ### From PyPI
 
 ```bash
-pip install --upgrade propongo2
+pip install --upgrade propongo
 ```
 
 ### From source
 
 ```bash
-cd propongo2
+cd propongo
 git pull
 pip install -e .
 ```
@@ -159,7 +159,7 @@ pytest
 ## Project Structure
 
 ```
-propongo2/
+propongo/
 ├── run.py                      # Dev entry point
 ├── pyproject.toml              # Package config
 ├── requirements.txt            # Dependencies

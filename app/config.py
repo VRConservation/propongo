@@ -1,4 +1,4 @@
-"""Configuration settings for Propongo2."""
+"""Configuration settings for Propongo."""
 
 import os
 import sys
@@ -17,7 +17,7 @@ class Config:
     
     # File paths
     if sys.platform == "win32":
-        DATA_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
+        DATA_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo")
     else:
         DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
     PROPOSALS_DIR = os.path.join(DATA_DIR, 'proposals')

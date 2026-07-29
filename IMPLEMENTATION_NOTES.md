@@ -66,8 +66,8 @@ The installation process is straightforward with one Windows-specific requiremen
 
 1. Create virtual environment: `conda create -n propongo python=3.10 && conda activate propongo`
 2. Install GTK3 Runtime from: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases
-3. Install Propongo2: `pip install propongo2`
-4. Run: `propongo2`
+3. Install Propongo: `pip install propongo`
+4. Run: `propongo`
 5. Open browser to: http://localhost:5000
 
 ⚠️ **Important:** Use a virtual environment (Anaconda/Miniconda recommended) to avoid conflicts with system Python. [Learn more about Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
@@ -99,11 +99,11 @@ Full installation details are in the main [README.md](README.md).
 ### Testing
 
 To test the custom sections feature:
-1. Run `propongo2`
+1. Run `propongo`
 2. Create or open a proposal
 3. Click "Custom Sections" tab
 4. Add a section and try Excel import
 5. Preview and export to PDF/HTML
 
-Enjoy using Propongo2 with custom sections! 🎉
+Enjoy using Propongo with custom sections! 🎉
 

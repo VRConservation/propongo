@@ -1,8 +1,8 @@
-site_name: Propongo2
+site_name: Propongo
 site_description: python package for grant management
 site_author: VRConservation
-site_url: https://3point.xyz/propongo2
-repo_url: https://github.com/VRConservation/propongo2
+site_url: https://3point.xyz/propongo
+repo_url: https://github.com/VRConservation/propongo
 
 copyright: "Copyright &copy; 2026 Vance Russell"
 
@@ -71,6 +71,6 @@ nav:
     - Contributing: contributing.md
     - FAQ: faq.md
     - Changelog: changelog.md
-    - Report Issues: https://github.com/VRConservation/propongo2/issues
+    - Report Issues: https://github.com/VRConservation/propongo/issues
     - API Reference: api.md
 

@@ -1,4 +1,4 @@
-# Code Audit Report - Propongo2
+# Code Audit Report - Propongo
 
 **Date:** 2026-07-17  
 **Files Audited:** app/main.py, app/models.py, app/export.py, app/snippets.py, run.py
@@ -10,7 +10,7 @@
 ### 1. **Security: Hardcoded Secret Key**
 **Location:** `app/main.py:95`
 ```python
-app.secret_key = "propongo2-dev-key-change-in-production"
+app.secret_key = "propongo-dev-key-change-in-production"
 ```
 **Issue:** Secret key is hardcoded and includes a reminder to change it, but there's no mechanism to do so.  
 **Impact:** Security vulnerability if deployed to production  

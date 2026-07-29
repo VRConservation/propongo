@@ -15,7 +15,7 @@ snippets_bp = Blueprint("snippets", __name__)
 
 _PKG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "snippets")
 if sys.platform == "win32":
-    SNIPPETS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2", "snippets")
+    SNIPPETS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo", "snippets")
 else:
     SNIPPETS_DIR = _PKG_DIR
 CUSTOM_DIR = os.path.join(SNIPPETS_DIR, "custom")

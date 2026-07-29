@@ -20,17 +20,17 @@ Fixed <br>
 
 Fixed <br>
 - Graceful WeasyPrint failure on Windows with GTK3 install link
-- Store proposals, templates, and snippets in Documents/Propongo2/ instead of site-packages
+- Store proposals, templates, and snippets in Documents/Propongo/ instead of site-packages
 
 Added <br>
 - Docstrings to all public functions and classes
 - API reference documentation via mkdocstrings
-- MkDocs documentation site at 3point.xyz/propongo2
+- MkDocs documentation site at 3point.xyz/propongo
 
 ## 1.3.1
 
 Added <br>
-- Startup message when running propongo2 command
+- Startup message when running propongo command
 
 ## 1.3.0
 

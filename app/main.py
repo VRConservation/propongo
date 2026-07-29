@@ -1,4 +1,4 @@
-"""Main Flask application for Propongo2."""
+"""Main Flask application for Propongo."""
 
 import json
 import os
@@ -82,7 +82,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.secret_key = Config.SECRET_KEY
     
-    logger.info(f"Starting Propongo2 v{__version__}")
+    logger.info(f"Starting Propongo v{__version__}")
 
     app.register_blueprint(export_bp)
     app.register_blueprint(snippets_bp)

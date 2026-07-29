@@ -3,8 +3,8 @@
 ## Install from PyPI (Linux/Mac)
 
 ```bash
-pip install propongo2
-propongo2
+pip install propongo
+propongo
 ```
 
 Opens at [http://localhost:5000](http://localhost:5000)
@@ -30,14 +30,14 @@ Opens at [http://localhost:5000](http://localhost:5000)
    <br>
    c. Restart your computer
 
-3. **Install Propongo2**
+3. **Install Propongo**
    ```powershell
-   pip install propongo2
+   pip install propongo
    ```
 
 4. **Run the application**
    ```powershell
-   propongo2
+   propongo
    ```
    
 5. **Open browser** to http://localhost:5000 or control click on the link to the localhost browser in your terminal.
@@ -58,32 +58,32 @@ For windows:
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-2. Install git by following the instructions at https://git-scm.com/install/windows. Or if you don't want to do that go to https://github.com/VRConservation/propongo2, click on the green code button and select download zip, unzip, and save the file where you want it.
+2. Install git by following the instructions at https://git-scm.com/install/windows. Or if you don't want to do that go to https://github.com/VRConservation/propongo, click on the green code button and select download zip, unzip, and save the file where you want it.
 3. After installing git, go to the folder where you want the propongo files, right click and select open in terminal.
-4. Go to https://github.com/VRConservation/propongo2, click the green code button and copy the url under clone.
-5. Run git clone https://github.com/VRConservation/propongo2.git in your terminal
+4. Go to https://github.com/VRConservation/propongo, click the green code button and copy the url under clone.
+5. Run git clone https://github.com/VRConservation/propongo.git in your terminal
 6. In the same open terminal run:
 ```bash
 uv sync
-uv run propongo2
+uv run propongo
 ```
-7. Open propongo2 at http://localhost:5000 or ctrl + click in the server link in the terminal
+7. Open propongo at http://localhost:5000 or ctrl + click in the server link in the terminal
 8. Start using the app.
 
 ## Install from source
 
 ```bash
-git clone https://github.com/VRConservation/propongo2.git
-cd propongo2
+git clone https://github.com/VRConservation/propongo.git
+cd propongo
 pip install -e .
-propongo2
+propongo
 ```
 
 ## Development setup
 
 ```bash
-git clone https://github.com/VRConservation/propongo2.git
-cd propongo2
+git clone https://github.com/VRConservation/propongo.git
+cd propongo
 pip install -e ".[dev]"
 python run.py
 ```

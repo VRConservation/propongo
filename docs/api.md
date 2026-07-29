@@ -1,6 +1,6 @@
 # API Reference
 
-Documentation for the propongo2 Python modules.
+Documentation for the propongo Python modules.
 
 ::: app.main
     options:

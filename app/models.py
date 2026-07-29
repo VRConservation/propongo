@@ -1,4 +1,4 @@
-"""Data models for Propongo2.
+"""Data models for Propongo.
 
 Tasks and budget items are stored as dictionaries with the following structure:
 
@@ -32,24 +32,44 @@ Custom Section dict:
 """
 
 import json
+import logging
 import os
+import shutil
 import sys
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 from datetime import datetime
 import uuid
 
+logger = logging.getLogger(__name__)
 
 if sys.platform == "win32":
-    _DATA_ROOT = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
+    _DATA_ROOT = os.path.join(os.path.expanduser("~"), "Documents", "Propongo")
 else:
     _DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
 TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")
 
 
+def _migrate_from_propongo2() -> None:
+    """Migrate user data from Propongo2 to Propongo on Windows."""
+    if sys.platform != "win32":
+        return
+    old_root = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
+    if not os.path.isdir(old_root):
+        return
+    if os.path.isdir(_DATA_ROOT):
+        return
+    try:
+        shutil.copytree(old_root, _DATA_ROOT)
+        logger.info("Migrated data from %s to %s", old_root, _DATA_ROOT)
+    except OSError:
+        logger.warning("Could not migrate data from %s", old_root)
+
+
 def ensure_dirs() -> None:
     """Ensure data directories exist."""
+    _migrate_from_propongo2()
     os.makedirs(PROPOSALS_DIR, exist_ok=True)
     os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
