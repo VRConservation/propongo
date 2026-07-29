@@ -13,8 +13,7 @@ This guide walks through creating a complete proposal — from a blank slate to 
 You are taken to the editor with six tabs: Scope, Budget, Qualifications, Timeline, Custom Sections, and Preview.
 
 ## 2. Scope of Work
-
-The Scope tab is where you define the project summary and deliverables.
+The Scope tab allows you to define the project summary and deliverables.
 
 1. **Funder / Program** — Enter the client or funding program name.
 2. **Project Summary** — Write a short Markdown description of the project.
@@ -24,7 +23,7 @@ The Scope tab is where you define the project summary and deliverables.
 ![Scope tab](img/scope.png)
 
 !!! info "Markdown"
-   Markdown is supported in the summary, scope, and task description fields.
+    Markdown is supported in the summary, scope, and task description fields.
 
 ## 3. Budget
 
@@ -35,6 +34,9 @@ The Scope tab is where you define the project summary and deliverables.
    - Click **Add Item**.
 3. Set **Indirect Costs** as a percentage (e.g. 15%).
 4. Optionally check **Show budget description** and add notes.
+
+??? tip "Snippets for Budget Justification
+    Add snippets for frequently used budget categories to easily add text to the budget description section then customize with quantities and totals specific to the project.
 
 The total updates in real-time at the top of the page.
 
