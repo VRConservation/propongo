@@ -70,11 +70,11 @@ nav:
     - Usage: usage.md
     - Examples:
         - Overview: examples/index.md
-        - Full Walkthrough: examples/full-walkthrough.md
+        - Walkthrough: examples/walkthrough.md
         - Budget: examples/budget.md
-        - Timeline & Gantt Chart: examples/timeline.md
-        - Excel Import: examples/excel-import.md
-        - Custom Sections: examples/custom-sections.md
+        - Timeline: examples/timeline.md
+        - Excel Import: examples/excel.md
+        - Custom Sections: examples/custom.md
         - Snippet Library: examples/snippets.md
         - Templates: examples/templates.md
         - Project Tracker: examples/tracker.md

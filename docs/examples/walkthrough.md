@@ -8,7 +8,7 @@ This guide walks through creating a complete proposal — from a blank slate to 
 2. Click **New Proposal**.
 3. Enter a title (e.g. "Riparian Restoration — Smith Creek") and click **Create**.
 
-![New proposal button](../img/examples/new-proposal.png)
+![New proposal button](img/new.png)
 
 You are taken to the editor with six tabs: Scope, Budget, Qualifications, Timeline, Custom Sections, and Preview.
 
@@ -21,7 +21,7 @@ The Scope tab is where you define the project summary and deliverables.
 3. **Scope** — Describe the work to be done in detail.
 4. **Tasks / Deliverables** — Click **Add Task** and give each task a name and description. These tasks will be referenced in the Budget and Timeline tabs.
 
-![Scope tab](../img/examples/scope-tab.png)
+![Scope tab](img/scope.png)
 
 > Markdown is supported in the summary, scope, and task description fields.
 
@@ -37,7 +37,7 @@ The Scope tab is where you define the project summary and deliverables.
 
 The total updates in real-time at the top of the page.
 
-![Budget tab](../img/examples/budget-tab.png)
+![Budget tab](img/budget.png)
 
 ## 4. Qualifications
 
@@ -45,7 +45,7 @@ The total updates in real-time at the top of the page.
 2. Write a Markdown description of your organization's background and relevant experience.
 3. Use the **Snippets** sidebar (toggle in the top-left) to insert reusable text like "About Us" or "Mission Statement."
 
-![Qualifications tab](../img/examples/qualifications-tab.png)
+![Qualifications tab](img/quals.png)
 
 ## 5. Timeline
 
@@ -60,7 +60,9 @@ The total updates in real-time at the top of the page.
 
 The Gantt chart displays colored bars for each task across the project timeline.
 
-![Timeline tab](../img/examples/timeline-tab.png)
+![Timeline tab](img/timeline.png)
+
+![Timeline preview](img/timeline2.png)
 
 ## 6. Custom Sections
 
@@ -71,7 +73,7 @@ The Gantt chart displays colored bars for each task across the project timeline.
 
 Custom sections appear in the preview and export in the order you set.
 
-![Custom sections](../img/examples/custom-sections.png)
+![Custom sections](img/custom.png)
 
 ## 7. Preview & Export
 
@@ -79,7 +81,16 @@ Custom sections appear in the preview and export in the order you set.
 2. Click **Export** → choose **PDF**, **HTML**, or **DOCX**.
 3. The PDF includes a cover page, scope, budget table grouped by task, qualifications, custom sections, and a landscape Gantt chart.
 
-![Preview tab](../img/examples/preview-tab.png)
+![Preview tab](img/preview.png)
+
+![Preview tab continued](img/preview2.png)
+
+## 8. Snippets
+Any text that you frequently use in proposals can be added to the snippets panel:
+1. To add a snippet insert a Title under Add Custom Snippet, then write or paste content into the Markdown content box. Any markdown headers or annotation will appear as rendered. Then click the blue Add Snippet button.
+2. To use, click on the snippet you want under CUSTOM to copy to clipboard then paste into the proposal section. Alternatively, put the cursor in the are of the proposal you want the snippet and then click the snippet you want inserted.
+
+![Snippets panel](img/snippets.png)
 
 ## Next Steps
 

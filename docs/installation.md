@@ -21,7 +21,7 @@ Opens at [http://localhost:5000](http://localhost:5000)
    ```
    
 !!! note "Warning"
-      Installing to base Python can cause package conflicts. Learn about [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management or use [this](http://3point.xyz/geo2/appendix1/) mini guide to install a virtual environment on your machine.
+      Installing to base Python can cause package conflicts. Learn about [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management or use [this](http://3point.xyz/geo2/appendix1/) mini guide to install a virtual environment on your machine. For even simpler management, install using uv (please see 'Install using uv' section).
 
 2. **Install GTK3 Runtime** (Required for PDF export and any Windows OS users) <br>
    a. Download: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/
@@ -46,7 +46,7 @@ Opens at [http://localhost:5000](http://localhost:5000)
     If PDF export fails, ensure GTK3 is in your PATH. If Excel import doesn't work, run: `pip install pandas openpyxl tabulate`
 
 ## Install using uv
-Installing propongo using uv is faster and simpler than using conda and keeps everything in the same folder. The package also handles virtual environments automatically. If you're using windows, make sure to install GTK3 first, as described above.
+Installing propongo using uv is faster and simpler than using conda and keeps everything in the same folder for easier project and software management and not having to look in obscure files layers deep in your OS. The package also handles virtual environments automatically. If you're using windows, make sure to install GTK3 first, as described above.
 
 1. Install uv. Go to https://docs.astral.sh/uv and click on installation in the left panel. For linux and mac:
 ```bash
