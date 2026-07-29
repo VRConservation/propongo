@@ -34,7 +34,6 @@ Custom Section dict:
 import json
 import logging
 import os
-import shutil
 import sys
 from dataclasses import dataclass, field, asdict
 from typing import Optional
@@ -43,44 +42,26 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-_DATA_ROOT = os.path.join(os.path.expanduser("~"), "Documents", "Propongo")
+_SOURCE_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
+_CWD_DATA = os.path.join(os.getcwd(), "data")
+_USER_DATA = os.path.join(os.path.expanduser("~"), "Documents", "Propongo")
+
+env_dir = os.environ.get("PROPONGO_DATA_DIR")
+if env_dir:
+    _DATA_ROOT = env_dir
+elif os.path.isdir(os.path.join(_SOURCE_DATA, "proposals")):
+    _DATA_ROOT = os.path.abspath(_SOURCE_DATA)
+elif os.path.isdir(os.path.join(_CWD_DATA, "proposals")):
+    _DATA_ROOT = os.path.abspath(_CWD_DATA)
+else:
+    _DATA_ROOT = _USER_DATA
+
 PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
 TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")
 
 
-def _migrate_from_propongo2() -> None:
-    """Migrate user data from Propongo2 to Propongo."""
-    old_root = os.path.join(os.path.expanduser("~"), "Documents", "Propongo2")
-    if os.path.isdir(old_root) and not os.path.isdir(_DATA_ROOT):
-        try:
-            shutil.copytree(old_root, _DATA_ROOT)
-            logger.info("Migrated data from %s to %s", old_root, _DATA_ROOT)
-        except OSError:
-            logger.warning("Could not migrate data from %s", old_root)
-
-
-def _migrate_from_old_data_dir() -> None:
-    """Migrate proposals/templates from old repo-relative data/ directory (Linux)."""
-    old_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-    if not os.path.isdir(old_dir):
-        return
-    if os.path.isdir(PROPOSALS_DIR) and os.listdir(PROPOSALS_DIR):
-        return
-    for sub in ("proposals", "templates"):
-        src = os.path.join(old_dir, sub)
-        if os.path.isdir(src):
-            dst = os.path.join(_DATA_ROOT, sub)
-            os.makedirs(dst, exist_ok=True)
-            for fname in os.listdir(src):
-                if fname.endswith(".json"):
-                    shutil.copy2(os.path.join(src, fname), os.path.join(dst, fname))
-                    logger.info("Migrated %s/%s to %s", sub, fname, dst)
-
-
 def ensure_dirs() -> None:
     """Ensure data directories exist."""
-    _migrate_from_propongo2()
-    _migrate_from_old_data_dir()
     os.makedirs(PROPOSALS_DIR, exist_ok=True)
     os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
