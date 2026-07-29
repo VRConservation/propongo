@@ -1,8 +1,8 @@
-# Full Walkthrough: Creating a Proposal from Scratch
+# Full Walkthrough
 
 This guide walks through creating a complete proposal — from a blank slate to an exported PDF.
 
-## 1. Start a New Proposal
+## 1. New Proposal
 
 1. Open Propongo at [http://localhost:5000](http://localhost:5000).
 2. Click **New Proposal**.
@@ -23,7 +23,8 @@ The Scope tab is where you define the project summary and deliverables.
 
 ![Scope tab](img/scope.png)
 
-> Markdown is supported in the summary, scope, and task description fields.
+!!! info "Markdown"
+   Markdown is supported in the summary, scope, and task description fields.
 
 ## 3. Budget
 
@@ -93,6 +94,5 @@ Any text that you frequently use in proposals can be added to the snippets panel
 ![Snippets panel](img/snippets.png)
 
 ## Next Steps
-
 - Save the proposal as a [template](templates.md) for future reuse.
 - Once funded, use the [Project Tracker](tracker.md) to manage progress and spending.

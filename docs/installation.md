@@ -20,7 +20,7 @@ Opens at [http://localhost:5000](http://localhost:5000)
    conda activate propongo
    ```
    
-!!! note "Warning"
+!!! warning "Warning"
       Installing to base Python can cause package conflicts. Learn about [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for better Python environment management or use [this](http://3point.xyz/geo2/appendix1/) mini guide to install a virtual environment on your machine. For even simpler management, install using uv (please see 'Install using uv' section).
 
 2. **Install GTK3 Runtime** (Required for PDF export and any Windows OS users) <br>
@@ -42,7 +42,7 @@ Opens at [http://localhost:5000](http://localhost:5000)
    
 5. **Open browser** to http://localhost:5000 or control click on the link to the localhost browser in your terminal.
 
-!!! note "Troubleshooting"
+!!! failure "Troubleshooting"
     If PDF export fails, ensure GTK3 is in your PATH. If Excel import doesn't work, run: `pip install pandas openpyxl tabulate`
 
 ## Install using uv
