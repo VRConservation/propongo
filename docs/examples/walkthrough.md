@@ -35,7 +35,7 @@ The Scope tab allows you to define the project summary and deliverables.
 3. Set **Indirect Costs** as a percentage (e.g. 15%).
 4. Optionally check **Show budget description** and add notes.
 
-??? tip "Snippets for Budget Justification
+??? tip "Snippets for Budget Justification"
     Add snippets for frequently used budget categories to easily add text to the budget description section then customize with quantities and totals specific to the project.
 
 The total updates in real-time at the top of the page.
