@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [Unreleased]\n\n## 1.4.0
 
 
 ## 1.3.6
