@@ -52,6 +52,10 @@ htmlcov/
 # Local data (if you want to keep proposal files out of git)
 # data/proposals/*.json
 # data/exports/*
+
+# Generated exports and transient save files stay out of git
+data/exports/*
+data/proposals/*.tmp
 features.md
 CODE_AUDIT.MD
 FIXES_APPLIED.MD

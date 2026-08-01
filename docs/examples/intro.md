@@ -15,3 +15,7 @@ Step-by-step guides for using Propongo. Each guide covers a specific feature or 
 - [Snippet Library](snippets.md) — Use and manage reusable text blocks.
 - [Templates](templates.md) — Save proposals as templates and start new ones from them.
 - [Project Tracker](tracker.md) — Track task progress, budget spending, and milestones.
+
+## Collaboration
+
+- [Team Collaboration with GitHub](collaboration.md) — Share and version proposals across a team using git, from a fresh start (no GitHub account, git, or editor installed) through a full push/pull workflow.

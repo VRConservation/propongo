@@ -79,6 +79,7 @@ nav:
         - Snippet Library: examples/snippets.md
         - Templates: examples/templates.md
         - Project Tracker: examples/tracker.md
+        - Team Collaboration: examples/collaboration.md
     - Contributing: contributing.md
     - FAQ: faq.md
     - Changelog: changelog.md
