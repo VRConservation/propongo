@@ -1,5 +1,5 @@
 # Propongo
-A proposal generator for conservation and natural resource projects. Create professional proposals with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
+A proposal generator for conservation and natural resource projects. Create professional proposals in English, French, or Spanish with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
 
 ## Features
 
@@ -58,6 +58,70 @@ Opens at [http://localhost:5000](http://localhost:5000)
 5. **Open browser** to http://localhost:5000
 
 **Troubleshooting:** If PDF export fails, ensure GTK3 is in your PATH. If Excel import doesn't work, run: `pip install pandas openpyxl tabulate`
+
+### Docker (Mac, Linux, Windows)
+
+A containerized option is provided via `Dockerfile` and `docker-compose.yml`. This avoids installing Python, GTK, and the WeasyPrint system libraries on your host. If you don't have Docker installed yet, follow the steps for your OS below.
+
+#### Install Docker
+
+**Mac** (via Homebrew):
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install --cask docker
+open -a Docker
+```
+
+**Linux** (Ubuntu/Debian; see https://docs.docker.com/engine/install/ for other distros):
+```bash
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+Log out and back in (or restart) so the `docker` group takes effect.
+
+**Windows** (via PowerShell, administrator):
+```powershell
+winget install --id Docker.DockerDesktop
+# or: choco install docker-desktop
+```
+
+#### Install git
+
+**Mac / Linux:**
+```bash
+brew install git        # Mac
+sudo apt install git    # Linux
+```
+
+**Windows:**
+```powershell
+winget install --id Git.Git
+```
+
+#### Run Propongo
+
+Wait until Docker is fully started: run `docker info` and re-run until it completes without error (takes ~30 seconds after Docker starts).
+
+```bash
+git clone https://github.com/VRConservation/propongo.git
+cd propongo
+
+# Build and start
+docker compose up -d --build
+
+# Or with plain docker
+docker build -t propongo .
+docker run -d -p 5000:5000 -v "$PWD/data:/app/data" propongo
+```
+
+Open [http://localhost:5000](http://localhost:5000).
+
+- Proposals, templates, and exports are stored in `./data/` on your host (mounted into the container), so your data persists across restarts and upgrades.
+- The container runs as an unprivileged user (uid 1000). If your host user's uid differs, add `user: "${UID}:${GID}"` to the `propongo` service in `docker-compose.yml` (or pass `--user $(id -u):$(id -g)` to `docker run`) so the mounted volume stays writable.
+- Stop with `docker compose down`.
+- **Port 5000 conflict:** macOS AirPlay Receiver and some Windows services also use port 5000. If the page won't load, change `"5000:5000"` to `"8080:5000"` in `docker-compose.yml`, re-run `docker compose up -d`, and visit http://localhost:8080.
 
 ### Install from source
 

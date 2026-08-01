@@ -1,5 +1,74 @@
 # Installation
 
+## Install with Docker (Mac, Linux, Windows)
+
+Run Propongo in a container. These steps install git and Docker, then build and run the app in your terminal.
+
+### Install Docker
+
+**Mac** (via Homebrew):
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install --cask docker
+open -a Docker
+```
+
+**Linux** (Ubuntu/Debian; see https://docs.docker.com/engine/install/ for other distros):
+```bash
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+Log out and back in (or restart) so the `docker` group takes effect.
+
+**Windows** (via PowerShell, administrator):
+```powershell
+winget install --id Docker.DockerDesktop
+# or: choco install docker-desktop
+```
+
+### Install git
+
+**Mac / Linux:**
+```bash
+brew install git        # Mac
+sudo apt install git    # Linux
+```
+
+**Windows:**
+```powershell
+winget install --id Git.Git
+```
+
+### Run Propongo
+
+Wait until Docker is fully started: run `docker info` and re-run until it completes without error (takes ~30 seconds after Docker starts).
+
+1. **Get the code**:
+   ```bash
+   cd ~
+   git clone https://github.com/VRConservation/propongo.git
+   cd propongo
+   ```
+
+2. **Build and run**:
+   ```bash
+   docker compose up -d --build
+   ```
+
+3. **Open** http://localhost:5000
+
+!!! note "Port 5000 conflict"
+    macOS AirPlay Receiver and some Windows services also use port 5000 and can block the app. If the page won't load, change `"5000:5000"` to `"8080:5000"` in `docker-compose.yml`, re-run `docker compose up -d`, and visit http://localhost:8080.
+
+Useful commands:
+
+- Stop: `docker compose down`
+- Rebuild after code changes: `docker compose up -d --build`
+- View logs: `docker compose logs -f`
+- Data persists in `./data` on your host, so proposals survive rebuilds.
+
 ## Install from PyPI (Linux/Mac)
 
 ```bash
