@@ -171,6 +171,38 @@ def _build_proposal_docx(proposal) -> BytesIO:
                 for run in paragraph.runs:
                     run.bold = True
 
+        from .utils import build_budget_by_year
+        by_year = build_budget_by_year(proposal)
+        if by_year["years"] or by_year["unscheduled"]:
+            year_table = doc.add_table(rows=1, cols=3)
+            year_table.style = 'Light Grid Accent 1'
+            year_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+            for i, h in enumerate(['Year', 'Amount', '% of Total']):
+                cell = year_table.rows[0].cells[i]
+                cell.text = h
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.bold = True
+                        run.font.size = Pt(10)
+            total_budget = proposal.total_budget
+            for row in by_year["years"]:
+                r = year_table.add_row()
+                r.cells[0].text = str(row["year"])
+                r.cells[1].text = f"{row['amount']:,.0f}"
+                pct = f"{(row['amount'] / total_budget * 100):.1f}%" if total_budget > 0 else ""
+                r.cells[2].text = pct
+            for u in by_year["unscheduled"]:
+                r = year_table.add_row()
+                r.cells[0].text = 'Not scheduled'
+                r.cells[1].text = f"{u['amount']:,.0f}"
+                pct = f"{(u['amount'] / total_budget * 100):.1f}%" if total_budget > 0 else ""
+                r.cells[2].text = pct
+            for r in year_table.rows[1:]:
+                for cell in r.cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(10)
+
     if proposal.show_budget_description and proposal.budget_description:
         doc.add_heading('Budget Description', level=1)
         for line in _md_to_plain(proposal.budget_description).split('\n'):

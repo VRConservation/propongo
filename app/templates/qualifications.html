@@ -1,10 +1,10 @@
 <div class="section">
-    <h2>Qualifications</h2>
+    <h2>{{ _('Qualifications') }}</h2>
 
     <div class="form-group">
-        <label for="qualifications-text" id="label-qualifications-text" data-word-count="qualifications-text" data-base-label="Company Background & Qualifications">Company Background & Qualifications</label>
+        <label for="qualifications-text" id="label-qualifications-text" data-word-count="qualifications-text" data-base-label="{{ _('Company Background & Qualifications') }}">{{ _('Company Background & Qualifications') }}</label>
         <textarea id="qualifications-text" rows="10"
-                  placeholder="Describe your organization's background, relevant experience, team qualifications, and why you're the right choice for this project..."
+                  placeholder="{{ _('Describe your organization\'s background, relevant experience, team qualifications, and why you\'re the right choice for this project...') }}"
                   hx-trigger="keyup changed delay:1000ms, change"
                   hx-put="/api/proposal/{{ proposal.id }}"
                   hx-encoding="json"
@@ -12,6 +12,6 @@
     </div>
 
     <div class="callout callout-info">
-        <p><strong>Tip:</strong> Use the snippets panel (&#9776;) to insert pre-written organization descriptions and templates.</p>
+        <p><strong>{{ _('Tip:') }}</strong> {{ _('Use the snippets panel (☰) to insert pre-written organization descriptions and templates.') }}</p>
     </div>
 </div>

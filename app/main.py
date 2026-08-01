@@ -10,14 +10,16 @@ import threading
 from datetime import datetime
 from typing import Any, Optional, Tuple
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
+from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, g
 from markupsafe import Markup
 import markdown
 from .models import Proposal, PROPOSALS_DIR
 from .export import export_bp
 from .snippets import snippets_bp
-from .utils import build_export_context
+from .results import results_bp
+from .utils import build_budget_by_year, build_export_context
 from .config import Config, ERROR_MESSAGES
+from .i18n import translate, LANGUAGES, DEFAULT_LANG, LANG_COOKIE, TRANSLATIONS
 from . import __version__
 
 # Configure logging
@@ -86,11 +88,44 @@ def create_app() -> Flask:
 
     app.register_blueprint(export_bp)
     app.register_blueprint(snippets_bp)
+    app.register_blueprint(results_bp)
+
+    @app.before_request
+    def set_language():
+        """Read the selected language from the cookie into flask.g."""
+        lang = request.cookies.get(LANG_COOKIE, DEFAULT_LANG)
+        if lang not in LANGUAGES:
+            lang = DEFAULT_LANG
+        g.lang = lang
 
     @app.context_processor
     def inject_version():
         """Inject application version into all templates."""
         return {"app_version": __version__}
+
+    @app.context_processor
+    def inject_i18n():
+        """Inject translation helpers and language info into all templates."""
+        lang = getattr(g, "lang", DEFAULT_LANG)
+
+        def _(text: str) -> str:
+            return translate(text, lang)
+
+        return {
+            "_": _,
+            "current_lang": lang,
+            "LANGUAGES": LANGUAGES,
+            "js_translations": TRANSLATIONS.get(lang, {}),
+        }
+
+    @app.route("/set-language/<lang>")
+    def set_language_route(lang):
+        """Persist the selected app language in a cookie and redirect back."""
+        if lang not in LANGUAGES:
+            lang = DEFAULT_LANG
+        resp = redirect(request.referrer or url_for("index"))
+        resp.set_cookie(LANG_COOKIE, lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
+        return resp
 
     app.jinja_env.filters["md"] = lambda text: Markup(markdown_to_html(text))
     app.jinja_env.filters["currency"] = lambda value: f"{value:,.0f}"
@@ -349,6 +384,11 @@ def create_app() -> Flask:
         indirect_amount = proposal.total_budget * (indirect_percent / 100)
         total_with_indirect = proposal.total_budget + indirect_amount
 
+        try:
+            start_date_year = int(str(proposal.start_date)[:4])
+        except (ValueError, TypeError):
+            start_date_year = 2025
+
         return render_template(
             "budget.html",
             proposal=proposal,
@@ -359,6 +399,8 @@ def create_app() -> Flask:
             indirect_percent=indirect_percent,
             indirect_amount=indirect_amount,
             total_with_indirect=total_with_indirect,
+            budget_by_year=build_budget_by_year(proposal),
+            start_date_year=start_date_year,
         )
 
     @app.route("/qualifications/<proposal_id>")
@@ -642,7 +684,16 @@ def create_app() -> Flask:
         except ValueError as e:
             logger.warning(f"Invalid budget item data: {e}")
             return jsonify({**ERROR_MESSAGES['INVALID_NUMERIC'], 'details': str(e)}), 400
-        
+
+        if data.get("start_month") and data.get("start_year"):
+            timings = proposal.budget_item_timings or {}
+            timings[item["id"]] = {
+                "start_month": int(data["start_month"]),
+                "start_year": int(data["start_year"]),
+                "duration_months": max(int(data.get("duration_months", 1) or 1), 1),
+            }
+            proposal.budget_item_timings = timings
+
         proposal.budget_items.append(item)
         proposal.save()
         logger.debug(f"Added budget item {item['id']} to proposal {proposal_id}")
@@ -656,6 +707,8 @@ def create_app() -> Flask:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
         proposal.budget_items = [b for b in proposal.budget_items if b.get("id") != item_id]
+        if proposal.budget_item_timings:
+            proposal.budget_item_timings.pop(item_id, None)
         proposal.save()
         return jsonify({"ok": True})
 
@@ -688,6 +741,18 @@ def create_app() -> Flask:
                 except ValueError as e:
                     logger.warning(f"Invalid budget item data: {e}")
                     return jsonify({**ERROR_MESSAGES['INVALID_NUMERIC'], 'details': str(e)}), 400
+
+                timings = proposal.budget_item_timings or {}
+                sm, sy = data.get("start_month"), data.get("start_year")
+                if sm and sy:
+                    timings[item_id] = {
+                        "start_month": int(sm),
+                        "start_year": int(sy),
+                        "duration_months": max(int(data.get("duration_months", 1) or 1), 1),
+                    }
+                elif sm == "" and sy == "":
+                    timings.pop(item_id, None)
+                proposal.budget_item_timings = timings
                 break
         else:
             return jsonify(ERROR_MESSAGES['BUDGET_ITEM_NOT_FOUND']), 404

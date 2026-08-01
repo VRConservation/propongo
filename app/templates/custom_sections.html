@@ -1,19 +1,18 @@
 <div class="section">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>Custom</h2>
+        <h2>{{ _('Custom') }}</h2>
         <div style="display: flex; gap: 8px;">
             <button class="btn btn-secondary" onclick="openExcelImportModal('{{ proposal.id }}')">
-                📊 Import Excel
+                📊 {{ _('Import Excel') }}
             </button>
             <button class="btn btn-primary" onclick="addCustomSection('{{ proposal.id }}')">
-                + Add Section
+                + {{ _('Add Section') }}
             </button>
         </div>
     </div>
 
     <p style="color: var(--text-muted); margin-bottom: 24px;">
-        Add custom sections to your proposal. Use Markdown formatting for rich text. 
-        You can also import data from Excel spreadsheets.
+        {{ _('Add custom sections to your proposal. Use Markdown formatting for rich text. You can also import data from Excel spreadsheets.') }}
     </p>
 
     <div id="custom-sections-list">
@@ -25,35 +24,35 @@
                     <input type="text" 
                            class="section-title-input" 
                            value="{{ section.title }}"
-                           placeholder="Section Title"
+                           placeholder="{{ _('Section Title') }}"
                            style="font-size: 18px; font-weight: 600; border: 1px solid var(--border); padding: 8px; flex: 1; margin-right: 12px; border-radius: 4px;"
                            onchange="updateSection('{{ proposal.id }}', '{{ section.id }}')">
                     
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <button class="btn-icon" onclick="moveSectionUp('{{ proposal.id }}', '{{ section.id }}')" 
-                                title="Move Up" style="font-size: 16px;">↑</button>
+                                title="{{ _('Move Up') }}" style="font-size: 16px;">↑</button>
                         <button class="btn-icon" onclick="moveSectionDown('{{ proposal.id }}', '{{ section.id }}')" 
-                                title="Move Down" style="font-size: 16px;">↓</button>
+                                title="{{ _('Move Down') }}" style="font-size: 16px;">↓</button>
                         <button class="btn-icon btn-danger-icon" onclick="deleteSection('{{ proposal.id }}', '{{ section.id }}')" 
-                                title="Delete" style="font-size: 18px;">×</button>
+                                title="{{ _('Delete') }}" style="font-size: 18px;">×</button>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div>
                         <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px; color: var(--text-muted);">
-                            Content (Markdown)
+                            {{ _('Content (Markdown)') }}
                         </label>
                         <textarea class="section-content-input" 
                                   rows="12"
-                                  placeholder="Enter section content...&#10;&#10;**Supports Markdown:**&#10;- Bullet lists&#10;- **Bold** and *italic*&#10;- ## Headings&#10;- Tables and more"
+                                  placeholder="{{ _('Enter section content...') }}&#10;&#10;**{{ _('Supports Markdown') }}:**&#10;- {{ _('Bullet lists') }}&#10;- **{{ _('Bold') }}** {{ _('and') }} *{{ _('italic') }}*&#10;- ## {{ _('Headings') }}&#10;- {{ _('Tables and more') }}"
                                   onchange="updateSection('{{ proposal.id }}', '{{ section.id }}')"
                                   style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 13px;">{{ section.content }}</textarea>
                     </div>
                     
                     <div>
                         <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px; color: var(--text-muted);">
-                            Preview
+                            {{ _('Preview') }}
                         </label>
                         <div class="markdown-preview" 
                              style="height: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; overflow-y: auto; max-height: 400px;">
@@ -65,10 +64,10 @@
             {% endfor %}
         {% else %}
             <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
-                <h3 style="margin-bottom: 12px;">No custom sections yet</h3>
-                <p style="margin-bottom: 20px;">Add custom sections to include additional content in your proposal.</p>
+                <h3 style="margin-bottom: 12px;">{{ _('No custom sections yet') }}</h3>
+                <p style="margin-bottom: 20px;">{{ _('Add custom sections to include additional content in your proposal.') }}</p>
                 <button class="btn btn-primary" onclick="addCustomSection('{{ proposal.id }}')">
-                    + Add Your First Section
+                    + {{ _('Add Your First Section') }}
                 </button>
             </div>
         {% endif %}
@@ -79,27 +78,27 @@
 <div id="excel-import-modal" class="modal hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Import Excel Spreadsheet</h2>
+            <h2>{{ _('Import Excel Spreadsheet') }}</h2>
             <button class="btn-icon" onclick="closeExcelImportModal()">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label for="excel-section-title">Section Title</label>
-                <input type="text" id="excel-section-title" placeholder="Enter section title..." 
+                <label for="excel-section-title">{{ _('Section Title') }}</label>
+                <input type="text" id="excel-section-title" placeholder="{{ _('Enter section title...') }}" 
                        style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
             </div>
             <div class="form-group">
-                <label for="excel-file-input">Select Excel File (.xlsx, .xls)</label>
+                <label for="excel-file-input">{{ _('Select Excel File (.xlsx, .xls)') }}</label>
                 <input type="file" id="excel-file-input" accept=".xlsx,.xls" 
                        style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
             </div>
             <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">
-                The spreadsheet will be converted to a Markdown table in the custom section.
+                {{ _('The spreadsheet will be converted to a Markdown table in the custom section.') }}
             </p>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeExcelImportModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="uploadExcelFile('{{ proposal.id }}')">Import</button>
+            <button class="btn btn-secondary" onclick="closeExcelImportModal()">{{ _('Cancel') }}</button>
+            <button class="btn btn-primary" onclick="uploadExcelFile('{{ proposal.id }}')">{{ _('Import') }}</button>
         </div>
     </div>
 </div>

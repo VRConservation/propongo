@@ -169,6 +169,71 @@ def test_api_add_budget_item():
         assert data["units"] == 4
 
 
+def test_api_add_budget_item_with_timing():
+    p = Proposal(title="Budget Timing Test")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.post(
+            f"/api/budget/{p.id}",
+            json={
+                "task_id": "t1",
+                "name": "Travel",
+                "cost_per_unit": 150,
+                "units": 4,
+                "start_month": 3,
+                "start_year": 2027,
+                "duration_months": 6,
+            },
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        item_id = json.loads(resp.data)["id"]
+
+        loaded = Proposal.load(p.id)
+        assert loaded.budget_item_timings[item_id] == {
+            "start_month": 3,
+            "start_year": 2027,
+            "duration_months": 6,
+        }
+
+        resp = client.put(
+            f"/api/budget/{p.id}/{item_id}",
+            json={"start_month": "", "start_year": ""},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        loaded = Proposal.load(p.id)
+        assert item_id not in loaded.budget_item_timings
+
+
+def test_budget_page_shows_by_year_table():
+    p = Proposal(title="By Year Test")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [
+        {"id": "b1", "task_id": "t1", "name": "Year One Item", "cost_per_unit": 12000, "units": 1},
+        {"id": "b2", "task_id": "t1", "name": "Split Item", "cost_per_unit": 24000, "units": 1},
+    ]
+    p.budget_item_timings = {
+        "b1": {"start_month": 1, "start_year": 2026, "duration_months": 12},
+        "b2": {"start_month": 1, "start_year": 2026, "duration_months": 24},
+    }
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/budget/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Budget by Year" in html
+        # b1 all in 2026 (12000), b2 split 12000/2026 + 12000/2027
+        assert "$24,000" in html
+        assert "$12,000" in html
+
+
 def test_budget_total():
     p = Proposal(title="Total Test")
     p.budget_items = [

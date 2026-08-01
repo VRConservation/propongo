@@ -200,6 +200,46 @@ def build_export_context(proposal) -> Dict[str, Any]:
         "timeline_granularity": timeline_granularity,
         "timeline_total_months": timeline_total_months,
         "all_rows": all_rows,
+        "budget_by_year": build_budget_by_year(proposal),
+    }
+
+
+def build_budget_by_year(proposal) -> Dict[str, Any]:
+    """Allocate budget items across calendar years based on their spend dates.
+
+    Each item's cost is spread evenly over the months of its user-defined
+    spend window (``budget_item_timings``). Items with no dates set are
+    reported as unscheduled so totals still reconcile.
+    """
+    timings = getattr(proposal, "budget_item_timings", None) or {}
+    by_year = {}
+    unscheduled = []
+
+    for item in proposal.budget_items:
+        total = float(item.get("cost_per_unit", 0) * item.get("units", 0))
+        if total <= 0:
+            continue
+        timing = timings.get(item.get("id", ""), {})
+        sm = timing.get("start_month")
+        sy = timing.get("start_year")
+        dur = timing.get("duration_months")
+        if not (sm and sy and dur):
+            unscheduled.append({"name": item.get("name", ""), "amount": total})
+            continue
+
+        start = int(sy) * 12 + (int(sm) - 1)
+        dur = max(int(dur), 1)
+        monthly = total / dur
+        for m in range(dur):
+            y = (start + m) // 12
+            by_year[y] = by_year.get(y, 0.0) + monthly
+
+    years = [{"year": y, "amount": round(by_year[y], 2)} for y in sorted(by_year)]
+    return {
+        "years": years,
+        "unscheduled": unscheduled,
+        "total_scheduled": round(sum(r["amount"] for r in years), 2),
+        "total_unscheduled": round(sum(u["amount"] for u in unscheduled), 2),
     }
 
 

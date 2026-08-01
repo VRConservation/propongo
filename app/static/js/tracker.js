@@ -78,7 +78,7 @@ function updateMilestone(proposalId, milestoneId, field, value) {
 }
 
 function deleteMilestone(proposalId, milestoneId) {
-    if (!confirm('Delete this milestone?')) return;
+    if (!confirm(t('Delete this milestone?'))) return;
     fetch('/api/tracker/' + proposalId + '/milestone/' + milestoneId, {
         method: 'DELETE'
     }).then(() => {
@@ -112,7 +112,7 @@ function addReport(proposalId) {
                             onclick="deleteReport('${proposalId}', '${report.id}')">&times;</button>
                 </span>
             </div>
-            <textarea class="notes-textarea" placeholder="Report content..."
+            <textarea class="notes-textarea" placeholder="${t('Report content...')}"
                       onchange="updateReport('${proposalId}', '${report.id}', 'content', this.value)"></textarea>
         `;
         list.appendChild(div);
@@ -131,7 +131,7 @@ function updateReport(proposalId, reportId, field, value) {
 }
 
 function deleteReport(proposalId, reportId) {
-    if (!confirm('Delete this report?')) return;
+    if (!confirm(t('Delete this report?'))) return;
     fetch('/api/tracker/' + proposalId + '/report/' + reportId, {
         method: 'DELETE'
     }).then(() => {

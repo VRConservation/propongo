@@ -1,20 +1,20 @@
 <div class="section">
-    <h2>Scope of Work</h2>
+    <h2>{{ _('Scope of Work') }}</h2>
 
     <div style="display:flex;gap:16px;margin-bottom:16px;">
         <div class="form-group" style="flex:1;">
-            <label for="client-name">Funder</label>
+            <label for="client-name">{{ _('Funder') }}</label>
             <input type="text" id="client-name" value="{{ proposal.client_name }}"
-                   placeholder="Enter funder name..."
+                   placeholder="{{ _('Enter funder name...') }}"
                    hx-trigger="keyup changed delay:500ms, change"
                    hx-put="/api/proposal/{{ proposal.id }}"
                    hx-encoding="json"
                    hx-vals='{"client_name": "JS(document.getElementById(\'client-name\').value)"}'>
         </div>
         <div class="form-group" style="flex:1;">
-            <label for="proposal-subtitle">Program</label>
+            <label for="proposal-subtitle">{{ _('Program') }}</label>
             <input type="text" id="proposal-subtitle" value="{{ proposal.subtitle }}"
-                   placeholder="Enter program name..."
+                   placeholder="{{ _('Enter program name...') }}"
                    hx-trigger="keyup changed delay:500ms, change"
                    hx-put="/api/proposal/{{ proposal.id }}"
                    hx-encoding="json"
@@ -23,9 +23,9 @@
     </div>
 
     <div class="form-group">
-        <label for="project-summary" id="label-project-summary" data-word-count="project-summary" data-base-label="Project Summary">Project Summary</label>
+        <label for="project-summary" id="label-project-summary" data-word-count="project-summary" data-base-label="{{ _('Project Summary') }}">{{ _('Project Summary') }}</label>
         <textarea id="project-summary" rows="5"
-                  placeholder="Describe the project overview, goals, and approach..."
+                  placeholder="{{ _('Describe the project overview, goals, and approach...') }}"
                   hx-trigger="keyup changed delay:1000ms, change"
                   hx-put="/api/proposal/{{ proposal.id }}"
                   hx-encoding="json"
@@ -33,9 +33,9 @@
     </div>
 
     <div class="form-group">
-        <label for="project-scope" id="label-project-scope" data-word-count="project-scope" data-base-label="Scope">Scope</label>
+        <label for="project-scope" id="label-project-scope" data-word-count="project-scope" data-base-label="{{ _('Scope') }}">{{ _('Scope') }}</label>
         <textarea id="project-scope" rows="5"
-                  placeholder="Describe the scope of work, deliverables, and boundaries..."
+                  placeholder="{{ _('Describe the scope of work, deliverables, and boundaries...') }}"
                   hx-trigger="keyup changed delay:1000ms, change"
                   hx-put="/api/proposal/{{ proposal.id }}"
                   hx-encoding="json"
@@ -43,13 +43,13 @@
     </div>
 
     <div class="form-group">
-        <label>Tasks / Deliverables</label>
+        <label>{{ _('Tasks / Deliverables') }}</label>
         <div id="task-list">
             {% for task in tasks %}
             <div class="task-card" data-task-id="{{ task.id }}">
                 <div class="task-header">
                     <input type="text" class="task-name-input" value="{{ task.name }}"
-                           placeholder="Task name"
+                           placeholder="{{ _('Task name') }}"
                            hx-trigger="keyup changed delay:500ms, change"
                            hx-put="/api/proposal/{{ proposal.id }}"
                            hx-encoding="json"
@@ -58,10 +58,11 @@
                             hx-delete="/api/task/{{ proposal.id }}/{{ task.id }}"
                             hx-target="closest .task-card"
                             hx-swap="outerHTML"
+                            hx-confirm="{{ _('Remove this task and its budget items?') }}"
                             hx-disinherit="*">&times;</button>
                 </div>
                 <textarea class="task-desc-input" rows="2"
-                          placeholder="Task description..."
+                          placeholder="{{ _('Task description...') }}"
                           hx-trigger="keyup changed delay:1000ms, change"
                           hx-put="/api/proposal/{{ proposal.id }}"
                           hx-encoding="json"
@@ -72,13 +73,13 @@
 
         <div class="add-task-form" style="flex-direction:column;gap:8px;">
             <div style="display:flex;gap:8px;">
-                <input type="text" id="new-task-name" placeholder="New task name..." class="flex-grow">
-                <textarea id="new-task-desc" rows="2" placeholder="Task description..." class="flex-grow"
+                <input type="text" id="new-task-name" placeholder="{{ _('New task name...') }}" class="flex-grow">
+                <textarea id="new-task-desc" rows="2" placeholder="{{ _('Task description...') }}" class="flex-grow"
                           style="resize:vertical;"></textarea>
             </div>
             <div>
                 <button class="btn btn-primary"
-                        onclick="addTask('{{ proposal.id }}')">Add Task</button>
+                        onclick="addTask('{{ proposal.id }}')">{{ _('Add Task') }}</button>
             </div>
         </div>
     </div>

@@ -6,7 +6,7 @@ function toggleTimelineUnits() {
     ganttUseDays = document.getElementById('timeline-use-days').checked;
     const label = document.querySelectorAll('.duration-label');
     label.forEach(l => {
-        l.textContent = ganttUseDays ? 'Duration (days)' : 'Duration (months)';
+        l.textContent = ganttUseDays ? t('Duration (days)') : t('Duration (months)');
     });
 }
 
@@ -366,7 +366,7 @@ function monthsBetween(year1, month1, year2, month2) {
 function renderGantt(tasks) {
     const container = document.getElementById('gantt-chart');
     if (!tasks.length) {
-        container.innerHTML = '<div class="gantt-placeholder">No tasks to display.</div>';
+        container.innerHTML = '<div class="gantt-placeholder">' + t('No tasks to display.') + '</div>';
         return;
     }
 

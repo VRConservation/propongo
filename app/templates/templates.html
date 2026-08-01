@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propongo - Templates</title>
+    <title>Propongo - {{ _('Templates') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div style="max-width: 900px; margin: 0 auto; padding: 40px 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
             <div>
-                <h1 style="font-size:28px;">Templates</h1>
-                <p style="color:#64748b;">Save and reuse proposal structures</p>
+                <h1 style="font-size:28px;">{{ _('Templates') }}</h1>
+                <p style="color:#64748b;">{{ _('Save and reuse proposal structures') }}</p>
             </div>
-            <div style="display:flex;gap:8px;">
-                <a href="/" class="btn btn-secondary">Back to Proposals</a>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
+                    {% for code, name in LANGUAGES.items() %}
+                    <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/" class="btn btn-secondary">{{ _('Back to Proposals') }}</a>
             </div>
         </div>
 
@@ -28,26 +33,28 @@
                 {% else %}
                 <p class="client-name">{{ t.title }}</p>
                 {% endif %}
-                <p class="updated">Updated: {{ t.updated_at[:10] if t.updated_at else "Never" }}</p>
+                <p class="updated">{{ _('Updated:') }} {{ t.updated_at[:10] if t.updated_at else _("Never") }}</p>
                 <div class="card-actions">
-                    <a href="/templates/new-from/{{ t.id }}" class="btn btn-primary btn-sm">Use Template</a>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTemplate('{{ t.id }}')">Delete</button>
+                    <a href="/templates/new-from/{{ t.id }}" class="btn btn-primary btn-sm">{{ _('Use Template') }}</a>
+                    <button class="btn btn-danger btn-sm" onclick="deleteTemplate('{{ t.id }}')">{{ _('Delete') }}</button>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
         <div class="empty-state">
-            <h2>No templates yet</h2>
-            <p>Save a proposal as a template from the editor's menu.</p>
-            <a href="/" class="btn btn-primary">Back to Proposals</a>
+            <h2>{{ _('No templates yet') }}</h2>
+            <p>{{ _('Save a proposal as a template from the editor\'s menu.') }}</p>
+            <a href="/" class="btn btn-primary">{{ _('Back to Proposals') }}</a>
         </div>
         {% endif %}
     </div>
 
     <script>
+        window.I18N = {{ js_translations|tojson }};
+        function t(key) { return window.I18N[key] || key; }
         function deleteTemplate(id) {
-            if (!confirm('Delete this template?')) return;
+            if (!confirm(t('Delete this template?'))) return;
             fetch('/api/template/' + id, { method: 'DELETE' })
                 .then(() => window.location.reload());
         }

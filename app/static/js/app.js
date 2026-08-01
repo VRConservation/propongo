@@ -7,6 +7,17 @@ function toggleSidebar() {
     if (toggle) toggle.classList.toggle('rotated');
 }
 
+function switchSidebarTab(name, btn) {
+    document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('snippet-list').classList.toggle('hidden', name !== 'snippets');
+    document.getElementById('results-list').classList.toggle('hidden', name !== 'results');
+    if (name === 'results' && !window._resultsLoaded) {
+        window._resultsLoaded = true;
+        loadResults();
+    }
+}
+
 function activateTab(btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -232,16 +243,16 @@ function loadProposalList() {
         .then(r => r.json())
         .then(proposals => {
             if (proposals.length === 0) {
-                body.innerHTML = '<p style="text-align:center;color:#64748b;">No proposals yet.</p>';
+                body.innerHTML = '<p style="text-align:center;color:#64748b;">' + t('No proposals yet.') + '</p>';
                 return;
             }
             body.innerHTML = proposals.map(p => `
                 <div class="proposal-card" style="margin-bottom:8px;">
-                    <h3 style="font-size:14px;">${p.title || 'Untitled'}</h3>
-                    <p style="font-size:12px;color:#64748b;">${p.client_name || 'No funder'}${p.subtitle ? ' · ' + p.subtitle : ''} &middot; ${p.updated_at ? p.updated_at.slice(0,10) : ''}</p>
+                    <h3 style="font-size:14px;">${p.title || t('Untitled')}</h3>
+                    <p style="font-size:12px;color:#64748b;">${p.client_name || t('No funder')}${p.subtitle ? ' · ' + p.subtitle : ''} &middot; ${p.updated_at ? p.updated_at.slice(0,10) : ''}</p>
                     <div class="card-actions" style="margin-top:8px;">
-                        <a href="/editor/${p.id}" class="btn btn-primary btn-sm">Edit</a>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProposal('${p.id}')">Delete</button>
+                        <a href="/editor/${p.id}" class="btn btn-primary btn-sm">${t('Edit')}</a>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProposal('${p.id}')">${t('Delete')}</button>
                     </div>
                 </div>
             `).join('');
@@ -253,7 +264,7 @@ function closeModal() {
 }
 
 function deleteProposal(id) {
-    if (!confirm('Delete this proposal?')) return;
+    if (!confirm(t('Delete this proposal?'))) return;
     fetch('/api/proposal/' + id, { method: 'DELETE' })
         .then(() => {
             const card = document.querySelector(`[data-proposal-id="${id}"]`);
@@ -288,7 +299,7 @@ function addTask(proposalId) {
         card.innerHTML = `
             <div class="task-header">
                 <input type="text" class="task-name-input" value="${task.name}"
-                       placeholder="Task name"
+                       placeholder="${t('Task name')}"
                        hx-trigger="keyup changed delay:500ms, change"
                        hx-put="/api/proposal/${proposalId}"
                        hx-vals='{"tasks": "JS(getUpdatedTasks())"}'>
@@ -296,10 +307,10 @@ function addTask(proposalId) {
                         hx-delete="/api/task/${proposalId}/${task.id}"
                         hx-target="closest .task-card"
                         hx-swap="outerHTML"
-                        hx-confirm="Remove this task and its budget items?">&times;</button>
+                        hx-confirm="${t('Remove this task and its budget items?')}">&times;</button>
             </div>
             <textarea class="task-desc-input" rows="2"
-                      placeholder="Task description..."
+                      placeholder="${t('Task description...')}"
                       hx-trigger="keyup changed delay:1000ms, change"
                       hx-put="/api/proposal/${proposalId}"
                       hx-vals='{"tasks": "JS(getUpdatedTasks())"}'>${task.description || ''}</textarea>
@@ -357,7 +368,7 @@ function saveProposalAsTemplate() {
     const name = document.getElementById('template-name').value.trim();
     const category = document.getElementById('template-category').value.trim();
     if (!name) {
-        alert('Please enter a template name.');
+        alert(t('Please enter a template name.'));
         return;
     }
     const proposalId = window.location.pathname.split('/').pop();
@@ -370,9 +381,9 @@ function saveProposalAsTemplate() {
     .then(data => {
         if (data.id) {
             closeSaveAsTemplateModal();
-            alert('Template saved!');
+            alert(t('Template saved!'));
         } else {
-            alert(data.error || 'Failed to save template.');
+            alert(data.error || t('Failed to save template.'));
         }
     });
 }
@@ -380,7 +391,7 @@ function saveProposalAsTemplate() {
 function saveProposalAs() {
     const title = document.getElementById('save-as-title').value.trim();
     if (!title) {
-        alert('Please enter a title.');
+        alert(t('Please enter a title.'));
         return;
     }
 
@@ -396,7 +407,7 @@ function saveProposalAs() {
         if (data.id) {
             window.location.href = '/editor/' + data.id;
         } else {
-            alert(data.error || 'Failed to save.');
+            alert(data.error || t('Failed to save.'));
         }
     });
 }
@@ -434,7 +445,7 @@ function toggleDarkMode() {
 function updateDarkModeLabel() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const label = document.getElementById('dark-mode-label');
-    if (label) label.textContent = 'Dark Mode: ' + (isDark ? 'On' : 'Off');
+    if (label) label.textContent = isDark ? t('Dark Mode: On') : t('Dark Mode: Off');
 }
 
 (function() {
@@ -451,7 +462,7 @@ async function addCustomSection(proposalId) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            title: 'New Section',
+            title: t('New Section'),
             content: ''
         })
     });
@@ -485,7 +496,7 @@ async function updateSection(proposalId, sectionId) {
 }
 
 async function deleteSection(proposalId, sectionId) {
-    if (!confirm('Delete this section?')) return;
+    if (!confirm(t('Delete this section?'))) return;
     
     const response = await fetch(`/api/section/${proposalId}/${sectionId}`, {
         method: 'DELETE'
@@ -556,7 +567,7 @@ async function uploadExcelFile(proposalId) {
     const file = fileInput.files[0];
     
     if (!file) {
-        alert('Please select an Excel file.');
+        alert(t('Please select an Excel file.'));
         return;
     }
     
@@ -577,10 +588,10 @@ async function uploadExcelFile(proposalId) {
             const btn = document.querySelector('[data-tab="custom-sections"]');
             if (btn) await switchTab(proposalId, 'custom-sections', btn);
         } else {
-            alert(result.error || 'Failed to import Excel file.');
+            alert(result.error || t('Failed to import Excel file.'));
         }
     } catch (error) {
-        alert('Error importing Excel file: ' + error.message);
+        alert(t('Error importing Excel file: ') + error.message);
     }
 }
 

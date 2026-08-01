@@ -1,49 +1,49 @@
 <div class="section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <h2>Proposal Preview</h2>
+        <h2>{{ _('Proposal Preview') }}</h2>
         <div class="preview-actions">
-            <button class="btn btn-primary" onclick="window.print()">Print</button>
-            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'html')">Export HTML</button>
-            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'pdf')">Export PDF</button>
-            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'docx')">Export DOCX</button>
+            <button class="btn btn-primary" onclick="window.print()">{{ _('Print') }}</button>
+            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'html')">{{ _('Export HTML') }}</button>
+            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'pdf')">{{ _('Export PDF') }}</button>
+            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'docx')">{{ _('Export DOCX') }}</button>
         </div>
     </div>
 
     <div style="display:flex;gap:24px;margin-bottom:16px;">
         <div class="form-group" style="flex:1;">
-            <h3>Funder</h3>
+            <h3>{{ _('Funder') }}</h3>
             <p style="font-size:15px;">{{ proposal.client_name or "—" }}</p>
         </div>
         <div class="form-group" style="flex:1;">
-            <h3>Program</h3>
+            <h3>{{ _('Program') }}</h3>
             <p style="font-size:15px;">{{ proposal.subtitle or "—" }}</p>
         </div>
     </div>
 
     {% if proposal.project_summary %}
     <div class="form-group">
-        <h3>Project Summary</h3>
+        <h3>{{ _('Project Summary') }}</h3>
         <div style="font-size:14px;line-height:1.7;">{{ proposal.project_summary|md }}</div>
     </div>
     {% endif %}
 
     {% if proposal.scope %}
     <div class="form-group">
-        <h3>Scope</h3>
+        <h3>{{ _('Scope') }}</h3>
         <div style="font-size:14px;line-height:1.7;">{{ proposal.scope|md }}</div>
     </div>
     {% endif %}
 
     {% if budget_items %}
     <div class="form-group">
-        <h3>Budget</h3>
+        <h3>{{ _('Budget') }}</h3>
         <table class="preview-budget-table">
             <thead>
                 <tr>
-                    <th>Item</th>
-                    <th class="num-col">Cost/Unit</th>
-                    <th class="num-col">Units</th>
-                    <th class="num-col">Total</th>
+                    <th>{{ _('Item') }}</th>
+                    <th class="num-col">{{ _('Cost/Unit') }}</th>
+                    <th class="num-col">{{ _('Units') }}</th>
+                    <th class="num-col">{{ _('Total') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,34 +70,62 @@
                 {% endfor %}
                 {% endfor %}
                 <tr>
-                    <td colspan="3" style="font-weight:600;border-top:2px solid var(--border);">Subtotal</td>
+                    <td colspan="3" style="font-weight:600;border-top:2px solid var(--border);">{{ _('Subtotal') }}</td>
                     <td class="num-col" style="font-weight:600;border-top:2px solid var(--border);">{{ total_budget|currency }}</td>
                 </tr>
                 {% if indirect_percent is defined and indirect_percent > 0 %}
                 <tr>
-                    <td colspan="3">Indirect ({{ "%.0f"|format(indirect_percent) }}%)</td>
+                    <td colspan="3">{{ _('Indirect') }} ({{ "%.0f"|format(indirect_percent) }}%)</td>
                     <td class="num-col">{{ indirect_amount|currency }}</td>
                 </tr>
                 {% endif %}
                 <tr>
-                    <td colspan="3"><strong>Total</strong></td>
+                    <td colspan="3"><strong>{{ _('Total') }}</strong></td>
                     <td class="num-col"><strong>${{ total_with_indirect|currency }}</strong></td>
                 </tr>
             </tbody>
         </table>
+        {% if budget_by_year.years or budget_by_year.unscheduled %}
+        <h3 style="margin-top:16px;">{{ _('Budget by Year') }}</h3>
+        <table class="preview-budget-table">
+            <thead>
+                <tr>
+                    <th>{{ _('Year') }}</th>
+                    <th class="num-col">{{ _('Amount') }}</th>
+                    <th class="num-col">{{ _('% of Total') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in budget_by_year.years %}
+                <tr>
+                    <td>{{ row.year }}</td>
+                    <td class="num-col">${{ row.amount|currency }}</td>
+                    <td class="num-col">{% if total_budget > 0 %}{{ (row.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
+                </tr>
+                {% endfor %}
+                {% for u in budget_by_year.unscheduled %}
+                <tr>
+                    <td style="font-style:italic;color:var(--text-muted);">{{ _('Not scheduled') }}</td>
+                    <td class="num-col">${{ u.amount|currency }}</td>
+                    <td class="num-col">{% if total_budget > 0 %}{{ (u.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
     </div>
     {% endif %}
 
     {% if proposal.show_budget_description and proposal.budget_description %}
     <div class="form-group">
-        <h3>Budget Description</h3>
+        <h3>{{ _('Budget Description') }}</h3>
         <div style="font-size:14px;line-height:1.7;">{{ proposal.budget_description|md }}</div>
     </div>
     {% endif %}
 
     {% if proposal.qualifications %}
     <div class="form-group">
-        <h3>Qualifications</h3>
+        <h3>{{ _('Qualifications') }}</h3>
         <div style="font-size:14px;line-height:1.7;">{{ proposal.qualifications|md }}</div>
     </div>
     {% endif %}
@@ -113,7 +141,7 @@
 
     {% if tasks %}
     <div class="form-group">
-        <h3>Timeline</h3>
+        <h3>{{ _('Timeline') }}</h3>
         {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
         {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
         {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}

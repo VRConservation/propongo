@@ -1357,3 +1357,180 @@ textarea {
 [data-theme="dark"] .indirect-amount {
     color: var(--text-muted);
 }
+
+.hidden {
+    display: none !important;
+}
+
+.sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+}
+
+.sidebar-tab {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.sidebar-tab:hover {
+    color: var(--text);
+}
+
+.sidebar-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--surface);
+}
+
+.lang-select {
+    padding: 5px 8px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.lang-select:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.results-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.results-toolbar input,
+.results-toolbar select {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+}
+
+.result-item {
+    position: relative;
+}
+
+.result-item .snippet-title {
+    padding-right: 40px;
+}
+
+.result-category {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+[data-theme="dark"] .result-category {
+    background: #1e3a5f;
+    color: #93c5fd;
+}
+
+.result-source {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.budget-year-table {
+    width: 100%;
+    max-width: 480px;
+    border-collapse: collapse;
+    margin-top: 4px;
+}
+
+.budget-year-table th,
+.budget-year-table td {
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.budget-year-table th {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.budget-year-table td.num,
+.budget-year-table th.num {
+    text-align: right;
+}
+
+.budget-year-table .year-row-unscheduled td {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.budget-year-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.budget-timing-row {
+    margin-top: 8px;
+    align-items: center;
+    gap: 8px;
+}
+
+.budget-timing-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.budget-timing-fields {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.budget-timing-fields select,
+.budget-timing-fields input {
+    padding: 5px 8px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+}
+
+.budget-item-timing {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.budget-item-timing .unscheduled {
+    color: #b45309;
+    font-style: italic;
+}
+
+.budget-item-edit-form .budget-timing-fields {
+    margin-top: 8px;
+}

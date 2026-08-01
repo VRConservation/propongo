@@ -18,7 +18,7 @@ function loadSnippets() {
             let html = '';
 
             if (data.organization && data.organization.length) {
-                html += '<div class="snippet-category"><h4>Organization</h4>';
+                html += '<div class="snippet-category"><h4>' + t('Organization') + '</h4>';
                 data.organization.forEach(s => {
                     html += snippetHTML(s, 'organization');
                 });
@@ -26,7 +26,7 @@ function loadSnippets() {
             }
 
             if (data.deliverables && data.deliverables.length) {
-                html += '<div class="snippet-category"><h4>Deliverables</h4>';
+                html += '<div class="snippet-category"><h4>' + t('Deliverables') + '</h4>';
                 data.deliverables.forEach(s => {
                     html += snippetHTML(s, 'deliverables');
                 });
@@ -34,7 +34,7 @@ function loadSnippets() {
             }
 
             if (data.custom && data.custom.length) {
-                html += '<div class="snippet-category"><h4>Custom</h4>';
+                html += '<div class="snippet-category"><h4>' + t('Custom') + '</h4>';
                 data.custom.forEach(s => {
                     html += snippetHTML(s, 'custom');
                 });
@@ -43,20 +43,20 @@ function loadSnippets() {
 
             html += `
                 <div class="snippet-add-form">
-                    <h4 style="margin-bottom:8px;font-size:13px;">Add Custom Snippet</h4>
-                    <input type="text" id="new-snippet-title" placeholder="Title">
-                    <textarea id="new-snippet-content" rows="3" placeholder="Markdown content..."></textarea>
-                    <button class="btn btn-primary btn-sm" onclick="addCustomSnippet()" style="width:100%">Add Snippet</button>
+                    <h4 style="margin-bottom:8px;font-size:13px;">${t('Add Custom Snippet')}</h4>
+                    <input type="text" id="new-snippet-title" placeholder="${t('Title')}">
+                    <textarea id="new-snippet-content" rows="3" placeholder="${t('Markdown content...')}"></textarea>
+                    <button class="btn btn-primary btn-sm" onclick="addCustomSnippet()" style="width:100%">${t('Add Snippet')}</button>
                 </div>
                 <div class="snippet-add-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
-                    <h4 style="margin-bottom:8px;font-size:13px;">Import from File</h4>
-                    <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Supports .md, .txt, and .docx files</p>
+                    <h4 style="margin-bottom:8px;font-size:13px;">${t('Import from File')}</h4>
+                    <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">${t('Supports .md, .txt, and .docx files')}</p>
                     <input type="file" id="import-file-input" accept=".md,.markdown,.txt,.docx" style="display:none" onchange="importSnippetFile()">
-                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file-input').click()" style="width:100%">Choose File to Import</button>
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file-input').click()" style="width:100%">${t('Choose File to Import')}</button>
                 </div>
             `;
 
-            container.innerHTML = html || '<p class="snippet-loading">No snippets yet. Add one below.</p>';
+            container.innerHTML = html || '<p class="snippet-loading">' + t('No snippets yet. Add one below.') + '</p>';
         });
 }
 
@@ -88,15 +88,15 @@ function insertSnippet(content) {
         field.focus();
         field.dispatchEvent(new Event('input', { bubbles: true }));
         field.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-        showToast('Snippet inserted!');
+        showToast(t('Snippet inserted!'));
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(decoded).then(() => {
-            showToast('Snippet copied to clipboard — paste it where you need it.');
+            showToast(t('Snippet copied to clipboard — paste it where you need it.'));
         }).catch(() => {
-            prompt('Copy this snippet:', decoded);
+            prompt(t('Copy this snippet:'), decoded);
         });
     } else {
-        prompt('Copy this snippet:', decoded);
+        prompt(t('Copy this snippet:'), decoded);
     }
 }
 
@@ -118,7 +118,7 @@ function addCustomSnippet() {
     const title = document.getElementById('new-snippet-title').value.trim();
     const content = document.getElementById('new-snippet-content').value.trim();
     if (!title || !content) {
-        alert('Enter a title and content.');
+        alert(t('Enter a title and content.'));
         return;
     }
 
@@ -135,7 +135,7 @@ function addCustomSnippet() {
 }
 
 function deleteSnippet(category, id) {
-    if (!confirm('Delete this snippet?')) return;
+    if (!confirm(t('Delete this snippet?'))) return;
     fetch(`/snippets/${category}/${id}`, { method: 'DELETE' })
         .then(() => loadSnippets());
 }
@@ -145,7 +145,7 @@ function importSnippetFile() {
     const file = input.files[0];
     if (!file) return;
 
-    const title = prompt('Snippet title:', file.name.replace(/\.[^.]+$/, ''));
+    const title = prompt(t('Snippet title:'), file.name.replace(/\.[^.]+$/, ''));
     if (title === null) {
         input.value = '';
         return;

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propongo - Proposals</title>
+    <title>Propongo - {{ _('Proposals') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -11,11 +11,16 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
             <div>
                 <h1 style="font-size:28px;">Propongo</h1>
-                <p style="color:#64748b;">Open source proposal generator for nonprofits</p>
+                <p style="color:#64748b;">{{ _('Open source proposal generator for nonprofits') }}</p>
             </div>
-            <div style="display:flex;gap:8px;">
-                <a href="/templates" class="btn btn-secondary">Templates</a>
-                <a href="/new" class="btn btn-primary">New Proposal</a>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
+                    {% for code, name in LANGUAGES.items() %}
+                    <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/templates" class="btn btn-secondary">{{ _('Templates') }}</a>
+                <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
             </div>
         </div>
 
@@ -24,27 +29,29 @@
             {% for p in proposals %}
             <div class="proposal-card">
                 <h3>{{ p.title }}</h3>
-                <p class="client-name">{{ p.client_name or "No funder" }}{% if p.subtitle %} &middot; {{ p.subtitle }}{% endif %}</p>
-                <p class="updated">Updated: {{ p.updated_at[:10] if p.updated_at else "Never" }}</p>
+                <p class="client-name">{{ p.client_name or _("No funder") }}{% if p.subtitle %} &middot; {{ p.subtitle }}{% endif %}</p>
+                <p class="updated">{{ _('Updated:') }} {{ p.updated_at[:10] if p.updated_at else _("Never") }}</p>
                 <div class="card-actions">
-                    <a href="/editor/{{ p.id }}" class="btn btn-primary btn-sm">Edit</a>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProposal('{{ p.id }}')">Delete</button>
+                    <a href="/editor/{{ p.id }}" class="btn btn-primary btn-sm">{{ _('Edit') }}</a>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProposal('{{ p.id }}')">{{ _('Delete') }}</button>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
         <div class="empty-state">
-            <h2>No proposals yet</h2>
-            <p>Create your first proposal to get started.</p>
-            <a href="/new" class="btn btn-primary">New Proposal</a>
+            <h2>{{ _('No proposals yet') }}</h2>
+            <p>{{ _('Create your first proposal to get started.') }}</p>
+            <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
         </div>
         {% endif %}
     </div>
 
     <script>
+        window.I18N = {{ js_translations|tojson }};
+        function t(key) { return window.I18N[key] || key; }
         function deleteProposal(id) {
-            if (!confirm('Delete this proposal?')) return;
+            if (!confirm(t('Delete this proposal?'))) return;
             fetch('/api/proposal/' + id, { method: 'DELETE' })
                 .then(() => window.location.reload());
         }

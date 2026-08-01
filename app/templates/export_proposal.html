@@ -261,6 +261,34 @@
                 </tr>
             </tbody>
         </table>
+        {% if budget_by_year.years or budget_by_year.unscheduled %}
+        <h3 style="margin-top:12px;margin-bottom:4px;font-size:11pt;">Budget by Year</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:9pt;">
+            <thead>
+                <tr>
+                    <th style="text-align:left;padding:4px 6px;border-bottom:1px solid #333;">Year</th>
+                    <th style="text-align:right;padding:4px 6px;border-bottom:1px solid #333;">Amount</th>
+                    <th style="text-align:right;padding:4px 6px;border-bottom:1px solid #333;">% of Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in budget_by_year.years %}
+                <tr>
+                    <td style="padding:2px 6px;">{{ row.year }}</td>
+                    <td style="text-align:right;padding:2px 6px;">${{ row.amount|currency }}</td>
+                    <td style="text-align:right;padding:2px 6px;">{% if total_budget > 0 %}{{ (row.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
+                </tr>
+                {% endfor %}
+                {% for u in budget_by_year.unscheduled %}
+                <tr>
+                    <td style="padding:2px 6px;font-style:italic;color:#555;">Not scheduled</td>
+                    <td style="text-align:right;padding:2px 6px;">${{ u.amount|currency }}</td>
+                    <td style="text-align:right;padding:2px 6px;">{% if total_budget > 0 %}{{ (u.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
     </div>
     {% endif %}
 

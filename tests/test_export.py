@@ -74,6 +74,56 @@ def test_preview_route():
         assert b"Proposal Preview" in resp.data
 
 
+def test_build_budget_by_year_single_year():
+    from app.utils import build_budget_by_year
+
+    p = Proposal()
+    p.budget_items = [{"id": "b1", "name": "Item", "cost_per_unit": 12000, "units": 1}]
+    p.budget_item_timings = {
+        "b1": {"start_month": 1, "start_year": 2026, "duration_months": 12},
+    }
+
+    result = build_budget_by_year(p)
+    assert result["years"] == [{"year": 2026, "amount": 12000.0}]
+    assert result["total_scheduled"] == 12000.0
+    assert result["unscheduled"] == []
+
+
+def test_build_budget_by_year_spans_years():
+    from app.utils import build_budget_by_year
+
+    p = Proposal()
+    p.budget_items = [{"id": "b1", "name": "Item", "cost_per_unit": 24000, "units": 1}]
+    p.budget_item_timings = {
+        "b1": {"start_month": 1, "start_year": 2026, "duration_months": 24},
+    }
+
+    result = build_budget_by_year(p)
+    assert result["years"] == [
+        {"year": 2026, "amount": 12000.0},
+        {"year": 2027, "amount": 12000.0},
+    ]
+
+
+def test_build_budget_by_year_unscheduled():
+    from app.utils import build_budget_by_year
+
+    p = Proposal()
+    p.budget_items = [
+        {"id": "b1", "name": "Scheduled", "cost_per_unit": 1000, "units": 1},
+        {"id": "b2", "name": "No Dates", "cost_per_unit": 500, "units": 2},
+    ]
+    p.budget_item_timings = {
+        "b1": {"start_month": 6, "start_year": 2026, "duration_months": 1},
+    }
+
+    result = build_budget_by_year(p)
+    assert result["years"] == [{"year": 2026, "amount": 1000.0}]
+    assert result["unscheduled"] == [{"name": "No Dates", "amount": 1000.0}]
+    assert result["total_unscheduled"] == 1000.0
+
+
+
 def test_preview_timeline_expands_task_bars():
     import re
     p = Proposal(title="Timeline Expand Test")

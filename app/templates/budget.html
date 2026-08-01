@@ -1,34 +1,90 @@
 <div class="section">
-    <h2>Budget</h2>
+    <h2>{{ _('Budget') }}</h2>
+    {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
 
     <div class="budget-summary-bar">
-        <span>Total Budget:</span>
+        <span>{{ _('Total Budget:') }}</span>
         <span class="budget-total" id="budget-total">${{ total_budget|currency }}</span>
+    </div>
+
+    <div class="form-group budget-by-year">
+        <label>{{ _('Budget by Year') }}</label>
+        <div id="budget-year-table-wrap" {% if not budget_by_year.years and not budget_by_year.unscheduled %}class="hidden"{% endif %}>
+            <table class="budget-year-table">
+                <thead>
+                    <tr>
+                        <th>{{ _('Year') }}</th>
+                        <th class="num">{{ _('Amount') }}</th>
+                        <th class="num">{{ _('% of Total') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="budget-year-body">
+                    {% for row in budget_by_year.years %}
+                    <tr data-year="{{ row.year }}">
+                        <td>{{ row.year }}</td>
+                        <td class="num">${{ row.amount|currency }}</td>
+                        <td class="num">{% if total_budget > 0 %}{{ (row.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for u in budget_by_year.unscheduled %}
+                    <tr class="year-row-unscheduled" data-unscheduled>
+                        <td>{{ _('Not scheduled') }}</td>
+                        <td class="num">${{ u.amount|currency }}</td>
+                        <td class="num">{% if total_budget > 0 %}{{ (u.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="budget-year-hint" id="budget-year-hint"
+               {% if not budget_by_year.unscheduled %}style="display:none"{% endif %}>
+                {{ _('Set spend dates on each item to assign it to a year.') }}
+            </p>
+        </div>
+        <p class="empty-text" id="budget-year-empty"
+           {% if budget_by_year.years or budget_by_year.unscheduled %}style="display:none"{% endif %}>
+            {{ _('No budget items yet. Add items above.') }}
+        </p>
     </div>
 
     {% if tasks %}
     <div class="form-group">
-        <label>Add Budget Item</label>
+        <label>{{ _('Add Budget Item') }}</label>
         <div class="budget-add-form">
             <select id="budget-task-select">
-                <option value="">Select task...</option>
+                <option value="">{{ _('Select task...') }}</option>
                 {% for task in tasks %}
                 <option value="{{ task.id }}">{{ task.name }}</option>
                 {% endfor %}
             </select>
-            <input type="text" id="budget-item-name" placeholder="Item name" class="flex-grow">
-            <input type="number" id="budget-cost" placeholder="Cost/unit" min="0" step="0.01">
-            <input type="number" id="budget-units" placeholder="Units" min="0" step="1" value="1">
-            <button class="btn btn-primary" onclick="addBudgetItem('{{ proposal.id }}')">Add</button>
+            <input type="text" id="budget-item-name" placeholder="{{ _('Item name') }}" class="flex-grow">
+            <input type="number" id="budget-cost" placeholder="{{ _('Cost/unit') }}" min="0" step="0.01">
+            <input type="number" id="budget-units" placeholder="{{ _('Units') }}" min="0" step="1" value="1">
+            <button class="btn btn-primary" onclick="addBudgetItem('{{ proposal.id }}')">{{ _('Add') }}</button>
+        </div>
+        <div class="budget-add-form budget-timing-row">
+            <span class="budget-timing-label">{{ _('Spend dates') }}</span>
+            <select id="budget-start-month">
+                <option value="">{{ _('Month') }}</option>
+                {% for m in range(1, 13) %}
+                <option value="{{ m }}">{{ _(months[m-1]) }}</option>
+                {% endfor %}
+            </select>
+            <select id="budget-start-year">
+                <option value="">{{ _('Year') }}</option>
+                {% for y in range(2024, 2036) %}
+                <option value="{{ y }}" {{ 'selected' if y == (start_date_year|default(2025)) }}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" id="budget-duration" placeholder="{{ _('Months') }}" min="1" value="1">
         </div>
         <div style="margin-top:8px;display:flex;gap:8px;">
-            <button class="btn btn-secondary btn-sm" onclick="openBudgetImportModal()">Import Excel</button>
-            <a href="/api/budget-template" class="btn btn-secondary btn-sm" download>Download Template</a>
+            <button class="btn btn-secondary btn-sm" onclick="openBudgetImportModal()">{{ _('Import Excel') }}</button>
+            <a href="/api/budget-template" class="btn btn-secondary btn-sm" download>{{ _('Download Template') }}</a>
         </div>
     </div>
 
     <div class="form-group">
-        <label>Budget Items</label>
+        <label>{{ _('Budget Items') }}</label>
         <div id="budget-item-list">
             {% for task in tasks %}
             <div class="budget-task-group" data-task-id="{{ task.id }}">
@@ -42,20 +98,31 @@
                 </div>
                 {% if task.id in task_budgets %}
                 {% for item in task_budgets[task.id]["items"] %}
+                {% set item_timing = proposal.budget_item_timings.get(item.id, {}) %}
                 <div class="budget-item-card" data-item-id="{{ item.id }}"
                      data-task-id="{{ item.task_id }}"
                      data-name="{{ item.name }}"
                      data-cost="{{ item.cost_per_unit }}"
-                     data-units="{{ item.units }}">
+                     data-units="{{ item.units }}"
+                     data-start-month="{{ item_timing.get('start_month', '') }}"
+                     data-start-year="{{ item_timing.get('start_year', '') }}"
+                     data-duration="{{ item_timing.get('duration_months', '') }}">
                     <div class="budget-item-info">
                         <span class="budget-item-name">{{ item.name }}</span>
                     </div>
                     <div class="budget-item-numbers">
-                        <span>{{ item.cost_per_unit|currency }}/unit &times; {{ item.units|currency }} units</span>
+                        <span>{{ item.cost_per_unit|currency }}/unit &times; {{ item.units|currency }} {{ _('units') }}</span>
                         <span class="budget-item-total">{{ (item.cost_per_unit * item.units)|currency }}</span>
                     </div>
+                    <div class="budget-item-timing" data-timing-line>
+                        {% if item_timing.get('start_month') and item_timing.get('start_year') %}
+                        <span class="budget-item-timing-text">{{ _(months[item_timing.get('start_month')|int - 1]) }} {{ item_timing.get('start_year') }} &middot; {{ item_timing.get('duration_months', 1) }} {{ _('months') }}</span>
+                        {% else %}
+                        <span class="budget-item-timing-text unscheduled">{{ _('Not scheduled') }}</span>
+                        {% endif %}
+                    </div>
                     <div class="budget-item-actions">
-                        <button class="btn-icon" onclick="editBudgetItem('{{ proposal.id }}', this)" title="Edit">&#9998;</button>
+                        <button class="btn-icon" onclick="editBudgetItem('{{ proposal.id }}', this)" title="{{ _('Edit') }}">&#9998;</button>
                         <button class="btn-icon btn-danger-icon"
                                 onclick="deleteBudgetItem('{{ proposal.id }}', '{{ item.id }}', this)">&times;</button>
                     </div>
@@ -66,25 +133,25 @@
             {% endfor %}
         </div>
         {% if not budget_items %}
-        <p class="empty-text">No budget items yet. Add items above.</p>
+        <p class="empty-text">{{ _('No budget items yet. Add items above.') }}</p>
         {% endif %}
     </div>
 
     <div class="form-group indirect-row">
-        <label for="indirect-percent">Indirect Costs (%)</label>
+        <label for="indirect-percent">{{ _('Indirect Costs (%)') }}</label>
         <div class="indirect-input-row">
             <input type="number" id="indirect-percent" min="0" max="100" step="1"
                    value="{{ indirect_percent }}"
                    placeholder="0"
                    onchange="updateIndirect('{{ proposal.id }}')"
                    onkeyup="updateIndirect('{{ proposal.id }}')">
-            <span class="indirect-label" id="indirect-label">Indirect ({{ indirect_percent|round|int }}%)</span>
+            <span class="indirect-label" id="indirect-label">{{ _('Indirect') }} ({{ indirect_percent|round|int }}%)</span>
             <span class="indirect-amount" id="indirect-amount">${{ indirect_amount|currency }}</span>
         </div>
     </div>
 
     <div class="budget-summary-bar budget-total-with-indirect">
-        <span>Total:</span>
+        <span>{{ _('Total Budget:') }}</span>
         <span class="budget-total budget-total-final" id="budget-total-with-indirect">${{ total_with_indirect|currency }}</span>
     </div>
 
@@ -93,11 +160,11 @@
             <input type="checkbox" id="show-budget-description"
                    {% if proposal.show_budget_description %}checked{% endif %}
                    onchange="toggleBudgetDescription()">
-            Include budget description
+            {{ _('Include budget description') }}
         </label>
         <div id="budget-description-wrapper" style="margin-top:8px;{% if not proposal.show_budget_description %}display:none;{% endif %}">
             <textarea id="budget-description" rows="4"
-                      placeholder="Add notes or descriptions for the budget..."
+                      placeholder="{{ _('Add notes or descriptions for the budget...') }}"
                       hx-trigger="keyup changed delay:1000ms, change"
                       hx-put="/api/proposal/{{ proposal.id }}"
                       hx-encoding="json"
@@ -107,7 +174,7 @@
 
     {% else %}
     <div class="callout callout-warning">
-        <p><strong>No tasks available.</strong> Add tasks in the Scope section first.</p>
+        <p><strong>{{ _('No tasks available.') }}</strong> {{ _('Add tasks in the Scope section first.') }}</p>
     </div>
     {% endif %}
 </div>

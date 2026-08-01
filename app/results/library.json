@@ -1,0 +1,37 @@
+[
+  {
+    "id": "natural-climate-solutions",
+    "title": "Natural climate solutions provide cost-effective mitigation",
+    "category": "Climate",
+    "evidence": "Natural climate solutions \u2014 reforestation, improved forest management, and soil practices among others \u2014 can provide over one-third of the cost-effective climate mitigation needed by 2030 to keep warming below 2\u00b0C. Protecting and restoring natural ecosystems therefore offers a measurable, near-term climate return while supporting biodiversity.",
+    "source": "Griscom, B.W., et al. (2017). Natural climate solutions. PNAS 114(44):11645-11650. https://www.pnas.org/doi/10.1073/pnas.1710465114"
+  },
+  {
+    "id": "protected-areas-reduce-deforestation",
+    "title": "Protected areas measurably reduce deforestation",
+    "category": "Protected Areas",
+    "evidence": "Protected area networks significantly reduce deforestation compared with matched control locations. Evaluating the Costa Rican protected area system with matched-pair methods showed protection prevents land clearing, meaning expansion of protected areas is an effective, quantifiable conservation intervention.",
+    "source": "Andam, K.S., et al. (2008). Measuring the effectiveness of protected area networks in reducing deforestation. PNAS 105(42):16089-16094."
+  },
+  {
+    "id": "economic-returns-conservation",
+    "title": "Conserving wild nature has strong economic returns",
+    "category": "Economics",
+    "evidence": "The net economic benefits of conserving wild nature exceed the benefits of conversion in many cases. Sustainable ecosystem services (pollination, water, carbon storage, tourism) can outweigh alternative land uses, providing an evidence base for valuing conservation outcomes in proposals and negotiations.",
+    "source": "Balmford, A., et al. (2002). Economic reasons for conserving wild nature. Science 297(5583):950-953."
+  },
+  {
+    "id": "call-for-evaluation-pes",
+    "title": "Conservation investments need empirical evaluation",
+    "category": "Evaluation",
+    "evidence": "Payment for environmental services and similar investments often lack rigorous impact evaluation. Designing projects with baseline data, control groups, and measurable outcomes from the start strengthens the evidence for what works and improves funder confidence.",
+    "source": "Ferraro, P.J. & Pattanayak, S.K. (2006). Money for nothing? A call for empirical evaluation of biodiversity conservation investments. PLoS Biology 4(4):e105."
+  },
+  {
+    "id": "biodiversity-priority-setting",
+    "title": "Global biodiversity priorities concentrate in hotspots",
+    "category": "Prioritization",
+    "evidence": "Global biodiversity priority-setting shows that a large share of endemic species is concentrated in a small fraction of the Earth's land surface. Focusing resources on biodiversity hotspots delivers disproportionately high conservation value per unit of investment.",
+    "source": "Brooks, T.M., et al. (2006). Global biodiversity conservation priorities. Science 313(5783):58-61."
+  }
+]

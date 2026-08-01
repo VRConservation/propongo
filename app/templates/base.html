@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,49 +12,70 @@
     <div class="app-container">
         <aside class="sidebar open" id="snippet-sidebar">
             <div class="sidebar-header">
-                <h3>Snippets</h3>
-                <button class="btn-icon" onclick="toggleSidebar()" title="Close sidebar">&times;</button>
+                <h3>{{ _('Snippets') }}</h3>
+                <button class="btn-icon" onclick="toggleSidebar()" title="{{ _('Close sidebar') }}">&times;</button>
+            </div>
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-sidebar-tab="snippets" onclick="switchSidebarTab('snippets', this)">{{ _('Snippets') }}</button>
+                <button class="sidebar-tab" data-sidebar-tab="results" onclick="switchSidebarTab('results', this)">{{ _('Results Library') }}</button>
             </div>
             <div class="sidebar-content" id="snippet-list">
-                <div class="snippet-loading">Loading snippets...</div>
+                <div class="snippet-loading">{{ _('Loading snippets...') }}</div>
+            </div>
+            <div class="sidebar-content hidden" id="results-list">
+                <div class="results-toolbar">
+                    <input type="text" id="results-search" placeholder="{{ _('Search results...') }}"
+                           oninput="renderResults()">
+                    <select id="results-category-filter" onchange="renderResults()">
+                        <option value="">{{ _('All categories') }}</option>
+                    </select>
+                </div>
+                <div id="results-cards">
+                    <div class="snippet-loading">{{ _('Loading snippets...') }}</div>
+                </div>
             </div>
         </aside>
 
         <main class="main-content sidebar-open">
             <header class="app-header">
                 <div class="header-left">
-                    <button class="btn-icon sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle snippets panel" id="sidebar-toggle">&#10094;</button>
+                    <button class="btn-icon sidebar-toggle-btn" onclick="toggleSidebar()" title="{{ _('Toggle snippets panel') }}" id="sidebar-toggle">&#10094;</button>
                     <h1>Propongo <span style="font-weight:400;font-size:0.65em;">v{{ app_version }}</span></h1>
                 </div>
                 <div class="header-center">
-                    <h1 id="proposal-title" class="title-display">{{ proposal.title or "Untitled Proposal" }}</h1>
+                    <h1 id="proposal-title" class="title-display">{{ proposal.title or _("Untitled Proposal") }}</h1>
                 </div>
                 <div class="header-right">
+                    <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
+                        {% for code, name in LANGUAGES.items() %}
+                        <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
                     <a href="https://github.com/VRConservation/propongo" target="_blank" rel="noopener" title="GitHub" class="btn-icon" style="text-decoration:none;margin-right:4px;display:flex;align-items:center;">
                         <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                     </a>
                     <div class="hamburger-menu">
-                        <button class="btn-icon hamburger-btn" onclick="toggleHamburgerMenu()" title="Menu">&#9776;</button>
+                        <button class="btn-icon hamburger-btn" onclick="toggleHamburgerMenu()" title="{{ _('Menu') }}">&#9776;</button>
                         <div class="hamburger-dropdown hidden" id="hamburger-dropdown">
-                            <a class="hamburger-item" href="/">Switch Proposal</a>
-                            <a class="hamburger-item" href="/new">New Proposal</a>
-                            <button class="hamburger-item" onclick="openSaveAsModal(); closeHamburger()">Save As...</button>
-                            <button class="hamburger-item" onclick="openSaveAsTemplateModal(); closeHamburger()">Save as Template...</button>
+                            <a class="hamburger-item" href="/">{{ _('Switch Proposal') }}</a>
+                            <a class="hamburger-item" href="/new">{{ _('New Proposal') }}</a>
+                            <button class="hamburger-item" onclick="openSaveAsModal(); closeHamburger()">{{ _('Save As...') }}</button>
+                            <button class="hamburger-item" onclick="openSaveAsTemplateModal(); closeHamburger()">{{ _('Save as Template...') }}</button>
                             <hr class="hamburger-divider">
-                            <a class="hamburger-item" href="/templates">Templates</a>
+                            <a class="hamburger-item" href="/templates">{{ _('Templates') }}</a>
                             <hr class="hamburger-divider">
-                            <a class="hamburger-item" href="/tracker/{{ proposal.id }}">Project Tracker</a>
+                            <a class="hamburger-item" href="/tracker/{{ proposal.id }}">{{ _('Project Tracker') }}</a>
                             <hr class="hamburger-divider">
-                            <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'html'); closeHamburger()">Export HTML</button>
-                            <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'pdf'); closeHamburger()">Export PDF</button>
-                            <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'docx'); closeHamburger()">Export DOCX</button>
-                            <button class="hamburger-item" onclick="window.print(); closeHamburger()">Print</button>
+                            <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'html'); closeHamburger()">{{ _('Export HTML') }}</button>
+                            <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'pdf'); closeHamburger()">{{ _('Export PDF') }}</button>
+                            <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'docx'); closeHamburger()">{{ _('Export DOCX') }}</button>
+                            <button class="hamburger-item" onclick="window.print(); closeHamburger()">{{ _('Print') }}</button>
                             <hr class="hamburger-divider">
                             <button class="hamburger-item hamburger-theme-btn" onclick="toggleDarkMode()" id="dark-mode-toggle">
-                                <span id="dark-mode-label">Dark Mode: Off</span>
+                                <span id="dark-mode-label">{{ _('Dark Mode: Off') }}</span>
                             </button>
                             <hr class="hamburger-divider">
-                            <button class="hamburger-item" onclick="closeHamburger()">Cancel</button>
+                            <button class="hamburger-item" onclick="closeHamburger()">{{ _('Cancel') }}</button>
                         </div>
                     </div>
                 </div>
@@ -62,17 +83,17 @@
 
             <nav class="tab-nav">
                 <button class="tab-btn active" data-tab="scope"
-                        onclick="switchTab('{{ proposal.id }}', 'scope', this)">Scope</button>
+                        onclick="switchTab('{{ proposal.id }}', 'scope', this)">{{ _('Scope') }}</button>
                 <button class="tab-btn" data-tab="budget"
-                        onclick="switchTab('{{ proposal.id }}', 'budget', this)">Budget</button>
+                        onclick="switchTab('{{ proposal.id }}', 'budget', this)">{{ _('Budget') }}</button>
                 <button class="tab-btn" data-tab="qualifications"
-                        onclick="switchTab('{{ proposal.id }}', 'qualifications', this)">Qualifications</button>
+                        onclick="switchTab('{{ proposal.id }}', 'qualifications', this)">{{ _('Qualifications') }}</button>
                 <button class="tab-btn" data-tab="timeline"
-                        onclick="switchTab('{{ proposal.id }}', 'timeline', this)">Timeline</button>
+                        onclick="switchTab('{{ proposal.id }}', 'timeline', this)">{{ _('Timeline') }}</button>
                 <button class="tab-btn" data-tab="custom-sections"
-                        onclick="switchTab('{{ proposal.id }}', 'custom-sections', this)">Custom</button>
+                        onclick="switchTab('{{ proposal.id }}', 'custom-sections', this)">{{ _('Custom') }}</button>
                 <button class="tab-btn" data-tab="preview"
-                        onclick="switchTab('{{ proposal.id }}', 'preview', this)">Preview</button>
+                        onclick="switchTab('{{ proposal.id }}', 'preview', this)">{{ _('Preview') }}</button>
             </nav>
 
             <div id="tab-content" class="tab-content">
@@ -84,13 +105,13 @@
     <div id="proposal-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Your Proposals</h2>
+                <h2>{{ _('Your Proposals') }}</h2>
                 <button class="btn-icon" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="proposal-list-body">
             </div>
             <div class="modal-footer">
-                <a href="/new" class="btn btn-primary">New Proposal</a>
+                <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
             </div>
         </div>
     </div>
@@ -98,18 +119,18 @@
     <div id="save-as-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Save As</h2>
+                <h2>{{ _('Save As') }}</h2>
                 <button class="btn-icon" onclick="closeSaveAsModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="save-as-title">Proposal Title</label>
-                    <input type="text" id="save-as-title" placeholder="Enter proposal title..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+                    <label for="save-as-title">{{ _('Proposal Title') }}</label>
+                    <input type="text" id="save-as-title" placeholder="{{ _('Enter proposal title...') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeSaveAsModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveProposalAs()">Save</button>
+                <button class="btn btn-secondary" onclick="closeSaveAsModal()">{{ _('Cancel') }}</button>
+                <button class="btn btn-primary" onclick="saveProposalAs()">{{ _('Save') }}</button>
             </div>
         </div>
     </div>
@@ -117,22 +138,22 @@
     <div id="save-as-template-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Save as Template</h2>
+                <h2>{{ _('Save as Template') }}</h2>
                 <button class="btn-icon" onclick="closeSaveAsTemplateModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="template-name">Template Name</label>
-                    <input type="text" id="template-name" placeholder="e.g., Forest Conservation Proposal" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+                    <label for="template-name">{{ _('Template Name') }}</label>
+                    <input type="text" id="template-name" placeholder="{{ _('e.g., Forest Conservation Proposal') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 </div>
                 <div class="form-group">
-                    <label for="template-category">Category (optional)</label>
-                    <input type="text" id="template-category" placeholder="e.g., Conservation, Research, General" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+                    <label for="template-category">{{ _('Category (optional)') }}</label>
+                    <input type="text" id="template-category" placeholder="{{ _('e.g., Conservation, Research, General') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeSaveAsTemplateModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveProposalAsTemplate()">Save Template</button>
+                <button class="btn btn-secondary" onclick="closeSaveAsTemplateModal()">{{ _('Cancel') }}</button>
+                <button class="btn btn-primary" onclick="saveProposalAsTemplate()">{{ _('Save Template') }}</button>
             </div>
         </div>
     </div>
@@ -140,32 +161,68 @@
     <div id="budget-import-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Import Budget from Excel</h2>
+                <h2>{{ _('Import Budget from Excel') }}</h2>
                 <button class="btn-icon" onclick="closeBudgetImportModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom:12px;color:var(--text-muted);font-size:13px;">
-                    Upload an Excel file with columns: <strong>Task, Item, Cost/Unit, Units</strong>
+                    {{ _('Upload an Excel file with columns:') }} <strong>{{ _('Task') }}, {{ _('Item') }}, {{ _('Cost/Unit') }}, {{ _('Units') }}</strong>
                 </p>
                 <p style="margin-bottom:12px;font-size:13px;">
-                    <a href="/api/budget-template" download style="color:var(--primary);">Download template</a> to get started.
+                    <a href="/api/budget-template" download style="color:var(--primary);">{{ _('Download template') }}</a> {{ _('to get started.') }}
                 </p>
                 <div class="form-group">
-                    <label for="budget-import-file">Select file</label>
+                    <label for="budget-import-file">{{ _('Select file') }}</label>
                     <input type="file" id="budget-import-file" accept=".xlsx,.xls">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeBudgetImportModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="uploadBudgetExcel()">Import</button>
+                <button class="btn btn-secondary" onclick="closeBudgetImportModal()">{{ _('Cancel') }}</button>
+                <button class="btn btn-primary" onclick="uploadBudgetExcel()">{{ _('Import') }}</button>
             </div>
         </div>
     </div>
 
+    <div id="result-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="result-modal-title">{{ _('Add Result') }}</h2>
+                <button class="btn-icon" onclick="closeResultModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="result-title">{{ _('Result title') }}</label>
+                    <input type="text" id="result-title" placeholder="{{ _('Enter result title...') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+                </div>
+                <div class="form-group">
+                    <label for="result-category">{{ _('Category') }}</label>
+                    <input type="text" id="result-category" placeholder="{{ _('Enter category (e.g., Reforestation, Fisheries)...') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+                </div>
+                <div class="form-group">
+                    <label for="result-evidence">{{ _('Evidence') }}</label>
+                    <textarea id="result-evidence" rows="5" placeholder="{{ _('Describe the evidence and findings (Markdown supported)') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="result-source">{{ _('Source / Reference') }}</label>
+                    <input type="text" id="result-source" placeholder="{{ _('Enter source or reference (author, year, publication, link)') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeResultModal()">{{ _('Cancel') }}</button>
+                <button class="btn btn-primary" onclick="saveResult()">{{ _('Save') }}</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.I18N = {{ js_translations|tojson }};
+        function t(key) { return window.I18N[key] || key; }
+    </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/budget.js') }}"></script>
     <script src="{{ url_for('static', filename='js/gantt.js') }}"></script>
     <script src="{{ url_for('static', filename='js/snippets.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/results.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

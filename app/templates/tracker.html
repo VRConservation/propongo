@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Tracker: {{ proposal.title }}</title>
+    <title>{{ _('Project Tracker') }}: {{ proposal.title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>
@@ -62,78 +62,83 @@
                 <p style="color:var(--text-muted);font-size:13px;">{{ proposal.client_name }}{% if proposal.subtitle %} &middot; {{ proposal.subtitle }}{% endif %}</p>
             </div>
             <div style="display:flex;gap:8px;align-items:center;">
-                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'pdf')">Export PDF</button>
-                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'docx')">Export DOCX</button>
-                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'html')">Export HTML</button>
-                <a href="/editor/{{ proposal.id }}" class="btn btn-secondary">Back to Editor</a>
+                <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
+                    {% for code, name in LANGUAGES.items() %}
+                    <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'pdf')">{{ _('Export PDF') }}</button>
+                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'docx')">{{ _('Export DOCX') }}</button>
+                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'html')">{{ _('Export HTML') }}</button>
+                <a href="/editor/{{ proposal.id }}" class="btn btn-secondary">{{ _('Back to Editor') }}</a>
             </div>
         </div>
 
         <div class="dashboard-cards">
             <div class="dash-card">
                 <div class="dash-value">{{ overall_pct }}%</div>
-                <div class="dash-label">Tasks Completed</div>
+                <div class="dash-label">{{ _('Tasks Completed') }}</div>
             </div>
             <div class="dash-card">
                 <div class="dash-value">{{ tasks|length }}</div>
-                <div class="dash-label">Total Tasks</div>
+                <div class="dash-label">{{ _('Total Tasks') }}</div>
             </div>
             <div class="dash-card">
                 <div class="dash-value">${{ total_with_indirect|currency }}</div>
-                <div class="dash-label">Total Budget</div>
+                <div class="dash-label">{{ _('Total Budget') }}</div>
             </div>
             <div class="dash-card">
                 <div class="dash-value">{{ milestones|length }}</div>
-                <div class="dash-label">Milestones</div>
+                <div class="dash-label">{{ _('Milestones') }}</div>
             </div>
         </div>
 
-        <h2 class="section-title">Tasks</h2>
+        <h2 class="section-title">{{ _('Tasks') }}</h2>
         {% for task in tasks %}
         <div class="task-tracker-card" data-task-id="{{ task.id }}">
             <div class="task-tracker-header">
                 <span class="task-tracker-name">{{ task.name }}</span>
                 <select class="tracker-select" onchange="updateTaskStatus('{{ proposal.id }}', '{{ task.id }}', 'status', this.value)">
-                    <option value="not_started" {% if task.get('status') == 'not_started' %}selected{% endif %}>Not Started</option>
-                    <option value="in_progress" {% if task.get('status') == 'in_progress' %}selected{% endif %}>In Progress</option>
-                    <option value="completed" {% if task.get('status') == 'completed' %}selected{% endif %}>Completed</option>
-                    <option value="delayed" {% if task.get('status') == 'delayed' %}selected{% endif %}>Delayed</option>
+                    <option value="not_started" {% if task.get('status') == 'not_started' %}selected{% endif %}>{{ _('Not Started') }}</option>
+                    <option value="in_progress" {% if task.get('status') == 'in_progress' %}selected{% endif %}>{{ _('In Progress') }}</option>
+                    <option value="completed" {% if task.get('status') == 'completed' %}selected{% endif %}>{{ _('Completed') }}</option>
+                    <option value="delayed" {% if task.get('status') == 'delayed' %}selected{% endif %}>{{ _('Delayed') }}</option>
                 </select>
             </div>
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" style="width:{{ task.get('progress_pct', 0) }}%"></div>
             </div>
             <div class="task-tracker-meta">
-                <span>Progress:
+                <span>{{ _('Progress:') }}
                     <input type="number" class="tracker-input" style="width:50px;" min="0" max="100"
                            value="{{ task.get('progress_pct', 0) }}"
                            onchange="updateTaskStatus('{{ proposal.id }}', '{{ task.id }}', 'progress_pct', this.value)">%
                 </span>
-                <span>Start:
+                <span>{{ _('Start:') }}
                     <input type="date" class="tracker-input"
                            value="{{ task.get('actual_start', '') }}"
                            onchange="updateTaskStatus('{{ proposal.id }}', '{{ task.id }}', 'actual_start', this.value)">
                 </span>
-                <span>End:
+                <span>{{ _('End:') }}
                     <input type="date" class="tracker-input"
                            value="{{ task.get('actual_end', '') }}"
                            onchange="updateTaskStatus('{{ proposal.id }}', '{{ task.id }}', 'actual_end', this.value)">
                 </span>
             </div>
-            <textarea class="notes-textarea" placeholder="Progress notes..."
+            <textarea class="notes-textarea" placeholder="{{ _('Progress notes...') }}"
                       onchange="updateTaskStatus('{{ proposal.id }}', '{{ task.id }}', 'notes', this.value)">{{ task.get('notes', '') }}</textarea>
         </div>
         {% endfor %}
 
-        <h2 class="section-title">Budget Tracking</h2>
+        <h2 class="section-title">{{ _('Budget Tracking') }}</h2>
         <table class="budget-tracker-table">
             <thead>
                 <tr>
-                    <th>Task</th>
-                    <th>Item</th>
-                    <th style="text-align:right;">Planned</th>
-                    <th style="text-align:right;">Actual</th>
-                    <th style="text-align:right;">Variance</th>
+                    <th>{{ _('Task') }}</th>
+                    <th>{{ _('Item') }}</th>
+                    <th style="text-align:right;">{{ _('Planned') }}</th>
+                    <th style="text-align:right;">{{ _('Actual') }}</th>
+                    <th style="text-align:right;">{{ _('Variance') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -165,7 +170,7 @@
                     {% endif %}
                 {% endfor %}
                 <tr class="subtotal-row" style="border-top:2px solid var(--border);">
-                    <td colspan="2"><strong>Total</strong></td>
+                    <td colspan="2"><strong>{{ _('Total') }}</strong></td>
                     <td class="num"><strong>${{ total_with_indirect|currency }}</strong></td>
                     <td class="num"><strong>
                         ${{ (task_budgets.values()|map(attribute='actual_total')|sum + indirect_amount)|currency }}
@@ -175,7 +180,7 @@
             </tbody>
         </table>
 
-        <h2 class="section-title">Milestones</h2>
+        <h2 class="section-title">{{ _('Milestones') }}</h2>
         <ul class="milestone-list" id="milestone-list">
             {% for m in milestones %}
             <li class="milestone-item" data-milestone-id="{{ m.id }}">
@@ -192,12 +197,12 @@
             {% endfor %}
         </ul>
         <div class="add-form-row">
-            <input type="text" id="new-milestone-name" placeholder="Milestone name" class="tracker-input" style="flex:1;">
+            <input type="text" id="new-milestone-name" placeholder="{{ _('Milestone name') }}" class="tracker-input" style="flex:1;">
             <input type="date" id="new-milestone-date" class="tracker-input">
-            <button class="btn btn-primary btn-sm" onclick="addMilestone('{{ proposal.id }}')">Add</button>
+            <button class="btn btn-primary btn-sm" onclick="addMilestone('{{ proposal.id }}')">{{ _('Add') }}</button>
         </div>
 
-        <h2 class="section-title">Reports</h2>
+        <h2 class="section-title">{{ _('Reports') }}</h2>
         <div id="report-list">
             {% for r in reports|reverse %}
             <div class="report-card" data-report-id="{{ r.id }}">
@@ -210,17 +215,21 @@
                                 onclick="deleteReport('{{ proposal.id }}', '{{ r.id }}')">&times;</button>
                     </span>
                 </div>
-                <textarea class="notes-textarea" placeholder="Report content..."
+                <textarea class="notes-textarea" placeholder="{{ _('Report content...') }}"
                           onchange="updateReport('{{ proposal.id }}', '{{ r.id }}', 'content', this.value)">{{ r.content }}</textarea>
             </div>
             {% endfor %}
         </div>
         <div class="add-form-row" style="margin-top:12px;">
-            <input type="text" id="new-report-title" placeholder="Report title" class="tracker-input" style="flex:1;">
-            <button class="btn btn-primary btn-sm" onclick="addReport('{{ proposal.id }}')">Add Report</button>
+            <input type="text" id="new-report-title" placeholder="{{ _('Report title') }}" class="tracker-input" style="flex:1;">
+            <button class="btn btn-primary btn-sm" onclick="addReport('{{ proposal.id }}')">{{ _('Add Report') }}</button>
         </div>
     </div>
 
+    <script>
+        window.I18N = {{ js_translations|tojson }};
+        function t(key) { return window.I18N[key] || key; }
+    </script>
     <script src="{{ url_for('static', filename='js/tracker.js') }}"></script>
 </body>
 </html>
