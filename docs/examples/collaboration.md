@@ -1,6 +1,6 @@
 # Team Collaboration with GitHub
 
-Propongo saves each proposal as a single JSON file under `data/proposals/`. Because these files are plain text, a team can use **git and GitHub** as a shared, versioned workspace: everyone edits proposals on their own machine, then syncs with the rest of the team. This is not live (real-time) collaboration, but it gives you change history, conflict tracking, and a single source of truth.
+Propongo saves each proposal as a single JSON file under `data/proposals`. Because these files are plain text, a team can use git and GitHub as a shared, versioned workspace: everyone edits proposals on their own machine, then syncs with the rest of the team. This is not live (real-time) collaboration, but it gives you change history, conflict tracking, and a single source of truth.
 
 This guide assumes you are starting from scratch: no GitHub account, no git, and no editor installed.
 
@@ -79,7 +79,7 @@ Open [http://localhost:5000](http://localhost:5000) and create a proposal as usu
 
 ## 7. Example session (a team of two)
 
-Ana and Ben both cloned the shared repository. Here is a complete round-trip.
+Ana and Ben both cloned the shared repository. Here is a complete work flow for how that could collaborate on a proposal.
 
 ### Ana creates a proposal
 
