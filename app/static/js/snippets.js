@@ -57,6 +57,12 @@ function loadSnippets() {
             `;
 
             container.innerHTML = html || '<p class="snippet-loading">' + t('No snippets yet. Add one below.') + '</p>';
+        })
+        .catch(() => {
+            const container = document.getElementById('snippet-list');
+            if (container) {
+                container.innerHTML = '<p class="snippet-loading">' + t('Failed to load snippets.') + '</p>';
+            }
         });
 }
 
