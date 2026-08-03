@@ -4,8 +4,9 @@
   "client_name": "",
   "subtitle": "",
   "created_at": "2026-07-16T10:36:23.446147",
-  "updated_at": "2026-07-16T16:52:11.396358",
+  "updated_at": "2026-08-03T12:15:40.448480",
   "project_summary": "",
+  "scope": "",
   "tasks": [
     {
       "id": "83dc7abf",
@@ -21,7 +22,16 @@
   "budget_items": [],
   "budget_item_timings": {},
   "start_date": "2026-07-01",
+  "end_date": "",
   "indirect_percent": 0,
+  "show_budget_description": false,
+  "budget_description": "",
   "timeline_use_days": false,
-  "timeline_show_budget": true
+  "timeline_show_budget": true,
+  "custom_sections": [],
+  "is_template": false,
+  "template_name": "",
+  "template_category": "",
+  "milestones": [],
+  "reports": []
 }
