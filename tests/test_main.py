@@ -253,3 +253,14 @@ def test_editor_route():
         resp = client.get(f"/editor/{p.id}")
         assert resp.status_code == 200
         assert b"Editor Test" in resp.data
+
+
+def test_snippets_endpoint_serves_stock_and_custom():
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get("/snippets")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert len(data["organization"]) > 0
+        assert len(data["deliverables"]) > 0

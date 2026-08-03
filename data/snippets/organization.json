@@ -1,0 +1,26 @@
+[
+    {
+        "id": "org-about",
+        "title": "About Our Organization",
+        "content": "VR Conservation is dedicated to the preservation and restoration of natural resources through science-based conservation practices. Our team combines decades of field experience with cutting-edge technology to deliver measurable conservation outcomes for communities, landowners, and government agencies.",
+        "category": "organization"
+    },
+    {
+        "id": "org-mission",
+        "title": "Mission Statement",
+        "content": "Our mission is to protect and restore critical ecosystems through collaborative conservation, research, and community engagement. We work alongside stakeholders to develop sustainable solutions that balance ecological integrity with community needs.",
+        "category": "organization"
+    },
+    {
+        "id": "org-experience",
+        "title": "Relevant Experience",
+        "content": "Our team has successfully completed over 50 conservation projects across the region, including watershed restoration, wildlife habitat improvement, and natural resource assessments. We maintain strong relationships with state and federal agencies, ensuring our work meets or exceeds regulatory standards.",
+        "category": "organization"
+    },
+    {
+        "id": "org-team",
+        "title": "Team Qualifications",
+        "content": "Our interdisciplinary team includes certified wildlife biologists, hydrologists, GIS specialists, and project managers. Each team member holds relevant certifications and brings a minimum of 10 years of field experience to every project.",
+        "category": "organization"
+    }
+]

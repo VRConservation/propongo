@@ -2,34 +2,42 @@
 
 import json
 import os
-import sys
+import shutil
 import uuid
 import logging
 from typing import Tuple, Dict, List, Any
 from flask import Blueprint, render_template, request, jsonify, Response
 from .config import ERROR_MESSAGES
+from . import models
 
 logger = logging.getLogger(__name__)
 
 snippets_bp = Blueprint("snippets", __name__)
 
-_PKG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "snippets")
-if sys.platform == "win32":
-    SNIPPETS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo", "snippets")
-else:
-    SNIPPETS_DIR = _PKG_DIR
+# Stock seed snippets ship inside the package; live (user) data lives under
+# the resolved data root alongside proposals and templates.
+_PKG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snippets")
+SNIPPETS_DIR = os.path.join(models.DATA_ROOT, "snippets")
 CUSTOM_DIR = os.path.join(SNIPPETS_DIR, "custom")
+_STOCK_FILES = ("organization.json", "deliverables.json")
 
 
 def ensure_dirs():
-    """Ensure snippet directories exist."""
+    """Ensure snippet directories exist and seed stock snippets on first run."""
     os.makedirs(SNIPPETS_DIR, exist_ok=True)
     os.makedirs(CUSTOM_DIR, exist_ok=True)
+    for name in _STOCK_FILES:
+        dest = os.path.join(SNIPPETS_DIR, name)
+        if not os.path.exists(dest):
+            src = os.path.join(_PKG_DIR, name)
+            if os.path.exists(src):
+                shutil.copyfile(src, dest)
 
 
 def load_snippets(filename):
-    """Load stock snippets from the package directory."""
-    filepath = os.path.join(_PKG_DIR, filename)
+    """Load snippets from the data directory."""
+    ensure_dirs()
+    filepath = os.path.join(SNIPPETS_DIR, filename)
     if os.path.exists(filepath):
         with open(filepath, "r") as f:
             return json.load(f)
@@ -37,11 +45,13 @@ def load_snippets(filename):
 
 
 def save_snippets(filename, data):
-    """Save snippets to a JSON file."""
+    """Save snippets to the data directory."""
     ensure_dirs()
     filepath = os.path.join(SNIPPETS_DIR, filename)
-    with open(filepath, "w") as f:
+    tmp = filepath + ".tmp"
+    with open(tmp, "w") as f:
         json.dump(data, f, indent=2)
+    os.replace(tmp, filepath)
 
 
 def load_custom_snippets():

@@ -1,36 +1,36 @@
 """Evidence-based results library.
 
 Stores reusable evidence-based findings (title, category, evidence text,
-and source/reference) as JSON, seeded from a stock library shipped with
-the package. Following the snippet pattern, on non-Windows systems the
-library lives in the package directory so seed entries stay available.
+and source/reference) as JSON under the resolved data root, seeded from a
+stock library shipped with the package on first run.
 """
 
 import json
 import os
-import sys
+import shutil
 import uuid
 import logging
 from typing import Tuple
 from datetime import datetime
 from flask import Blueprint, request, jsonify, Response
 from .config import ERROR_MESSAGES
+from . import models
 
 logger = logging.getLogger(__name__)
 
 results_bp = Blueprint("results", __name__)
 
 _PKG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
-if sys.platform == "win32":
-    RESULTS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo", "results")
-else:
-    RESULTS_DIR = _PKG_DIR
+RESULTS_DIR = os.path.join(models.DATA_ROOT, "results")
 LIBRARY_FILE = os.path.join(RESULTS_DIR, "library.json")
 
 
 def ensure_dirs():
-    """Ensure the results directory exists."""
+    """Ensure the results directory exists, seeding the stock library on first run."""
     os.makedirs(RESULTS_DIR, exist_ok=True)
+    seed = os.path.join(_PKG_DIR, "library.json")
+    if os.path.exists(seed) and not os.path.exists(LIBRARY_FILE):
+        shutil.copyfile(seed, LIBRARY_FILE)
 
 
 def load_library() -> list:

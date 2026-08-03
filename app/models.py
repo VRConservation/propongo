@@ -42,19 +42,18 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-_SOURCE_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 _CWD_DATA = os.path.join(os.getcwd(), "data")
 _USER_DATA = os.path.join(os.path.expanduser("~"), "Documents", "Propongo")
 
 env_dir = os.environ.get("PROPONGO_DATA_DIR")
 if env_dir:
     _DATA_ROOT = env_dir
-elif os.path.isdir(os.path.join(_SOURCE_DATA, "proposals")):
-    _DATA_ROOT = os.path.abspath(_SOURCE_DATA)
 elif os.path.isdir(os.path.join(_CWD_DATA, "proposals")):
     _DATA_ROOT = os.path.abspath(_CWD_DATA)
 else:
     _DATA_ROOT = _USER_DATA
+
+DATA_ROOT = _DATA_ROOT
 
 PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
 TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")

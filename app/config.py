@@ -1,7 +1,8 @@
 """Configuration settings for Propongo."""
 
 import os
-import sys
+
+from .models import DATA_ROOT
 
 
 class Config:
@@ -16,10 +17,7 @@ class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', os.urandom(24).hex())
     
     # File paths
-    if sys.platform == "win32":
-        DATA_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Propongo")
-    else:
-        DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+    DATA_DIR = DATA_ROOT
     PROPOSALS_DIR = os.path.join(DATA_DIR, 'proposals')
     EXPORTS_DIR = os.path.join(DATA_DIR, 'exports')
     
