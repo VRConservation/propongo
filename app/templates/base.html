@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     {% block head %}{% endblock %}
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFDLZGVT5Z"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-CFDLZGVT5Z');
+    </script>
+
 </head>
 <body>
     <div class="app-container">
