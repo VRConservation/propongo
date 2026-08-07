@@ -12,6 +12,7 @@ from typing import Any, Optional, Tuple
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, g
 from markupsafe import Markup
+from flask_login import current_user
 import markdown
 from .models import Proposal, PROPOSALS_DIR
 from .export import export_bp
@@ -20,6 +21,7 @@ from .results import results_bp
 from .utils import build_budget_by_year, build_export_context
 from .config import Config, ERROR_MESSAGES
 from .i18n import translate, LANGUAGES, DEFAULT_LANG, LANG_COOKIE, TRANSLATIONS
+from .auth import auth_bp, auth_enabled, ensure_admin_user, init_login_manager
 from . import __version__
 
 # Configure logging
@@ -83,12 +85,39 @@ def create_app() -> Flask:
     """
     app = Flask(__name__)
     app.secret_key = Config.SECRET_KEY
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=os.environ.get("PROPONGO_SESSION_COOKIE_SECURE", "false").lower() in ("true", "1", "yes"),
+    )
     
     logger.info(f"Starting Propongo v{__version__}")
+
+    ensure_admin_user()
+    init_login_manager(app)
 
     app.register_blueprint(export_bp)
     app.register_blueprint(snippets_bp)
     app.register_blueprint(results_bp)
+    app.register_blueprint(auth_bp)
+
+    PUBLIC_ENDPOINTS = {"auth.login", "auth.logout", "static", "set_language_route", "healthz"}
+
+    @app.before_request
+    def require_login():
+        """Redirect unauthenticated requests to the login page when auth is enabled."""
+        if not auth_enabled():
+            return
+        if request.endpoint is None or request.endpoint in PUBLIC_ENDPOINTS:
+            return
+        if current_user.is_authenticated:
+            return
+        return redirect(url_for("auth.login", next=request.path))
+
+    @app.route("/healthz")
+    def healthz():
+        """Health check endpoint for the hosting platform."""
+        return Response("ok", status=200)
 
     @app.before_request
     def set_language():
@@ -117,6 +146,11 @@ def create_app() -> Flask:
             "LANGUAGES": LANGUAGES,
             "js_translations": TRANSLATIONS.get(lang, {}),
         }
+
+    @app.context_processor
+    def inject_auth():
+        """Inject authentication state into all templates."""
+        return {"auth_enabled": auth_enabled(), "current_user": current_user}
 
     @app.route("/set-language/<lang>")
     def set_language_route(lang):

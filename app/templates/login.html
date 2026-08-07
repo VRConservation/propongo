@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propongo - {{ _('Sign in') }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div style="max-width: 400px; margin: 80px auto; padding: 0 20px;">
+        <h1 style="font-size: 28px; text-align: center;">Propongo</h1>
+        <p style="text-align: center; color: #64748b; margin-bottom: 24px;">{{ _('Please sign in to continue.') }}</p>
+
+        {% if error %}
+        <div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;padding:10px 12px;margin-bottom:16px;font-size:14px;">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}">
+            <div class="form-group">
+                <label for="username">{{ _('Username') }}</label>
+                <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+            </div>
+            <div class="form-group">
+                <label for="password">{{ _('Password') }}</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">{{ _('Sign in') }}</button>
+        </form>
+
+        <div style="text-align:center;margin-top:24px;">
+            <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
+                {% for code, name in LANGUAGES.items() %}
+                <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</body>
+</html>

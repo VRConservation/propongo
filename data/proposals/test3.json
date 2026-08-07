@@ -4,7 +4,7 @@
   "client_name": "",
   "subtitle": "",
   "created_at": "2026-07-16T10:36:23.446147",
-  "updated_at": "2026-08-03T12:15:40.448480",
+  "updated_at": "2026-08-07T08:32:01.007216",
   "project_summary": "",
   "scope": "",
   "tasks": [
@@ -15,16 +15,18 @@
       "start_year": 2026,
       "duration_months": 1,
       "description": "test",
-      "name": "Updated Task 1"
+      "name": "Updated Task 1",
+      "recurring": false,
+      "recurring_interval": 3
     }
   ],
-  "qualifications": "Small batch ethical fixie, actually echo park meggings before they sold out disrupt. Yr sustainable whatever, artisan microdosing cred activated charcoal. Celiac dreamcatcher four loko, vinyl church-key helvetica sartorial. Gochujang banjo sustainable, food truck kinfolk aesthetic. Woke normcore literally cloud bread, jianbing ethical waistcoat. Hammock shoreditch microdosing, trust fund lo-fi post-ironic. Man braid literally drinking vinegar sustainable, cred lomo keytar.",
+  "qualifications": "",
   "budget_items": [],
   "budget_item_timings": {},
   "start_date": "2026-07-01",
-  "end_date": "",
+  "end_date": "2027-07-01",
   "indirect_percent": 0,
-  "show_budget_description": false,
+  "show_budget_description": true,
   "budget_description": "",
   "timeline_use_days": false,
   "timeline_show_budget": true,

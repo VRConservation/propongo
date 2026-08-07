@@ -21,6 +21,9 @@
                 </select>
                 <a href="/templates" class="btn btn-secondary">{{ _('Templates') }}</a>
                 <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
+                {% if auth_enabled %}
+                <a href="/logout" class="btn btn-secondary">{{ _('Log out') }}</a>
+                {% endif %}
             </div>
         </div>
 

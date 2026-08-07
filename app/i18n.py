@@ -273,6 +273,13 @@ TRANSLATIONS = {
         "Failed to save result.": "No se pudo guardar el resultado.",
         "Click a result to insert its evidence into the focused field.": "Haz clic en un resultado para insertar su evidencia en el campo enfocado.",
         "Evidence inserted!": "¡Evidencia insertada!",
+        # Auth
+        "Sign in": "Iniciar sesión",
+        "Please sign in to continue.": "Inicia sesión para continuar.",
+        "Username": "Nombre de usuario",
+        "Password": "Contraseña",
+        "Invalid username or password.": "Nombre de usuario o contraseña no válidos.",
+        "Log out": "Cerrar sesión",
     },
     "fr": {
         # Navigation / chrome
@@ -532,6 +539,13 @@ TRANSLATIONS = {
         "Failed to save result.": "Échec de l'enregistrement du résultat.",
         "Click a result to insert its evidence into the focused field.": "Cliquez sur un résultat pour insérer ses preuves dans le champ actif.",
         "Evidence inserted!": "Preuves insérées !",
+        # Auth
+        "Sign in": "Connexion",
+        "Please sign in to continue.": "Veuillez vous connecter pour continuer.",
+        "Username": "Nom d'utilisateur",
+        "Password": "Mot de passe",
+        "Invalid username or password.": "Nom d'utilisateur ou mot de passe invalide.",
+        "Log out": "Déconnexion",
     },
 }
 

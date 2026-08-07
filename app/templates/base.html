@@ -76,6 +76,10 @@
                             <a class="hamburger-item" href="/templates">{{ _('Templates') }}</a>
                             <hr class="hamburger-divider">
                             <a class="hamburger-item" href="/tracker/{{ proposal.id }}">{{ _('Project Tracker') }}</a>
+                            {% if auth_enabled %}
+                            <hr class="hamburger-divider">
+                            <a class="hamburger-item" href="/logout">{{ _('Log out') }}</a>
+                            {% endif %}
                             <hr class="hamburger-divider">
                             <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'html'); closeHamburger()">{{ _('Export HTML') }}</button>
                             <button class="hamburger-item" onclick="exportProposal('{{ proposal.id }}', 'pdf'); closeHamburger()">{{ _('Export PDF') }}</button>
