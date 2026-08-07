@@ -20,7 +20,7 @@
                     {% endfor %}
                 </select>
                 <a href="/templates" class="btn btn-secondary">{{ _('Templates') }}</a>
-                <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
+                <button class="btn btn-primary" onclick="openNewProposalModal()">{{ _('New Proposal') }}</button>
                 {% if auth_enabled %}
                 <a href="/logout" class="btn btn-secondary">{{ _('Log out') }}</a>
                 {% endif %}
@@ -45,10 +45,12 @@
         <div class="empty-state">
             <h2>{{ _('No proposals yet') }}</h2>
             <p>{{ _('Create your first proposal to get started.') }}</p>
-            <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
+            <button class="btn btn-primary" onclick="openNewProposalModal()">{{ _('New Proposal') }}</button>
         </div>
         {% endif %}
     </div>
+
+    {% include "_new_proposal_modal.html" %}
 
     <script>
         window.I18N = {{ js_translations|tojson }};
@@ -59,5 +61,6 @@
                 .then(() => window.location.reload());
         }
     </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

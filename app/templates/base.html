@@ -69,7 +69,7 @@
                         <button class="btn-icon hamburger-btn" onclick="toggleHamburgerMenu()" title="{{ _('Menu') }}">&#9776;</button>
                         <div class="hamburger-dropdown hidden" id="hamburger-dropdown">
                             <a class="hamburger-item" href="/">{{ _('Switch Proposal') }}</a>
-                            <a class="hamburger-item" href="/new">{{ _('New Proposal') }}</a>
+                            <button class="hamburger-item" onclick="openNewProposalModal(); closeHamburger()">{{ _('New Proposal') }}</button>
                             <button class="hamburger-item" onclick="openSaveAsModal(); closeHamburger()">{{ _('Save As...') }}</button>
                             <button class="hamburger-item" onclick="openSaveAsTemplateModal(); closeHamburger()">{{ _('Save as Template...') }}</button>
                             <hr class="hamburger-divider">
@@ -126,7 +126,7 @@
             <div class="modal-body" id="proposal-list-body">
             </div>
             <div class="modal-footer">
-                <a href="/new" class="btn btn-primary">{{ _('New Proposal') }}</a>
+                <button class="btn btn-primary" onclick="openNewProposalModal()">{{ _('New Proposal') }}</button>
             </div>
         </div>
     </div>
@@ -228,6 +228,8 @@
             </div>
         </div>
     </div>
+
+    {% include "_new_proposal_modal.html" %}
 
     <script>
         window.I18N = {{ js_translations|tojson }};

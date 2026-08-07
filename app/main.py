@@ -21,7 +21,7 @@ from .results import results_bp
 from .utils import build_budget_by_year, build_export_context
 from .config import Config, ERROR_MESSAGES
 from .i18n import translate, LANGUAGES, DEFAULT_LANG, LANG_COOKIE, TRANSLATIONS
-from .auth import auth_bp, auth_enabled, ensure_admin_user, init_login_manager
+from .auth import auth_bp, auth_enabled, allow_registration, ensure_admin_user, init_login_manager
 from . import __version__
 
 # Configure logging
@@ -101,14 +101,16 @@ def create_app() -> Flask:
     app.register_blueprint(results_bp)
     app.register_blueprint(auth_bp)
 
-    PUBLIC_ENDPOINTS = {"auth.login", "auth.logout", "static", "set_language_route", "healthz"}
+    PUBLIC_ENDPOINTS = {"static", "set_language_route", "healthz"}
 
     @app.before_request
     def require_login():
         """Redirect unauthenticated requests to the login page when auth is enabled."""
         if not auth_enabled():
             return
-        if request.endpoint is None or request.endpoint in PUBLIC_ENDPOINTS:
+        if request.endpoint is None:
+            return
+        if request.endpoint.startswith("auth.") or request.endpoint in PUBLIC_ENDPOINTS:
             return
         if current_user.is_authenticated:
             return
@@ -150,7 +152,11 @@ def create_app() -> Flask:
     @app.context_processor
     def inject_auth():
         """Inject authentication state into all templates."""
-        return {"auth_enabled": auth_enabled(), "current_user": current_user}
+        return {
+            "auth_enabled": auth_enabled(),
+            "allow_registration": allow_registration(),
+            "current_user": current_user,
+        }
 
     @app.route("/set-language/<lang>")
     def set_language_route(lang):
@@ -170,13 +176,19 @@ def create_app() -> Flask:
         proposals = Proposal.list_all()
         return render_template("index.html", proposals=proposals)
 
-    @app.route("/new")
+    @app.route("/new", methods=["GET", "POST"])
     def new_proposal():
-        """Create a new proposal and redirect to its editor."""
-        proposal = Proposal()
-        proposal.save()
-        logger.info(f"Created new proposal: {proposal.id}")
-        return redirect(url_for("editor", proposal_id=proposal.id))
+        """Create a proposal (POST with a title) or bounce GET to the index."""
+        if request.method == "POST":
+            data = request.get_json(silent=True) or {}
+            title = (data.get("title") or "").strip()
+            if not title:
+                return jsonify({"error": "Title required"}), 400
+            proposal = Proposal(title=title)
+            proposal.save()
+            logger.info(f"Created new proposal: {proposal.id}")
+            return jsonify({"id": proposal.id}), 201
+        return redirect(url_for("index"))
 
     @app.route("/editor/<proposal_id>")
     def editor(proposal_id):

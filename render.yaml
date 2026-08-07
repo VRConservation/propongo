@@ -18,6 +18,9 @@ services:
         generateValue: true
       - key: PROPONGO_AUTH_ENABLED
         value: "true"
+      # Set to "false" to disable self-registration (invite-only).
+      - key: PROPONGO_ALLOW_REGISTRATION
+        value: "true"
       # Set these two in the Render dashboard (or via the Deploy dialog) —
       # they are required to create the first admin account.
       - key: PROPONGO_ADMIN_USER

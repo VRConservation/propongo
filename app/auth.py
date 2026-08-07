@@ -10,6 +10,7 @@ first time the app starts with auth enabled.
 import json
 import logging
 import os
+import re
 import secrets
 import threading
 from typing import Optional
@@ -33,6 +34,11 @@ _lock = threading.Lock()
 def auth_enabled() -> bool:
     """Return True if login is required for the app."""
     return os.environ.get("PROPONGO_AUTH_ENABLED", "false").lower() in ("true", "1", "yes")
+
+
+def allow_registration() -> bool:
+    """Return True if new users may self-register."""
+    return os.environ.get("PROPONGO_ALLOW_REGISTRATION", "true").lower() in ("true", "1", "yes")
 
 
 class User(UserMixin):
@@ -170,6 +176,56 @@ def logout():
     """Log out the current user."""
     logout_user()
     return redirect(url_for("auth.login"))
+
+
+def _validate_signup(username: str, email: str, password: str, confirm: str) -> Optional[str]:
+    """Validate registration input, returning an error message or None."""
+    lang = getattr(g, "lang", DEFAULT_LANG)
+    if not re.match(r"^[A-Za-z0-9_.-]{3,32}$", username):
+        return translate(
+            "Usernames must be 3-32 characters using letters, numbers, dots, dashes, or underscores.",
+            lang,
+        )
+    if len(password) < 8:
+        return translate("Password must be at least 8 characters.", lang)
+    if password != confirm:
+        return translate("Passwords do not match.", lang)
+    return None
+
+
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    """Render the registration page and create new accounts."""
+    if not auth_enabled() or not allow_registration():
+        return redirect(url_for("index"))
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm_password", "")
+        error = _validate_signup(username, email, password, confirm)
+        if error is None:
+            with _lock:
+                users = _load_users()
+                if username in users:
+                    error = translate("That username is already taken.", getattr(g, "lang", DEFAULT_LANG))
+                else:
+                    users[username] = {
+                        "username": username,
+                        "email": email,
+                        "password_hash": generate_password_hash(password),
+                        "plan": DEFAULT_PLAN,
+                    }
+                    _save_users(users)
+        if error is None:
+            login_user(load_user(username))
+            return redirect(url_for("index"))
+
+    return render_template("register.html", error=error)
 
 
 def init_login_manager(app) -> LoginManager:

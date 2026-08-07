@@ -1,0 +1,18 @@
+<div id="new-proposal-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>{{ _('New Proposal') }}</h2>
+            <button class="btn-icon" onclick="closeNewProposalModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="new-proposal-title">{{ _('Proposal Title') }}</label>
+                <input type="text" id="new-proposal-title" placeholder="{{ _('Enter proposal title...') }}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeNewProposalModal()">{{ _('Cancel') }}</button>
+            <button class="btn btn-primary" onclick="createNewProposal()">{{ _('Create') }}</button>
+        </div>
+    </div>
+</div>

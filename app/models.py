@@ -65,6 +65,40 @@ def ensure_dirs() -> None:
     os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 
+def _auth_enabled() -> bool:
+    return os.environ.get("PROPONGO_AUTH_ENABLED", "false").lower() in ("true", "1", "yes")
+
+
+def _current_owner() -> str:
+    """Username of the logged-in user when multi-user auth is on, else ''.
+
+    Returns an empty string for single-user local mode and for requests made
+    outside of a logged-in session (which keeps paths unchanged)."""
+    if not _auth_enabled():
+        return ""
+    try:
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            return current_user.username
+    except (ImportError, RuntimeError):
+        pass
+    return ""
+
+
+def _scoped_dir(base_dir: str) -> str:
+    """Return `base_dir`, or `base_dir/<owner>` when a user is logged in.
+
+    Creates the directory if needed so load/list/save can rely on it existing.
+    """
+    os.makedirs(base_dir, exist_ok=True)
+    owner = _current_owner()
+    if not owner:
+        return base_dir
+    scoped = os.path.join(base_dir, owner)
+    os.makedirs(scoped, exist_ok=True)
+    return scoped
+
+
 @dataclass
 class Proposal:
     """A project proposal containing tasks, budget items, and custom sections."""
@@ -109,9 +143,8 @@ class Proposal:
 
     def save(self):
         """Save the proposal to disk as a JSON file."""
-        ensure_dirs()
         self.updated_at = datetime.now().isoformat()
-        target_dir = TEMPLATES_DIR if self.is_template else PROPOSALS_DIR
+        target_dir = _scoped_dir(TEMPLATES_DIR if self.is_template else PROPOSALS_DIR)
         filepath = os.path.join(target_dir, f"{self.id}.json")
         tmp = filepath + ".tmp"
         with open(tmp, "w") as f:
@@ -122,7 +155,7 @@ class Proposal:
     @classmethod
     def load(cls, proposal_id: str, is_template: bool = False) -> Optional["Proposal"]:
         """Load a proposal or template by ID from disk."""
-        target_dir = TEMPLATES_DIR if is_template else PROPOSALS_DIR
+        target_dir = _scoped_dir(TEMPLATES_DIR if is_template else PROPOSALS_DIR)
         filepath = os.path.join(target_dir, f"{proposal_id}.json")
         if not os.path.exists(filepath):
             return None
@@ -135,12 +168,12 @@ class Proposal:
     @classmethod
     def list_all(cls) -> list:
         """List all proposals, returning summaries sorted by most recent."""
-        ensure_dirs()
+        target_dir = _scoped_dir(PROPOSALS_DIR)
         proposals = []
-        for filename in sorted(os.listdir(PROPOSALS_DIR)):
+        for filename in sorted(os.listdir(target_dir)):
             if filename.endswith(".json"):
                 try:
-                    with open(os.path.join(PROPOSALS_DIR, filename), "r") as f:
+                    with open(os.path.join(target_dir, filename), "r") as f:
                         data = json.load(f)
                         proposals.append({
                             "id": data.get("id", filename.replace(".json", "")),
@@ -156,12 +189,12 @@ class Proposal:
     @classmethod
     def list_templates(cls) -> list:
         """List all templates, returning summaries sorted by most recent."""
-        ensure_dirs()
+        target_dir = _scoped_dir(TEMPLATES_DIR)
         templates = []
-        for filename in sorted(os.listdir(TEMPLATES_DIR)):
+        for filename in sorted(os.listdir(target_dir)):
             if filename.endswith(".json"):
                 try:
-                    with open(os.path.join(TEMPLATES_DIR, filename), "r") as f:
+                    with open(os.path.join(target_dir, filename), "r") as f:
                         data = json.load(f)
                         templates.append({
                             "id": data.get("id", filename.replace(".json", "")),
@@ -177,7 +210,7 @@ class Proposal:
     @classmethod
     def delete(cls, proposal_id: str, is_template: bool = False) -> bool:
         """Delete a proposal or template by ID. Returns True if deleted."""
-        target_dir = TEMPLATES_DIR if is_template else PROPOSALS_DIR
+        target_dir = _scoped_dir(TEMPLATES_DIR if is_template else PROPOSALS_DIR)
         filepath = os.path.join(target_dir, f"{proposal_id}.json")
         if os.path.exists(filepath):
             os.remove(filepath)

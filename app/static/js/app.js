@@ -346,6 +346,41 @@ function openSaveAsModal() {
     input.select();
 }
 
+function openNewProposalModal() {
+    const modal = document.getElementById('new-proposal-modal');
+    const input = document.getElementById('new-proposal-title');
+    if (!modal) return;
+    input.value = '';
+    modal.classList.remove('hidden');
+    input.focus();
+}
+
+function closeNewProposalModal() {
+    const modal = document.getElementById('new-proposal-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function createNewProposal() {
+    const title = document.getElementById('new-proposal-title').value.trim();
+    if (!title) {
+        alert(t('Please enter a title.'));
+        return;
+    }
+    fetch('/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.id) {
+            window.location.href = '/editor/' + data.id;
+        } else {
+            alert(data.error || t('Failed to save.'));
+        }
+    });
+}
+
 function closeSaveAsModal() {
     document.getElementById('save-as-modal').classList.add('hidden');
 }
