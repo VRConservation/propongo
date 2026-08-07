@@ -15,19 +15,33 @@ logger = logging.getLogger(__name__)
 snippets_bp = Blueprint("snippets", __name__)
 
 # Stock seed snippets ship inside the package; live (user) data lives under
-# the resolved data root alongside proposals and templates.
+# the resolved data root alongside proposals and templates, scoped per user
+# when multi-user auth is enabled.
 _PKG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snippets")
 SNIPPETS_DIR = os.path.join(models.DATA_ROOT, "snippets")
-CUSTOM_DIR = os.path.join(SNIPPETS_DIR, "custom")
 _STOCK_FILES = ("organization.json", "deliverables.json")
 
 
+def _snippets_root() -> str:
+    """Snippets root for the current user.
+
+    Returns `data/snippets/<owner>` when multi-user auth is on and someone is
+    logged in, otherwise the shared `data/snippets` (single-user mode).
+    """
+    return models._scoped_dir(SNIPPETS_DIR)
+
+
+def _custom_dir() -> str:
+    return os.path.join(_snippets_root(), "custom")
+
+
 def ensure_dirs():
-    """Ensure snippet directories exist and seed stock snippets on first run."""
-    os.makedirs(SNIPPETS_DIR, exist_ok=True)
-    os.makedirs(CUSTOM_DIR, exist_ok=True)
+    """Ensure per-user snippet directories exist and seed stock snippets."""
+    root = _snippets_root()
+    os.makedirs(root, exist_ok=True)
+    os.makedirs(_custom_dir(), exist_ok=True)
     for name in _STOCK_FILES:
-        dest = os.path.join(SNIPPETS_DIR, name)
+        dest = os.path.join(root, name)
         if not os.path.exists(dest):
             src = os.path.join(_PKG_DIR, name)
             if os.path.exists(src):
@@ -35,9 +49,9 @@ def ensure_dirs():
 
 
 def load_snippets(filename):
-    """Load snippets from the data directory."""
+    """Load snippets from the current user's data directory."""
     ensure_dirs()
-    filepath = os.path.join(SNIPPETS_DIR, filename)
+    filepath = os.path.join(_snippets_root(), filename)
     if os.path.exists(filepath):
         with open(filepath, "r") as f:
             return json.load(f)
@@ -45,9 +59,9 @@ def load_snippets(filename):
 
 
 def save_snippets(filename, data):
-    """Save snippets to the data directory."""
+    """Save snippets to the current user's data directory."""
     ensure_dirs()
-    filepath = os.path.join(SNIPPETS_DIR, filename)
+    filepath = os.path.join(_snippets_root(), filename)
     tmp = filepath + ".tmp"
     with open(tmp, "w") as f:
         json.dump(data, f, indent=2)
@@ -55,12 +69,12 @@ def save_snippets(filename, data):
 
 
 def load_custom_snippets():
-    """Load all user-created custom snippets."""
+    """Load all custom snippets for the current user."""
     ensure_dirs()
     snippets = []
-    for filename in sorted(os.listdir(CUSTOM_DIR)):
+    for filename in sorted(os.listdir(_custom_dir())):
         if filename.endswith(".json"):
-            with open(os.path.join(CUSTOM_DIR, filename), "r") as f:
+            with open(os.path.join(_custom_dir(), filename), "r") as f:
                 snippets.append(json.load(f))
     return snippets
 
@@ -91,7 +105,7 @@ def add_snippet(category):
 
     if category == "custom":
         ensure_dirs()
-        filepath = os.path.join(CUSTOM_DIR, f"{snippet['id']}.json")
+        filepath = os.path.join(_custom_dir(), f"{snippet['id']}.json")
         with open(filepath, "w") as f:
             json.dump(snippet, f, indent=2)
     elif category in ("organization", "deliverables"):
@@ -108,7 +122,7 @@ def add_snippet(category):
 def delete_snippet(category, snippet_id):
     """Delete a snippet by category and ID."""
     if category == "custom":
-        filepath = os.path.join(CUSTOM_DIR, f"{snippet_id}.json")
+        filepath = os.path.join(_custom_dir(), f"{snippet_id}.json")
         if os.path.exists(filepath):
             os.remove(filepath)
             return jsonify({"ok": True})
@@ -159,7 +173,7 @@ def import_snippet():
     }
 
     ensure_dirs()
-    filepath = os.path.join(CUSTOM_DIR, f"{snippet['id']}.json")
+    filepath = os.path.join(_custom_dir(), f"{snippet['id']}.json")
     with open(filepath, "w") as f:
         json.dump(snippet, f, indent=2)
 

@@ -2,7 +2,8 @@
 
 Stores reusable evidence-based findings (title, category, evidence text,
 and source/reference) as JSON under the resolved data root, seeded from a
-stock library shipped with the package on first run.
+stock library shipped with the package on first run. Scoped per user when
+multi-user auth is enabled.
 """
 
 import json
@@ -22,22 +23,38 @@ results_bp = Blueprint("results", __name__)
 
 _PKG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 RESULTS_DIR = os.path.join(models.DATA_ROOT, "results")
-LIBRARY_FILE = os.path.join(RESULTS_DIR, "library.json")
+
+
+def _results_root() -> str:
+    """Results root for the current user.
+
+    Returns `data/results/<owner>` when multi-user auth is on and someone is
+    logged in, otherwise the shared `data/results` (single-user mode).
+    """
+    return models._scoped_dir(RESULTS_DIR)
+
+
+def _library_file() -> str:
+    return os.path.join(_results_root(), "library.json")
 
 
 def ensure_dirs():
-    """Ensure the results directory exists, seeding the stock library on first run."""
-    os.makedirs(RESULTS_DIR, exist_ok=True)
+    """Ensure the per-user results directory exists, seeding the stock library."""
+    root = _results_root()
+    os.makedirs(root, exist_ok=True)
+    library = os.path.join(root, "library.json")
     seed = os.path.join(_PKG_DIR, "library.json")
-    if os.path.exists(seed) and not os.path.exists(LIBRARY_FILE):
-        shutil.copyfile(seed, LIBRARY_FILE)
+    if os.path.exists(seed) and not os.path.exists(library):
+        shutil.copyfile(seed, library)
 
 
 def load_library() -> list:
     """Load the results library, seeding from stock data on first run."""
-    if os.path.exists(LIBRARY_FILE):
+    ensure_dirs()
+    library = _library_file()
+    if os.path.exists(library):
         try:
-            with open(LIBRARY_FILE, "r") as f:
+            with open(library, "r") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             return []
@@ -54,11 +71,11 @@ def load_library() -> list:
 def save_library(entries: list) -> None:
     """Persist the results library to disk."""
     ensure_dirs()
-    tmp = LIBRARY_FILE + ".tmp"
+    tmp = _library_file() + ".tmp"
     with open(tmp, "w") as f:
         json.dump(entries, f, indent=2)
         f.write("\n")
-    os.replace(tmp, LIBRARY_FILE)
+    os.replace(tmp, _library_file())
 
 
 @results_bp.route("/api/results")

@@ -4,12 +4,16 @@ import tempfile
 
 import app.auth as auth
 import app.models as models
+import app.results as results
+import app.snippets as snippets
 from app.main import create_app
 
 
 _orig_users_file = auth.USERS_FILE
 _orig_proposals_dir = models.PROPOSALS_DIR
 _orig_templates_dir = models.TEMPLATES_DIR
+_orig_snippets_dir = snippets.SNIPPETS_DIR
+_orig_results_dir = results.RESULTS_DIR
 _orig_env = None
 _test_dir = None
 
@@ -21,6 +25,8 @@ def setup_function():
     auth.USERS_FILE = os.path.join(_test_dir, "users.json")
     models.PROPOSALS_DIR = os.path.join(_test_dir, "proposals")
     models.TEMPLATES_DIR = os.path.join(_test_dir, "templates")
+    snippets.SNIPPETS_DIR = os.path.join(_test_dir, "snippets")
+    results.RESULTS_DIR = os.path.join(_test_dir, "results")
 
 
 def teardown_function():
@@ -28,6 +34,8 @@ def teardown_function():
     auth.USERS_FILE = _orig_users_file
     models.PROPOSALS_DIR = _orig_proposals_dir
     models.TEMPLATES_DIR = _orig_templates_dir
+    snippets.SNIPPETS_DIR = _orig_snippets_dir
+    results.RESULTS_DIR = _orig_results_dir
     os.environ.clear()
     os.environ.update(_orig_env)
     _orig_env = None
@@ -228,3 +236,47 @@ def test_per_user_proposal_isolation():
     assert alice_id in [p["id"] for p in alice.get("/api/proposals").get_json()]
     assert alice_id not in [p["id"] for p in admin.get("/api/proposals").get_json()]
     assert admin.get(f"/api/proposal/{alice_id}").status_code == 404
+
+
+def test_snippets_are_per_user():
+    _enable_auth()
+    admin = _client()
+    admin.post("/login", data={"username": "admin", "password": "testpass123"})
+    resp = admin.post("/snippets/custom", json={"title": "Admin Snippet", "content": "Admin only"}, content_type="application/json")
+    assert resp.status_code == 201
+    admin_custom = admin.get("/snippets").get_json()["custom"]
+    assert any(s["title"] == "Admin Snippet" for s in admin_custom)
+    assert admin.get("/snippets").get_json()["organization"]
+
+    alice = _client()
+    _register(alice, "alice", "password123")
+    alice_snippets = alice.get("/snippets").get_json()
+    assert alice_snippets["custom"] == []
+    assert alice_snippets["organization"]
+
+    resp = alice.post("/snippets/custom", json={"title": "Alice Snippet", "content": "Alice only"}, content_type="application/json")
+    assert resp.status_code == 201
+
+    admin_custom = admin.get("/snippets").get_json()["custom"]
+    assert any(s["title"] == "Admin Snippet" for s in admin_custom)
+    assert not any(s["title"] == "Alice Snippet" for s in admin_custom)
+
+
+def test_results_library_is_per_user():
+    _enable_auth()
+    admin = _client()
+    admin.post("/login", data={"username": "admin", "password": "testpass123"})
+    resp = admin.post("/api/results", json={"title": "Admin Finding", "evidence": "data"}, content_type="application/json")
+    assert resp.status_code == 201
+    assert any(r["title"] == "Admin Finding" for r in admin.get("/api/results").get_json())
+    assert admin.get("/api/results").get_json()
+
+    alice = _client()
+    _register(alice, "alice", "password123")
+    alice_results = alice.get("/api/results").get_json()
+    assert not any(r["title"] == "Admin Finding" for r in alice_results)
+    assert alice_results
+
+    resp = alice.post("/api/results", json={"title": "Alice Finding", "evidence": "data"}, content_type="application/json")
+    assert resp.status_code == 201
+    assert not any(r["title"] == "Alice Finding" for r in admin.get("/api/results").get_json())
