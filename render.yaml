@@ -8,7 +8,7 @@ services:
     name: propongo
     runtime: docker
     repo: https://github.com/VRConservation/propongo
-    plan: free
+    plan: basic
     region: oregon
     dockerfilePath: ./Dockerfile
     dockerContext: .
@@ -34,9 +34,8 @@ services:
       - key: DEBUG
         value: "false"
     # Persistent storage for proposals/templates/exports.
-    # NOTE: the free plan cannot attach disks — remove this block for a
-    # throwaway trial (data resets on redeploy/spin-down). Uncomment it
-    # once you're on the Starter plan ($7/mo) or higher.
+    # Requires the Basic plan ($7/mo) or higher — the free plan cannot attach
+    # disks. Existing ephemeral data is NOT copied onto a newly attached disk.
     disk:
       name: propongo-data
       mountPath: /app/data
