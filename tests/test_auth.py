@@ -79,6 +79,19 @@ def test_admin_account_is_provisioned_from_env():
     assert auth.load_user("admin") is not None
 
 
+def test_admin_password_is_reset_from_env_on_boot():
+    _enable_auth()
+    os.environ["PROPONGO_ADMIN_PASSWORD"] = "firstpass"
+    _client()
+    assert auth.load_user("admin").check_password("firstpass")
+
+    os.environ["PROPONGO_ADMIN_PASSWORD"] = "secondpass"
+    _client()
+    user = auth.load_user("admin")
+    assert user.check_password("secondpass")
+    assert not user.check_password("firstpass")
+
+
 def test_login_flow():
     _enable_auth()
     client = _client()

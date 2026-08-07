@@ -104,16 +104,24 @@ def get_user(username: str) -> Optional["User"]:
 
 
 def ensure_admin_user() -> None:
-    """Provision the initial admin account from environment variables."""
+    """Provision (or reset) the admin account from environment variables.
+
+    When PROPONGO_ADMIN_USER and PROPONGO_ADMIN_PASSWORD are both set, that
+    account is created on first boot and its password is re-applied on every
+    subsequent boot, so operators control credentials via the environment.
+    If no users exist and the password is missing, a temporary password is
+    generated and logged.
+    """
     if not auth_enabled():
         return
     with _lock:
         users = _load_users()
-        if users:
-            return
-        username = (os.environ.get("PROPONGO_ADMIN_USER") or "admin").strip()
+        username = (os.environ.get("PROPONGO_ADMIN_USER") or "").strip()
         password = os.environ.get("PROPONGO_ADMIN_PASSWORD") or ""
-        if not password:
+        if not username or not password:
+            if users:
+                return
+            username = username or "admin"
             password = secrets.token_urlsafe(16)
             logger.warning(
                 "PROPONGO_ADMIN_PASSWORD not set. Generated a temporary password for '%s': %s",
@@ -127,7 +135,7 @@ def ensure_admin_user() -> None:
             "plan": DEFAULT_PLAN,
         }
         _save_users(users)
-        logger.info("Created initial admin user '%s'", username)
+        logger.info("Admin user '%s' provisioned from environment", username)
 
 
 auth_bp = Blueprint("auth", __name__)
