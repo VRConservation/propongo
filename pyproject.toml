@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "propongo"
-version = "1.4.2"
+version = "1.5.0"
 description = "A local proposal generator for conservation and natural resource projects"
 readme = "README.md"
 license = {text = "MIT"}
