@@ -78,6 +78,7 @@ TRANSLATIONS = {
         "Delete": "Eliminar",
         "No proposals yet": "Aún no hay propuestas",
         "Create your first proposal to get started.": "Crea tu primera propuesta para empezar.",
+        "Have you found Propongo useful? Please support its deployment and maintenance here.": "¿Te ha resultado útil Propongo? Apoya su despliegue y mantenimiento aquí.",
         "Delete this proposal?": "¿Eliminar esta propuesta?",
         # Scope
         "Scope of Work": "Alcance del trabajo",
@@ -357,6 +358,7 @@ TRANSLATIONS = {
         "Delete": "Supprimer",
         "No proposals yet": "Aucune proposition",
         "Create your first proposal to get started.": "Créez votre première proposition pour commencer.",
+        "Have you found Propongo useful? Please support its deployment and maintenance here.": "Propongo vous a-t-il été utile ? Soutenez son déploiement et sa maintenance ici.",
         "Delete this proposal?": "Supprimer cette proposition ?",
         # Scope
         "Scope of Work": "Portée du travail",
