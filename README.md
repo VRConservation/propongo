@@ -1,5 +1,5 @@
 # Propongo
-A proposal generator for conservation and natural resource projects. Create professional proposals in English, French, or Spanish with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
+A proposal generator for conservation and natural resource projects available as an app at [propongo.org](https://propongo.org). Create professional proposals in English, French, or Spanish with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
 
 ## Features
 
@@ -17,6 +17,11 @@ A proposal generator for conservation and natural resource projects. Create prof
 - **Project tracking** - When proposals is secured, using the tracking feature to manage project deliverables, timeline, and budget spend.
 
 ## Quick Start
+
+### Run as an app
+1. Visit [Propongo.org](https://propongo.org)
+2. Create a login username and password
+3. Start using by create a new proposal
 
 ### Linux/Mac
 

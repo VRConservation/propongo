@@ -1,5 +1,10 @@
 # Installation
 
+## Run as an app
+1. Visit [Propongo.org](https://propongo.org)
+2. Create a login username and password
+3. Start using by create a new proposal
+
 ## Install with Docker (Mac, Linux, Windows)
 
 Run Propongo in a container. These steps install git and Docker, then build and run the app in your terminal.
