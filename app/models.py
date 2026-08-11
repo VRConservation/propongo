@@ -34,6 +34,7 @@ Custom Section dict:
 import json
 import logging
 import os
+import shutil
 import sys
 from dataclasses import dataclass, field, asdict
 from typing import Optional
@@ -57,6 +58,10 @@ DATA_ROOT = _DATA_ROOT
 
 PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
 TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")
+
+# Demo proposals bundled with the package, seeded into the admin account's
+# proposals dir on first use so the gallery is not empty on fresh deploys.
+_DEMO_PROPOSALS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "proposals")
 
 
 def ensure_dirs() -> None:
@@ -97,6 +102,33 @@ def _scoped_dir(base_dir: str) -> str:
     scoped = os.path.join(base_dir, owner)
     os.makedirs(scoped, exist_ok=True)
     return scoped
+
+
+def _seed_demo_proposals(target_dir: str, owner: Optional[str] = None) -> None:
+    """Seed the bundled demo proposals into an empty proposals dir.
+
+    Runs only for the account named by ``PROPONGO_ADMIN_USER`` (the owner),
+    and only when the target dir has no proposals yet, so other users never
+    receive the demo content. Copies are skipped when a file already exists
+    so existing proposals are never overwritten.
+    """
+    if owner is None:
+        owner = _current_owner()
+    seed_user = os.environ.get("PROPONGO_ADMIN_USER", "").strip()
+    if not owner or not seed_user or owner != seed_user:
+        return
+    if not os.path.isdir(target_dir):
+        return
+    if any(f.endswith(".json") for f in os.listdir(target_dir)):
+        return
+    if not os.path.isdir(_DEMO_PROPOSALS_DIR):
+        return
+    for name in os.listdir(_DEMO_PROPOSALS_DIR):
+        if not name.endswith(".json"):
+            continue
+        dest = os.path.join(target_dir, name)
+        if not os.path.exists(dest):
+            shutil.copyfile(os.path.join(_DEMO_PROPOSALS_DIR, name), dest)
 
 
 @dataclass
@@ -169,6 +201,7 @@ class Proposal:
     def list_all(cls) -> list:
         """List all proposals, returning summaries sorted by most recent."""
         target_dir = _scoped_dir(PROPOSALS_DIR)
+        _seed_demo_proposals(target_dir)
         proposals = []
         for filename in sorted(os.listdir(target_dir)):
             if filename.endswith(".json"):

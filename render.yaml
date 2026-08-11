@@ -34,8 +34,10 @@ services:
       - key: DEBUG
         value: "false"
     # Persistent storage for proposals/templates/exports.
-    # Requires the Basic plan ($7/mo) or higher — the free plan cannot attach
-    # disks. Existing ephemeral data is NOT copied onto a newly attached disk.
+    # The workspace plan can stay Hobby (free): Render attaches disks to any
+    # PAID instance type (e.g. Starter $7/mo — the Free $0 instance cannot
+    # attach a disk). Disk storage bills at $0.25/GB/mo.
+    # Existing ephemeral data is NOT copied onto a newly attached disk.
     disk:
       name: propongo-data
       mountPath: /app/data

@@ -1,0 +1,156 @@
+{
+  "id": "sample",
+  "title": "Sample",
+  "client_name": "Department of Forestry",
+  "subtitle": "Forest Health Resilience",
+  "created_at": "2026-07-28T18:17:39.096747",
+  "updated_at": "2026-08-03T11:53:22.401332",
+  "project_summary": "This proposal outlines a comprehensive approach to reduce wildfire risk and restore forest resilience across 15,000 acres of priority landscape in the Colorado Front Range. The project will implement mechanical thinning, prescribed fire, and fuel break construction in the wildland-urban interface, targeting areas identified in the Colorado Forest Action Plan as high-risk. Key tasks include: (1) hazardous fuel reduction using hand crews and mastication equipment on 8,000 acres; (2) ecological prescribed burns on 5,000 acres conducted over three spring and fall windows; (3) shaded fuel break installation along 12 miles of evacuation corridors; (4) post-treatment monitoring for regeneration, wildlife response, and soil health; and (5) community engagement through public field tours and defensible space workshops for 500 landowners. Treatment prescriptions follow the Collaborative Forest Landscape Restoration Program framework and incorporate input from the Front Range Roundtable. Outcomes are measured against federal Cohesive Wildfire Strategy goals for fire-adapted communities and resilient landscapes.",
+  "scope": "## A. Need\nThe Colorado Front Range faces a growing wildfire crisis driven by climate change, drought, and a century of fire suppression, with over 1.4 million homes in the wildland-urban interface at risk. Without treatment, severe wildfires threaten watersheds supplying drinking water to 3 million residents, critical infrastructure, and endangered species habitat.\n### 1. Scalability\nThe project is designed as a modular treatment framework that can be replicated across the Front Range's 12 priority landscapes, with standardized prescriptions and monitoring protocols that reduce per-acre costs as program size increases. Phased implementation allows for adaptive management and integration with existing federal, state, and county wildfire mitigation programs, enabling expansion from 15,000 to 100,000 acres over five years.\n### 2. Impact\nTreatment will reduce flame lengths from 20+ feet to under 4 feet across treated areas, enabling direct suppression and improving firefighter safety. Long-term ecological benefits include restored ponderosa pine and mixed-conifer stand structure, improved wildlife connectivity for species such as the Mexican spotted owl, and reduced post-fire erosion and flooding that currently costs the region an average of $50 million per wildfire season.\n\n## B. Background\nForest Conservation Now (FCN) is a Colorado-based 501(c)(3) nonprofit founded in 2014 to accelerate forest restoration and wildfire resilience across the Rocky Mountain region. FCN has completed over 40,000 acres of treatment across 12 landscapes, leveraging $18 million in federal, state, and private funding through partnerships with the US Forest Service, Colorado State Forest Service, and county wildfire councils. The organization maintains a 12-person technical team\u2014including certified silviculturists, prescribed fire managers, and restoration ecologists\u2014and operates two mechanical thinning crews and a Type 6 prescribed fire module.\n## C. Qualifications\nFCN has worked on the following key projects:\n\n1. **Upper South Platte Collaborative** (2016\u20132021) \u2014 FCN led mechanical thinning and prescribed fire on 8,200 acres of the Pike-San Isabel National Forest to protect the Cheesman Reservoir watershed, which supplies drinking water to 1.5 million Denver-area residents. The project reduced predicted flame lengths by 60% and was recognized as a national model for source-water protection partnerships.\n2. **Boulder County Wildfire Risk Reduction Initiative** (2018\u20132023) \u2014 In response to the 2010 Fourmile Canyon Fire, FCN treated 4,500 acres of private and county-owned land in the Boulder County WUI, including shaded fuel breaks along 22 miles of evacuation routes. Post-treatment assessments documented a 75% reduction in canopy bulk density and zero structure loss in treated areas during subsequent wildfire events.\n3. **San Juan Mountains Landscape Restoration** (2020\u2013present) \u2014 FCN is implementing a 12,000-acre restoration program across the Rio Grande and San Juan National Forests, combining uneven-aged thinning with low-severity prescribed fire to restore historic ponderosa pine and dry mixed-conifer stand conditions. Early monitoring shows increased understory forb diversity by 40% and improved foraging habitat for the federally threatened Gunnison sage-grouse.\n\n## C. Key Staff\nA brief description of staff and roles is provided below, with more detail on experience and bios in the qualifications section\n\n**Dr. Sarah Kettering, Project Manager** \u2014 A certified silviculturist and former USFS district ecologist with 14 years of experience in Front Range forest restoration. Sarah has managed over 25,000 acres of treatment across six collaborative landscape projects and holds an M.S. in Forest Ecology from Colorado State University.\n**Marcus Delgado, Senior Data Analyst** \u2014 A geospatial systems engineer specializing in remote sensing-based treatment monitoring and fire behavior modeling. Marcus has developed the organization's adaptive management tracking platform and previous",
+  "tasks": [
+    {
+      "id": "b154b002",
+      "name": "1. Data collection",
+      "description": "FCN will deploy field crews to establish 200 stratified-random monitoring plots across treatment and control units, collecting pre- and post-treatment measurements on stand structure (basal area, canopy bulk density, tree density by size class), surface and ladder fuel loading (Brown's transects), and understory species composition.",
+      "start_month": 9,
+      "start_year": 2026,
+      "duration_months": 4,
+      "lead_months": 0,
+      "lead_entity": "FCN",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    {
+      "id": "de013d6b",
+      "name": "2. Analysis",
+      "description": "Plot data will be integrated with Landsat and NAIP imagery to model treatment effects on flame length reduction, crown fire potential (using NEXUS and FlamMap), and vegetation recovery trajectories across the 15,000-acre treatment area.",
+      "start_month": 12,
+      "start_year": 2026,
+      "duration_months": 4,
+      "lead_months": 0,
+      "lead_entity": "FCN",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    {
+      "id": "2433cd22",
+      "name": "3. Communicating results",
+      "description": "Findings will be synthesized into a publicly accessible StoryMap, an annual technical report for the Colorado Forest Restoration Institute, and a field tour guide for legislators and funders, with quarterly briefings to the Front Range Roundtable.",
+      "start_month": 3,
+      "start_year": 2027,
+      "duration_months": 3,
+      "lead_months": 0,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    }
+  ],
+  "qualifications": "Forest Conservation Now (FCN) is a Colorado-based 501(c)(3) nonprofit founded in 2014 that specializes in accelerating forest restoration and building wildfire resilience across the Rocky Mountain region. Since its founding, FCN has treated over 40,000 acres across 12 landscapes, leveraging $18 million in federal, state, and private funding in close partnership with the US Forest Service, Colorado State Forest Service, and county wildfire councils. FCN\u2019s technical team includes 12 specialists\u2014certified silviculturists, prescribed fire managers, and restoration ecologists\u2014supported by two mechanical thinning crews and a Type 6 prescribed fire module, positioning the organization to deliver integrated, science-driven treatments at landscape scale.",
+  "budget_items": [
+    {
+      "id": "6962a5a6",
+      "task_id": "b154b002",
+      "name": "a. initial organization",
+      "cost_per_unit": 100.0,
+      "units": 5.0
+    },
+    {
+      "id": "ef61a780",
+      "task_id": "b154b002",
+      "name": "b. field crews",
+      "cost_per_unit": 500.0,
+      "units": 40.0
+    },
+    {
+      "id": "63768ae8",
+      "task_id": "de013d6b",
+      "name": "a. data cleaning",
+      "cost_per_unit": 200.0,
+      "units": 20.0
+    },
+    {
+      "id": "f92fa28c",
+      "task_id": "de013d6b",
+      "name": "b. analysis",
+      "cost_per_unit": 200.0,
+      "units": 40.0
+    },
+    {
+      "id": "866fed65",
+      "task_id": "2433cd22",
+      "name": "a. final report",
+      "cost_per_unit": 300.0,
+      "units": 20.0
+    },
+    {
+      "id": "71b2f140",
+      "task_id": "2433cd22",
+      "name": "b. storymap",
+      "cost_per_unit": 200.0,
+      "units": 10.0
+    }
+  ],
+  "budget_item_timings": {
+    "6962a5a6": {
+      "start_month": 9,
+      "start_year": 2026,
+      "duration_months": 1,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    "ef61a780": {
+      "start_month": 10,
+      "start_year": 2026,
+      "duration_months": 3,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    "63768ae8": {
+      "start_month": 12,
+      "start_year": 2026,
+      "duration_months": 2,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    "f92fa28c": {
+      "start_month": 1,
+      "start_year": 2027,
+      "duration_months": 3,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    "866fed65": {
+      "start_month": 3,
+      "start_year": 2027,
+      "duration_months": 2,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    },
+    "71b2f140": {
+      "start_month": 5,
+      "start_year": 2027,
+      "duration_months": 1,
+      "lead_entity": "",
+      "recurring": false,
+      "recurring_interval": 3
+    }
+  },
+  "start_date": "2026-09-01",
+  "end_date": "2027-05-01",
+  "indirect_percent": 8,
+  "show_budget_description": true,
+  "budget_description": "1. **Data collection**. Funds are allocated for acquiring the necessary data through surveys, instrumentation, or third-party sources. This covers personnel time, software licensing, and operational costs associated with gathering raw data.\n2. **Analysis**. Resources support the processing, cleaning, and statistical modeling of collected data. This includes computational infrastructure, analytic software, and specialized personnel to derive actionable insights.\n3. **Communicating results**. Budget items cover the preparation and dissemination of findings to stakeholders. This encompasses report writing, visualization development, publication fees, and presentation materials for conferences or client meetings.",
+  "timeline_use_days": false,
+  "timeline_show_budget": true,
+  "custom_sections": [],
+  "is_template": false,
+  "template_name": "",
+  "template_category": "",
+  "milestones": [],
+  "reports": []
+}
