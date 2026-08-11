@@ -363,7 +363,7 @@ TRANSLATIONS = {
         # Scope
         "Scope of Work": "Portée du travail",
         "Funder": "Bailleur de fonds",
-        "Enter funder name...": "Saisissez le nom du bailleur...",
+        "Enter funder name...": "Nom du Bailleur à solliciter",
         "Program": "Programme",
         "Enter program name...": "Saisissez le nom du programme...",
         "Project Summary": "Résumé du projet",
@@ -380,7 +380,7 @@ TRANSLATIONS = {
         "Add Budget Item": "Ajouter un élément budgétaire",
         "Select task...": "Sélectionner une tâche...",
         "Item name": "Nom de l'élément",
-        "Cost/unit": "Coût/unité",
+        "Cost/unit": "Prix Unitaire",
         "Import Excel": "Importer Excel",
         "Download Template": "Télécharger le modèle",
         "Budget Items": "Éléments budgétaires",
@@ -402,10 +402,10 @@ TRANSLATIONS = {
         "Add tasks in the Scope section first.": "Ajoutez d'abord des tâches dans la section Portée.",
         "Total Budget": "Budget total",
         # Qualifications
-        "Company Background & Qualifications": "Antécédents de l'organisation et qualifications",
-        "Describe your organization's background, relevant experience, team qualifications, and why you're the right choice for this project...": "Décrivez les antécédents de votre organisation, l'expérience pertinente, les qualifications de l'équipe et pourquoi vous êtes le bon choix pour ce projet...",
+        "Company Background & Qualifications": "Présentation de l'organisation et qualifications",
+        "Describe your organization's background, relevant experience, team qualifications, and why you're the right choice for this project...": "Décrivez votre organisation, l'expérience pertinente, les qualifications de l'équipe et pourquoi votre organisation est le meilleur choix pour ce projet...",
         "Tip:": "Astuce :",
-        "Use the snippets panel (☰) to insert pre-written organization descriptions and templates.": "Utilisez le panneau d'extraits (☰) pour insérer des descriptions et modèles d'organisations pré-rédigés.",
+        "Use the snippets panel (☰) to insert pre-written organization descriptions and templates.": "Utilisez le panneau d'extraits (☰) pour insérer des descriptions et modèles d'organisations.",
         # Custom sections
         "+ Add Section": "+ Ajouter une section",
         "Add custom sections to your proposal. Use Markdown formatting for rich text. You can also import data from Excel spreadsheets.": "Ajoutez des sections personnalisées à votre proposition. Utilisez le format Markdown pour le texte enrichi. Vous pouvez également importer des données depuis des feuilles de calcul Excel.",

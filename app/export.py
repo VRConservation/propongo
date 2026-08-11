@@ -46,6 +46,90 @@ def _md_to_plain(text: str) -> str:
     return text.strip()
 
 
+def _add_timeline_to_docx(doc, proposal) -> None:
+    """Render the Gantt-style timeline as a table for DOCX exports.
+
+    Mirrors the Timeline section shown in the PDF/HTML exports. Bars from
+    ``build_export_context`` are grouped into months, quarters, or years
+    depending on the total project span; active periods are marked with a
+    filled block.
+    """
+    from datetime import datetime as _dt
+    from docx.shared import Pt
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.enum.table import WD_TABLE_ALIGNMENT
+
+    ctx = build_export_context(proposal)
+    timeline_rows = ctx.get("all_rows") or []
+    if not timeline_rows:
+        return
+
+    doc.add_heading('Timeline', level=1)
+
+    total_months = ctx.get("timeline_total_months", 1)
+    granularity = ctx.get("timeline_granularity", "months")
+    if granularity == "months":
+        period_count = total_months
+    elif granularity == "quarters":
+        period_count = -(-total_months // 3)
+    else:
+        period_count = -(-total_months // 12)
+
+    try:
+        sd = _dt.strptime(proposal.start_date, "%Y-%m-%d")
+        proj_start_month = sd.month
+        proj_start_year = sd.year
+    except (ValueError, TypeError):
+        proj_start_month = 1
+        proj_start_year = 2025
+
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    table = doc.add_table(rows=1, cols=period_count + 1)
+    table.style = 'Light Grid Accent 1'
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    header_cell = table.rows[0].cells[0]
+    header_cell.text = 'Task'
+    for i in range(period_count):
+        cell = table.rows[0].cells[i + 1]
+        if granularity == "months":
+            label = month_names[(proj_start_month - 1 + i) % 12]
+        elif granularity == "quarters":
+            q = ((proj_start_month - 1) // 3 + i) % 4 + 1
+            label = f"Q{q}"
+        else:
+            label = str(proj_start_year + i)
+        cell.text = label
+        for paragraph in cell.paragraphs:
+            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run in paragraph.runs:
+                run.bold = True
+                run.font.size = Pt(8)
+
+    def _bar_in_period(bar, p_start, p_end):
+        return bar["offset"] < p_end and (bar["offset"] + bar["duration"]) > p_start
+
+    for r in timeline_rows:
+        row = table.add_row()
+        row.cells[0].text = r["name"]
+        for i in range(period_count):
+            cell = row.cells[i + 1]
+            if granularity == "months":
+                p_start, p_end = i, i + 1
+            elif granularity == "quarters":
+                p_start, p_end = i * 3, min((i + 1) * 3, total_months)
+            else:
+                p_start, p_end = i * 12, min((i + 1) * 12, total_months)
+            if any(_bar_in_period(b, p_start, p_end) for b in r["bars"]):
+                cell.text = "■"
+                for paragraph in cell.paragraphs:
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    for run in paragraph.runs:
+                        run.font.size = Pt(8)
+
+
 def _build_proposal_docx(proposal) -> BytesIO:
     """Build a DOCX document for a proposal."""
     from docx import Document
@@ -221,6 +305,8 @@ def _build_proposal_docx(proposal) -> BytesIO:
             for line in _md_to_plain(section.get("content", "")).split('\n'):
                 if line.strip():
                     doc.add_paragraph(line.strip())
+
+    _add_timeline_to_docx(doc, proposal)
 
     buf = BytesIO()
     doc.save(buf)
