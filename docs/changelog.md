@@ -1,7 +1,67 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.5.2\n\n## 1.5.1\n\n## 1.5.0\n\n## 1.4.2\n\n## 1.4.1\n\n## 1.4.0
+## [Unreleased]
 
+Added <br>
+- Timeline export as PNG — new "Export PNG" button on the Timeline heading in the preview
+- Page numbers in DOCX exports (right-aligned, 9pt gray)
+- PDF export page numbers moved to the bottom-right, styled at 9pt gray
+
+Changed <br>
+- DOCX timeline now renders as a Gantt chart on a landscape page (colored bars matching the PDF/HTML look instead of block markers)
+- Timeline PNG export renders with the same engine as the PDF export (WeasyPrint)
+
+## 1.5.2
+
+Fixed <br>
+- French translation corrections
+- DOCX export timeline rendering
+- Example proposals save correctly
+- Seed proposals fixed
+
+## 1.5.1
+
+Changed <br>
+- User-specific snippets and results library data enabled (seeded from package copies on first run)
+- Render deployment upgraded to the Basic plan (adds a persistent disk for proposal data)
+
+## 1.5.0
+
+Added <br>
+- Render deployment support (Dockerfile and render.yaml blueprint)
+- User authentication with self-registration and admin accounts
+- Admin credentials configurable via environment variables
+- Ko-fi donation links
+
+Fixed <br>
+- Save issues across proposal forms
+
+## 1.4.2
+
+Added <br>
+- Collaboration guide in the docs
+
+Fixed <br>
+- Snippet library loading and save behavior
+- Installed package version conflict resolution
+
+## 1.4.1
+
+Added <br>
+- Docker install files (Dockerfile, docker-compose) and installation docs
+
+## 1.4.0
+
+Added <br>
+- Multi-language support — the UI is now available in English, Spanish, and French
+- Results library for storing reusable proposal outcomes
+
+Changed <br>
+- Budget section improvements (scheduling and by-year breakdown)
+
+Fixed <br>
+- Gallery storage location
+- Dev server startup now frees port 5000 automatically
 
 ## 1.3.6
 
