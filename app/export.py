@@ -46,34 +46,63 @@ def _md_to_plain(text: str) -> str:
     return text.strip()
 
 
-def _add_timeline_to_docx(doc, proposal) -> None:
-    """Render the Gantt-style timeline as a table for DOCX exports.
+def _add_page_number_footer(doc) -> None:
+    """Add a right-aligned, small gray page number to the document footer."""
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    from docx.shared import Pt, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-    Mirrors the Timeline section shown in the PDF/HTML exports. Bars from
-    ``build_export_context`` are grouped into months, quarters, or years
-    depending on the total project span; active periods are marked with a
-    filled block.
+    section = doc.sections[0]
+    footer = section.footer
+    p = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run = p.add_run()
+    run.font.size = Pt(9)
+    run.font.color.rgb = RGBColor(0x99, 0x99, 0x99)
+    fldChar1 = OxmlElement('w:fldChar')
+    fldChar1.set(qn('w:fldCharType'), 'begin')
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')
+    instrText.text = 'PAGE'
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'end')
+    run._r.append(fldChar1)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+
+
+def _add_timeline_to_docx(doc, proposal) -> None:
+    """Render the Gantt-style timeline for DOCX exports.
+
+    Mirrors the Timeline section shown in the PDF/HTML exports: a landscape
+    page with a year header row, a month header row, and shaded bars per
+    task/budget item (dark blue for tasks, light blue for budget items).
     """
     from datetime import datetime as _dt
-    from docx.shared import Pt
+    from docx.shared import Pt, Cm
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.enum.section import WD_SECTION, WD_ORIENT
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    def _shade_cell(cell, fill):
+        tcPr = cell._tc.get_or_add_tcPr()
+        shd = OxmlElement('w:shd')
+        shd.set(qn('w:val'), 'clear')
+        shd.set(qn('w:color'), 'auto')
+        shd.set(qn('w:fill'), fill)
+        tcPr.append(shd)
 
     ctx = build_export_context(proposal)
     timeline_rows = ctx.get("all_rows") or []
     if not timeline_rows:
         return
 
-    doc.add_heading('Timeline', level=1)
-
     total_months = ctx.get("timeline_total_months", 1)
-    granularity = ctx.get("timeline_granularity", "months")
-    if granularity == "months":
-        period_count = total_months
-    elif granularity == "quarters":
-        period_count = -(-total_months // 3)
-    else:
-        period_count = -(-total_months // 12)
+    if total_months < 1:
+        total_months = 1
 
     try:
         sd = _dt.strptime(proposal.start_date, "%Y-%m-%d")
@@ -86,48 +115,82 @@ def _add_timeline_to_docx(doc, proposal) -> None:
     month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    table = doc.add_table(rows=1, cols=period_count + 1)
-    table.style = 'Light Grid Accent 1'
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    # Landscape section for the chart (the PDF export uses a landscape page too).
+    section = doc.add_section(WD_SECTION.NEW_PAGE)
+    section.orientation = WD_ORIENT.LANDSCAPE
+    section.page_width, section.page_height = section.page_height, section.page_width
+    section.top_margin = section.bottom_margin = Cm(1.2)
+    section.left_margin = section.right_margin = Cm(1.5)
 
-    header_cell = table.rows[0].cells[0]
-    header_cell.text = 'Task'
-    for i in range(period_count):
-        cell = table.rows[0].cells[i + 1]
-        if granularity == "months":
-            label = month_names[(proj_start_month - 1 + i) % 12]
-        elif granularity == "quarters":
-            q = ((proj_start_month - 1) // 3 + i) % 4 + 1
-            label = f"Q{q}"
-        else:
-            label = str(proj_start_year + i)
-        cell.text = label
+    doc.add_heading('Timeline', level=1)
+
+    ncols = total_months + 1
+    table = doc.add_table(rows=2, cols=ncols)
+    table.style = 'Table Grid'
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    table.columns[0].width = Cm(4.5)
+    usable_cm = section.page_width.cm - section.left_margin.cm - section.right_margin.cm - 4.5
+    month_w = Cm(max(usable_cm / max(total_months, 1), 1.0))
+    for i in range(total_months):
+        table.columns[i + 1].width = month_w
+
+    # Year header row (merged across each year's months, like the HTML export).
+    years_in_proj = (proj_start_month - 1 + total_months - 1) // 12 + 1
+    for y in range(years_in_proj):
+        abs_y = proj_start_year + y
+        year_start_m = max((abs_y - proj_start_year) * 12 - (proj_start_month - 1), 0)
+        year_end_m = min((y + 1) * 12 - (proj_start_month - 1), total_months)
+        year_span = year_end_m - year_start_m
+        if year_span <= 0:
+            continue
+        first = table.rows[0].cells[year_start_m + 1]
+        last = table.rows[0].cells[year_start_m + year_span]
+        cell = first if year_span == 1 else first.merge(last)
+        cell.text = str(abs_y)
         for paragraph in cell.paragraphs:
             paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for run in paragraph.runs:
                 run.bold = True
+                run.font.size = Pt(9)
+
+    # Month header row.
+    corner = table.rows[1].cells[0]
+    corner.text = 'Task'
+    for run in corner.paragraphs[0].runs:
+        run.bold = True
+        run.font.size = Pt(9)
+    for m in range(total_months):
+        cell = table.rows[1].cells[m + 1]
+        cell.text = month_names[(proj_start_month - 1 + m) % 12]
+        for paragraph in cell.paragraphs:
+            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run in paragraph.runs:
                 run.font.size = Pt(8)
 
-    def _bar_in_period(bar, p_start, p_end):
-        return bar["offset"] < p_end and (bar["offset"] + bar["duration"]) > p_start
-
+    # Data rows: one shaded bar per activity, matching the HTML/PDF bar colors.
     for r in timeline_rows:
         row = table.add_row()
-        row.cells[0].text = r["name"]
-        for i in range(period_count):
-            cell = row.cells[i + 1]
-            if granularity == "months":
-                p_start, p_end = i, i + 1
-            elif granularity == "quarters":
-                p_start, p_end = i * 3, min((i + 1) * 3, total_months)
-            else:
-                p_start, p_end = i * 12, min((i + 1) * 12, total_months)
-            if any(_bar_in_period(b, p_start, p_end) for b in r["bars"]):
-                cell.text = "■"
-                for paragraph in cell.paragraphs:
-                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    for run in paragraph.runs:
-                        run.font.size = Pt(8)
+        name_cell = row.cells[0]
+        name_cell.text = r["name"]
+        if r.get("is_indent"):
+            name_cell.paragraphs[0].paragraph_format.left_indent = Cm(0.4)
+        for run in name_cell.paragraphs[0].runs:
+            run.font.size = Pt(9)
+
+        fill = '#bfdbfe' if r.get("is_indent") else '#1d4ed8'
+        for bar in r["bars"]:
+            start = max(int(bar.get("offset", 0)), 0)
+            dur = int(bar.get("duration", 1))
+            end = min(start + dur, total_months)
+            if end <= start:
+                continue
+            first = row.cells[start + 1]
+            last = row.cells[end]
+            cell = first if end == start + 1 else first.merge(last)
+            _shade_cell(cell, fill)
+            for paragraph in cell.paragraphs:
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
 def _build_proposal_docx(proposal) -> BytesIO:
@@ -150,6 +213,8 @@ def _build_proposal_docx(proposal) -> BytesIO:
         section.bottom_margin = Cm(2.5)
         section.left_margin = Cm(2.5)
         section.right_margin = Cm(2.5)
+
+    _add_page_number_footer(doc)
 
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -333,6 +398,8 @@ def _build_tracker_docx(proposal, ctx) -> BytesIO:
         section.bottom_margin = Cm(2.5)
         section.left_margin = Cm(2.5)
         section.right_margin = Cm(2.5)
+
+    _add_page_number_footer(doc)
 
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -532,6 +599,50 @@ def export_docx(proposal_id: str) -> Tuple[Response, int] | Response:
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         as_attachment=True,
         download_name=f"{proposal.title or 'proposal'}.docx",
+    )
+
+
+@export_bp.route("/export/timeline/png/<proposal_id>")
+def export_timeline_png(proposal_id: str) -> Tuple[Response, int] | Response:
+    """Export just the timeline chart as a PNG image.
+
+    Renders the chart with WeasyPrint (same engine as the PDF export) onto a
+    content-sized page, then rasterizes it with pypdfium2 so the image is a
+    tight crop rather than a full page.
+    """
+    if HTML is None:
+        return jsonify({"error": GTK3_MISSING_MSG}), 500
+
+    try:
+        import pypdfium2 as pdfium
+    except ImportError:
+        return jsonify({"error": "pypdfium2 not installed"}), 500
+
+    proposal = Proposal.load(proposal_id)
+    if not proposal:
+        logger.warning(f"Proposal not found for timeline PNG export: {proposal_id}")
+        return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
+
+    ctx = build_export_context(proposal)
+    html_content = render_template("timeline_export.html", **ctx)
+
+    ensure_export_dir()
+    pdf_buf = BytesIO()
+    HTML(string=html_content, base_url=request.host_url).write_pdf(pdf_buf)
+    pdf_buf.seek(0)
+
+    pdf = pdfium.PdfDocument(pdf_buf)
+    page = pdf[0]
+    bitmap = page.render(scale=2)
+    pil = bitmap.to_pil()
+    png_path = os.path.join(EXPORT_DIR, f"timeline_{proposal_id}.png")
+    pil.save(png_path, "PNG")
+
+    return send_file(
+        png_path,
+        mimetype="image/png",
+        as_attachment=True,
+        download_name=f"{proposal.title or 'proposal'}_timeline.png",
     )
 
 

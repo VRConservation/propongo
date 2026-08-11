@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ proposal.title or "Proposal" }}</title>
     <style>
-        @page { size: portrait; margin: 1.8cm; @bottom-center { content: counter(page); } }
-        @page timeline { size: landscape; margin: 0.8cm; @bottom-center { content: counter(page); } }
+        @page { size: portrait; margin: 1.8cm; @bottom-right { content: counter(page); font-size: 9pt; color: #999; } }
+        @page timeline { size: landscape; margin: 0.8cm; @bottom-right { content: counter(page); font-size: 9pt; color: #999; } }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

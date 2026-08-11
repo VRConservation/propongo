@@ -234,6 +234,10 @@ function exportProposal(proposalId, format) {
     }
 }
 
+function exportTimelinePng(proposalId) {
+    window.open('/export/timeline/png/' + proposalId + '?t=' + Date.now(), '_blank');
+}
+
 function loadProposalList() {
     const modal = document.getElementById('proposal-modal');
     const body = document.getElementById('proposal-list-body');

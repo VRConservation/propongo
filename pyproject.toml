@@ -27,6 +27,7 @@ dependencies = [
     "flask>=3.0",
     "flask-login>=0.6.3",
     "weasyprint>=60.0",
+    "pypdfium2>=4.0",
     "markdown>=3.5",
     "python-docx>=1.0",
     "pandas>=2.0",

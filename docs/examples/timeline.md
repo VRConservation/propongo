@@ -36,3 +36,5 @@ The chart is interactive — changes to task scheduling update the chart in real
 ## In Preview & Export
 
 The Gantt chart renders on a landscape page in PDF exports, showing all tasks and budget items across the full project timeline.
+
+Use **Export PNG** next to the Timeline heading in the Preview tab to download just the chart as a PNG image (rendered with the same engine as the PDF export).

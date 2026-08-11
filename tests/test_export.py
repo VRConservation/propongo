@@ -50,9 +50,38 @@ def test_export_pdf():
         assert resp.status_code == 200
 
 
+def test_export_timeline_png():
+    import io
+    from PIL import Image
+
+    p = Proposal(title="Timeline PNG Test")
+    p.tasks = [
+        {"id": "t1", "name": "Phase 1", "start_month": 1, "start_year": 2026, "duration_months": 3},
+    ]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item A", "cost_per_unit": 100, "units": 2}]
+    p.budget_item_timings = {
+        "b1": {"start_month": 1, "start_year": 2026, "duration_months": 3},
+    }
+    p.start_date = "2026-01-01"
+    p.end_date = "2026-03-31"
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/export/timeline/png/{p.id}")
+        assert resp.status_code == 200
+        assert resp.mimetype == "image/png"
+
+        img = Image.open(io.BytesIO(resp.data))
+        assert img.format == "PNG"
+        assert img.width > 0 and img.height > 0
+
+
 def test_export_docx_includes_timeline():
     import io
     from docx import Document
+    from docx.oxml.ns import qn
 
     p = Proposal(title="Docx Export Test")
     p.tasks = [
@@ -77,10 +106,19 @@ def test_export_docx_includes_timeline():
     assert "Timeline" in texts
 
     table = doc.tables[-1]
-    header = [cell.text for cell in table.rows[0].cells]
-    assert "Task" in header
-    assert any("Jan" in c for c in header)
-    assert any(cell.text == "■" for row in table.rows[1:] for cell in row.cells)
+    month_header = [cell.text for cell in table.rows[1].cells]
+    assert "Task" in month_header
+    assert any("Jan" in c for c in month_header)
+    year_header = [cell.text for cell in table.rows[0].cells]
+    assert any("2026" in c for c in year_header)
+    fills = {
+        cell._tc.tcPr.find(qn('w:shd')).get(qn('w:fill'))
+        for row in table.rows[2:]
+        for cell in row.cells
+        if cell._tc.tcPr is not None
+        and cell._tc.tcPr.find(qn('w:shd')) is not None
+    }
+    assert "#1d4ed8" in fills
 
 
 def test_export_missing_proposal():

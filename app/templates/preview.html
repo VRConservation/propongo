@@ -141,7 +141,10 @@
 
     {% if tasks %}
     <div class="form-group">
-        <h3>{{ _('Timeline') }}</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <h3 style="margin:0">{{ _('Timeline') }}</h3>
+            <button class="btn btn-secondary btn-sm" onclick="exportTimelinePng('{{ proposal.id }}')">{{ _('Export PNG') }}</button>
+        </div>
         {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
         {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
         {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
