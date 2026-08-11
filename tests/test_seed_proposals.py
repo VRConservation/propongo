@@ -41,13 +41,24 @@ def test_seed_demo_proposals_skips_non_admin(monkeypatch):
     assert os.listdir(models.PROPOSALS_DIR) == []
 
 
-def test_seed_demo_proposals_skips_nonempty_dir(monkeypatch):
+def test_seed_demo_proposals_adds_to_nonempty_dir(monkeypatch):
     monkeypatch.setenv("PROPONGO_ADMIN_USER", "admin")
     p = Proposal(title="Existing")
     p.save()
     models._seed_demo_proposals(models.PROPOSALS_DIR, owner="admin")
     files = sorted(os.listdir(models.PROPOSALS_DIR))
-    assert files == [f"{p.id}.json"]
+    assert files == [f"{p.id}.json", "jt_institute_08_03_2026.json", "sample.json"]
+
+
+def test_seed_demo_proposals_never_overwrites(monkeypatch):
+    monkeypatch.setenv("PROPONGO_ADMIN_USER", "admin")
+    os.makedirs(models.PROPOSALS_DIR, exist_ok=True)
+    dest = os.path.join(models.PROPOSALS_DIR, "sample.json")
+    with open(dest, "w") as f:
+        f.write("user data")
+    models._seed_demo_proposals(models.PROPOSALS_DIR, owner="admin")
+    with open(dest) as f:
+        assert f.read() == "user data"
 
 
 def test_seed_demo_proposals_skips_when_admin_unset():

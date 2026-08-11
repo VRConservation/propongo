@@ -105,24 +105,21 @@ def _scoped_dir(base_dir: str) -> str:
 
 
 def _seed_demo_proposals(target_dir: str, owner: Optional[str] = None) -> None:
-    """Seed the bundled demo proposals into an empty proposals dir.
+    """Ensure the bundled demo proposals exist in the admin account's dir.
 
-    Runs only for the account named by ``PROPONGO_ADMIN_USER`` (the owner),
-    and only when the target dir has no proposals yet, so other users never
-    receive the demo content. Copies are skipped when a file already exists
-    so existing proposals are never overwritten.
+    Runs only for the account named by ``PROPONGO_ADMIN_USER`` (the owner), so
+    other users never receive the demo content. Each demo proposal is copied
+    only if it is missing — existing files are never overwritten, so the demos
+    are added even to a gallery that already contains user proposals.
     """
     if owner is None:
         owner = _current_owner()
     seed_user = os.environ.get("PROPONGO_ADMIN_USER", "").strip()
     if not owner or not seed_user or owner != seed_user:
         return
-    if not os.path.isdir(target_dir):
-        return
-    if any(f.endswith(".json") for f in os.listdir(target_dir)):
-        return
     if not os.path.isdir(_DEMO_PROPOSALS_DIR):
         return
+    os.makedirs(target_dir, exist_ok=True)
     for name in os.listdir(_DEMO_PROPOSALS_DIR):
         if not name.endswith(".json"):
             continue
