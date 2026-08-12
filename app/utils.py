@@ -1,6 +1,45 @@
 """Utility functions for Propongo."""
 
 from typing import Dict, Any
+from urllib.parse import urlencode
+
+from .config import Config
+
+
+def normalize_geolibre_project_url(url: str) -> str:
+    """Return a fetchable .geolibre.json URL for a shared GeoLibre project.
+
+    GeoLibre's Share dialog hands out extension-less page links
+    (https://share.geolibre.app/user/project), but the embed's `url=` param
+    needs the raw project file. Appends `.geolibre.json` when the host is
+    share.geolibre.app and the extension is missing.
+    """
+    url = (url or "").strip()
+    if not url:
+        return url
+    if "share.geolibre.app" in url and not url.rstrip("/").endswith(".geolibre.json"):
+        url = url.rstrip("/") + ".geolibre.json"
+    return url
+
+
+def build_geolibre_embed_src(config: dict) -> str:
+    """Build the GeoLibre iframe URL from a proposal's map_config.
+
+    Args:
+        config: The proposal's map_config dict (mode + optional url).
+
+    Returns:
+        A URL to the configured GeoLibre embed. Nested URLs are
+        percent-encoded so their query strings are not parsed by GeoLibre.
+    """
+    config = config or {}
+    params = {"layout": "viewer", "welcome": "0"}
+    url = (config.get("url") or "").strip()
+    if config.get("mode") == "data_url" and url:
+        params["data"] = url
+    elif config.get("mode") == "project_url" and url:
+        params["url"] = normalize_geolibre_project_url(url)
+    return f"{Config.GEOLIBRE_EMBED_URL}?{urlencode(params)}"
 
 
 def build_export_context(proposal) -> Dict[str, Any]:
@@ -201,6 +240,24 @@ def build_export_context(proposal) -> Dict[str, Any]:
         "timeline_total_months": timeline_total_months,
         "all_rows": all_rows,
         "budget_by_year": build_budget_by_year(proposal),
+        "map_ctx": build_map_export_context(proposal),
+    }
+
+
+def build_map_export_context(proposal) -> Dict[str, Any]:
+    """Build the Map figure context for preview and export templates.
+
+    Returns None unless the proposal opts in via map_config.show_in_preview.
+    When a static image URL is configured it is preferred (raster figures
+    render in PDF/DOCX exports); otherwise the live GeoLibre embed URL is
+    provided for browser previews and HTML exports.
+    """
+    map_config = getattr(proposal, "map_config", None) or {}
+    if not map_config.get("show_in_preview"):
+        return None
+    return {
+        "embed_src": build_geolibre_embed_src(map_config),
+        "image_url": (map_config.get("image_url") or "").strip(),
     }
 
 

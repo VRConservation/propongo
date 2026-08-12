@@ -29,6 +29,12 @@ Custom Section dict:
         'content': str,           # Markdown content
         'order': int,             # Display order
     }
+
+map_config dict (Map tab): which context layer the embedded GeoLibre map
+opens with. One of:
+    {'mode': 'basemap'}                                  # bare map, pick basemap in-app
+    {'mode': 'data_url', 'url': '<public data URL>'}     # GeoJSON/COG/PMTiles/etc.
+    {'mode': 'project_url', 'url': '<shared .geolibre.json URL>'}
 """
 
 import json
@@ -153,6 +159,7 @@ class Proposal:
     timeline_use_days: bool = False
     timeline_show_budget: bool = False
     custom_sections: list = field(default_factory=list)
+    map_config: dict = field(default_factory=dict)
 
     is_template: bool = False
     template_name: str = ""

@@ -20,6 +20,10 @@ class Config:
     DATA_DIR = DATA_ROOT
     PROPOSALS_DIR = os.path.join(DATA_DIR, 'proposals')
     EXPORTS_DIR = os.path.join(DATA_DIR, 'exports')
+
+    # GeoLibre embed base URL. Points at the hosted app by default; set to a
+    # self-hosted instance (e.g. http://localhost:8080) when running one.
+    GEOLIBRE_EMBED_URL = os.environ.get('GEOLIBRE_EMBED_URL', 'https://web.geolibre.app')
     
     # Logging
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')

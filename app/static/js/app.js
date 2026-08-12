@@ -181,6 +181,23 @@ function saveCurrentTabData(proposalId) {
         }
     }
 
+    const mapMode = document.getElementById('map-context-mode');
+    if (mapMode) {
+        const mapUrl = document.getElementById('map-context-url');
+        const mapCheckbox = document.getElementById('map-show-in-preview');
+        const mapImageUrl = document.getElementById('map-image-url');
+        const mapConfig = { mode: mapMode.value };
+        if (mapMode.value === 'project_url' && mapUrl) {
+            mapUrl.value = normalizeProjectUrl(mapUrl.value);
+            mapConfig.url = mapUrl.value;
+        } else if (mapMode.value === 'data_url' && mapUrl) {
+            mapConfig.url = mapUrl.value.trim();
+        }
+        if (mapCheckbox) mapConfig.show_in_preview = mapCheckbox.checked;
+        if (mapImageUrl) mapConfig.image_url = mapImageUrl.value.trim();
+        data.map_config = mapConfig;
+    }
+
     if (Object.keys(data).length > 0) {
         return fetch('/api/proposal/' + proposalId, {
             method: 'PUT',
@@ -198,6 +215,7 @@ async function switchTab(proposalId, tabName, btn) {
         qualifications: '/qualifications/',
         timeline: '/timeline/',
         'custom-sections': '/custom-sections/',
+        map: '/map/',
         preview: '/preview/'
     };
 
@@ -220,6 +238,11 @@ async function switchTab(proposalId, tabName, btn) {
 
     if (tabName === 'timeline') {
         autoInitGantt();
+    }
+
+    if (tabName === 'map') {
+        toggleMapUrlInput();
+        toggleMapImageField();
     }
 }
 
@@ -749,6 +772,67 @@ window.addEventListener('beforeunload', function() {
         });
     }
 });
+
+// Map tab functions
+function toggleMapUrlInput() {
+    const mode = document.getElementById('map-context-mode');
+    const url = document.getElementById('map-context-url');
+    if (!mode || !url) return;
+    const urlGroup = document.getElementById('map-context-url-group');
+    if (mode.value === 'basemap') {
+        url.disabled = true;
+        if (urlGroup) urlGroup.style.opacity = '0.5';
+    } else {
+        url.disabled = false;
+        if (urlGroup) urlGroup.style.opacity = '1';
+    }
+}
+
+function normalizeProjectUrl(url) {
+    url = url.trim();
+    if (url.includes('share.geolibre.app') && !url.endsWith('.geolibre.json')) {
+        url = url.replace(/\/+$/, '') + '.geolibre.json';
+    }
+    return url;
+}
+
+function toggleMapImageField() {
+    const checkbox = document.getElementById('map-show-in-preview');
+    const imageGroup = document.getElementById('map-image-url-group');
+    if (!checkbox || !imageGroup) return;
+    imageGroup.style.display = checkbox.checked ? '' : 'none';
+}
+
+function readMapConfig() {
+    const mode = document.getElementById('map-context-mode');
+    const url = document.getElementById('map-context-url');
+    const checkbox = document.getElementById('map-show-in-preview');
+    const imageUrl = document.getElementById('map-image-url');
+    const mapConfig = { mode: mode ? mode.value : 'basemap' };
+    if (mode && mode.value === 'project_url' && url) {
+        url.value = normalizeProjectUrl(url.value);
+        mapConfig.url = url.value;
+    } else if (mode && mode.value === 'data_url' && url) {
+        mapConfig.url = url.value.trim();
+    }
+    if (checkbox) mapConfig.show_in_preview = checkbox.checked;
+    if (imageUrl) mapConfig.image_url = imageUrl.value.trim();
+    return mapConfig;
+}
+
+async function autosaveMapConfig(proposalId) {
+    await fetch(`/api/proposal/${proposalId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ map_config: readMapConfig() })
+    });
+}
+
+async function saveMapConfig(proposalId) {
+    await autosaveMapConfig(proposalId);
+    const btn = document.querySelector('[data-tab="map"]');
+    if (btn) await switchTab(proposalId, 'map', btn);
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     initWordCounts();

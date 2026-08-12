@@ -255,6 +255,194 @@ def test_editor_route():
         assert b"Editor Test" in resp.data
 
 
+def test_map_tab_renders_iframe():
+    p = Proposal(title="Map Test")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/map/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "geolibre-embed" in html
+        assert "web.geolibre.app" in html
+        # Default context layer is basemap-only (no data/url params).
+        assert "data=" not in html
+        assert "url=" not in html
+
+
+def test_map_tab_data_url():
+    p = Proposal(title="Map Data URL")
+    p.map_config = {"mode": "data_url", "url": "https://data.example.org/area.geojson"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/map/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "data=https%3A%2F%2Fdata.example.org%2Farea.geojson" in html
+
+
+def test_map_tab_project_url():
+    p = Proposal(title="Map Project URL")
+    p.map_config = {"mode": "project_url", "url": "https://share.geolibre.app/giswqs/demo.geolibre.json"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/map/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "url=https%3A%2F%2Fshare.geolibre.app%2Fgiswqs%2Fdemo.geolibre.json" in html
+
+
+def test_map_tab_project_url_without_extension():
+    p = Proposal(title="Map Project URL No Ext")
+    p.map_config = {"mode": "project_url", "url": "https://share.geolibre.app/giswqs/demo"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/map/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        # Extension-less share link is normalized to the raw project file.
+        assert "url=https%3A%2F%2Fshare.geolibre.app%2Fgiswqs%2Fdemo.geolibre.json" in html
+
+
+def test_map_page_shows_geolibre_citation():
+    p = Proposal(title="Map Citation")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/map/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "10.5281/zenodo.20785400" in html
+        assert "Wu, Q." in html
+
+
+def test_map_tab_missing_proposal():
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get("/map/does-not-exist")
+        assert resp.status_code == 404
+
+
+def test_map_config_persists_via_put():
+    p = Proposal(title="Map Persist")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"map_config": {"mode": "data_url", "url": "https://data.example.org/x.pmtiles"}},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert data["map_config"]["mode"] == "data_url"
+
+    loaded = Proposal.load(p.id)
+    assert loaded.map_config["url"] == "https://data.example.org/x.pmtiles"
+
+
+def test_map_config_show_in_preview_persists_via_put():
+    p = Proposal(title="Map Persist Preview")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"map_config": {"mode": "basemap", "show_in_preview": True, "image_url": "https://img.example.org/map.png"}},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+    loaded = Proposal.load(p.id)
+    assert loaded.map_config["show_in_preview"] is True
+    assert loaded.map_config["image_url"] == "https://img.example.org/map.png"
+
+
+def test_map_page_renders_checkbox_checked_when_enabled():
+    p = Proposal(title="Map Checkbox")
+    p.map_config = {"mode": "basemap", "show_in_preview": True}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/map/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        input_line = [l for l in html.splitlines() if 'id="map-show-in-preview"' in l][0]
+        assert 'checked' in input_line
+        assert 'autosaveMapConfig' in input_line
+
+
+def test_preview_omits_map_when_not_enabled():
+    p = Proposal(title="Preview No Map")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/preview/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "geolibre-embed" not in html
+        assert "Project Map" not in html
+
+
+def test_preview_shows_embed_when_enabled():
+    p = Proposal(title="Preview Embed Map")
+    p.map_config = {"mode": "project_url", "url": "https://share.geolibre.app/giswqs/demo", "show_in_preview": True}
+    p.save()
+    p.project_summary = "Summary text"
+    p.scope = "Scope text"
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/preview/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "url=https%3A%2F%2Fshare.geolibre.app%2Fgiswqs%2Fdemo.geolibre.json" in html
+        assert "<img" not in html
+        summary_idx = html.index("Project Summary")
+        map_idx = html.index("Project Map")
+        scope_idx = html.index("Scope")
+        assert summary_idx < map_idx < scope_idx
+
+
+def test_preview_prefers_image_url_when_set():
+    p = Proposal(title="Preview Image Map")
+    p.map_config = {"mode": "basemap", "show_in_preview": True, "image_url": "https://img.example.org/map.png"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/preview/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert '<img src="https://img.example.org/map.png"' in html
+        assert "geolibre-embed" not in html
+
+
 def test_snippets_endpoint_serves_stock_and_custom():
     app = create_app()
     app.config["TESTING"] = True

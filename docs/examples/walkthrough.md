@@ -4,7 +4,7 @@ This guide walks through creating a complete proposal — from a blank slate to 
 
 ## 1. New Proposal
 
-1. Open Propongo at [http://localhost:5000](http://localhost:5000).
+1. Open Propongo at [proongo.org](https://propongo.org).
 2. Click **New Proposal**.
 3. Enter a title (e.g. "Riparian Restoration — Smith Creek") and click **Create**.
 

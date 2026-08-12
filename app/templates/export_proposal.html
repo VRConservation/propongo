@@ -203,6 +203,21 @@
     </div>
     {% endif %}
 
+    {% if map_ctx %}
+    <div class="section-block">
+        <h2>Map</h2>
+        {% if map_ctx.image_url %}
+        <img src="{{ map_ctx.image_url }}" alt="Project map" style="max-width:100%;" />
+        {% else %}
+        <iframe src="{{ map_ctx.embed_src }}" title="GeoLibre map" width="100%" height="450"
+                style="border:0;" loading="lazy" allow="fullscreen; geolocation"></iframe>
+        {% endif %}
+        <p style="font-size:8pt;color:#777;margin-top:6px;">
+            Map powered by GeoLibre — Wu, Q. (2026). GeoLibre: A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data. Zenodo. https://doi.org/10.5281/zenodo.20785400
+        </p>
+    </div>
+    {% endif %}
+
     {% if proposal.scope %}
     <div class="section-block">
         <h2>Scope</h2>

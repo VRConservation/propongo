@@ -257,6 +257,29 @@ def _build_proposal_docx(proposal) -> BytesIO:
             if line.strip():
                 doc.add_paragraph(line.strip())
 
+    map_config = getattr(proposal, 'map_config', None) or {}
+    if map_config.get("show_in_preview"):
+        from .utils import build_geolibre_embed_src
+        doc.add_heading('Map', level=1)
+        image_url = (map_config.get("image_url") or "").strip()
+        if image_url:
+            try:
+                import urllib.request
+                with urllib.request.urlopen(image_url, timeout=15) as resp:
+                    img_buf = BytesIO(resp.read())
+                doc.add_picture(img_buf, width=Inches(6))
+            except Exception:
+                logger.warning(f"Could not fetch map image for DOCX export: {image_url}")
+        p = doc.add_paragraph()
+        p.add_run("Interactive map: ").bold = True
+        p.add_run(build_geolibre_embed_src(map_config))
+        p = doc.add_paragraph()
+        p.add_run("Map powered by GeoLibre — Wu, Q. (2026). GeoLibre: A lightweight, "
+                  "cloud-native GIS platform for visualizing, exploring, and analyzing "
+                  "geospatial data. Zenodo. https://doi.org/10.5281/zenodo.20785400")
+        p.runs[0].font.size = Pt(9)
+        p.runs[0].font.color.rgb = RGBColor(0x77, 0x77, 0x77)
+
     if proposal.budget_items:
         doc.add_heading('Budget', level=1)
         table = doc.add_table(rows=1, cols=4)

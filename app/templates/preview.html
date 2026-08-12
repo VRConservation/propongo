@@ -27,6 +27,21 @@
     </div>
     {% endif %}
 
+    {% if map_ctx %}
+    <div class="form-group">
+        <h3>{{ _('Project Map') }}</h3>
+        {% if map_ctx.image_url %}
+        <img src="{{ map_ctx.image_url }}" alt="{{ _('Project map') }}" style="max-width:100%;border-radius:4px;">
+        {% else %}
+        <iframe src="{{ map_ctx.embed_src }}" title="GeoLibre map" width="100%" height="450"
+                style="border:0;border-radius:4px;" loading="lazy" allow="fullscreen; geolocation"></iframe>
+        {% endif %}
+        <p style="margin:8px 0 0;font-size:12px;color:var(--text-muted);">
+            {{ _('Map powered by GeoLibre') }} — Wu, Q. (2026). <em>GeoLibre: A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data</em>. Zenodo. <a href="https://doi.org/10.5281/zenodo.20785400" target="_blank" rel="noopener">https://doi.org/10.5281/zenodo.20785400</a>
+        </p>
+    </div>
+    {% endif %}
+
     {% if proposal.scope %}
     <div class="form-group">
         <h3>{{ _('Scope') }}</h3>

@@ -18,7 +18,11 @@ from .models import Proposal, PROPOSALS_DIR
 from .export import export_bp
 from .snippets import snippets_bp
 from .results import results_bp
-from .utils import build_budget_by_year, build_export_context
+from .utils import (
+    build_budget_by_year,
+    build_export_context,
+    build_geolibre_embed_src,
+)
 from .config import Config, ERROR_MESSAGES
 from .i18n import translate, LANGUAGES, DEFAULT_LANG, LANG_COOKIE, TRANSLATIONS
 from .auth import auth_bp, auth_enabled, allow_registration, ensure_admin_user, init_login_manager
@@ -408,6 +412,20 @@ def create_app() -> Flask:
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
         return render_template("scope.html", proposal=proposal, tasks=proposal.tasks)
+
+    @app.route("/map/<proposal_id>")
+    def map_tab(proposal_id):
+        """Render the map tab with an embedded GeoLibre map."""
+        proposal = Proposal.load(proposal_id)
+        if not proposal:
+            return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
+        map_config = getattr(proposal, 'map_config', {}) or {}
+        return render_template(
+            "map.html",
+            proposal=proposal,
+            map_config=map_config,
+            geolibre_src=build_geolibre_embed_src(map_config),
+        )
 
     @app.route("/budget/<proposal_id>")
     def budget_tab(proposal_id):

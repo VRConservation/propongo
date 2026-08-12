@@ -49,6 +49,9 @@ Thumbs.db
 htmlcov/
 .tox/
 
+# Docs build output
+site/
+
 # Local data (if you want to keep proposal files out of git)
 # data/proposals/*.json
 # data/exports/*
