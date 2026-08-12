@@ -1,7 +1,7 @@
 # Usage
+Go to [propongo.org](https://propongo.org) to register and sign in. This leads you to the dashboard where your proposals will be saved.
 
 ## Creating a Proposal
-
 1. Click **New Proposal** from the dashboard
 2. Enter a title and optional client name in the header
 3. Work through each tab:
@@ -19,7 +19,6 @@
     **Preview** - Review the complete proposal with task-grouped budget and timeline before exporting as a pdf, word, or html file.
 
 ## Using Custom Sections
-
 Add custom sections to your proposal for any additional content:
 
 1. Click the **Custom Sections** tab
@@ -32,7 +31,6 @@ Add custom sections to your proposal for any additional content:
 **Excel Import:** Import `.xlsx` or `.xls` files and they'll be automatically converted to Markdown tables. Perfect for budget details, personnel lists, equipment inventories, or any tabular data.
 
 ## Using Snippets
-
 Click the sidebar icon (&#9776;) to open the snippet library:
 
 - **Organization** - Pre-written organization descriptions
@@ -42,19 +40,16 @@ Click the sidebar icon (&#9776;) to open the snippet library:
 Click a snippet to insert it at the cursor position in any text field.
 
 ## Exporting
-
 - **PDF** - Click "Export PDF" to generate a clean, professional PDF document
 - **HTML** - Click "Export HTML" to download a standalone HTML file
 - **Print** - Use Ctrl+P / Cmd+P in the Preview tab for browser printing
 
 ## Managing Proposals
-
 - Proposals auto-save as you work
 - Click "Proposals" in the header to see all saved proposals
 - Create, edit, or delete proposals from the dashboard
 
 ## Using Templates
-
 Reuse proposal structures by saving them as templates:
 
 1. **Save a template** — In the editor, click the menu (&#9776;) and select **Save as Template**. Give it a name and optional category.
