@@ -1,8 +1,9 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.6.0
+## [Unreleased]
 
 ## 1.6.0
+
 Added <br>
 - Mapping tab with GeoLibre
 - Timeline export as PNG — new "Export PNG" button on the Timeline heading in the preview
