@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+Added <br>
+
+
+Changed <br>
+
+- Changelog bullets
+- Caveat box for beta testing on landing page
 
 ## 1.6.0
 
