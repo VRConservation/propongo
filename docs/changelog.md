@@ -2,7 +2,9 @@
 
 ## [Unreleased]
 
+## 1.6.0
 Added <br>
+- Mapping tab with GeoLibre
 - Timeline export as PNG — new "Export PNG" button on the Timeline heading in the preview
 - Page numbers in DOCX exports (right-aligned, 9pt gray)
 - PDF export page numbers moved to the bottom-right, styled at 9pt gray
