@@ -43,7 +43,8 @@ Section content is written in Markdown and rendered in the **Preview** tab and i
 | Bullet list | lines starting with `-` |
 | Numbered list | lines starting with `1.`, `2.`, ... |
 | Link | `[text](https://example.com)` |
-| Table | pipe-separated rows with a header separator (below) |
+
+To create a table, use pipe-separated rows with a header separator as follows
 
 ```
 | Task | Lead | Due |
