@@ -23,12 +23,35 @@ Add custom sections to your proposal for any additional content:
 
 1. Click the **Custom Sections** tab
 2. Click **+ Add Section** to create a new section
-3. Enter a title and content using Markdown formatting
-4. See a live preview of your formatted content
+3. Enter a title and content using Markdown formatting (see below)
+4. Check the formatting in the **Preview** tab before exporting
 5. Use ↑ and ↓ buttons to reorder sections
 6. Click **Import Excel** to import spreadsheet data as tables
 
 **Excel Import:** Import `.xlsx` or `.xls` files and they'll be automatically converted to Markdown tables. Perfect for budget details, personnel lists, equipment inventories, or any tabular data.
+
+**RFP Import:** Click **Import RFP** to create the sections a funder's request for proposals requires. Each required section is added as a checklist of the RFP's requirements, which you fill in with your project details. Choose the applicant track when the RFP offers more than one, or upload your own RFP sections file (`.json`).
+
+## Markdown Formatting
+Section content is written in Markdown and rendered in the **Preview** tab and in PDF, DOCX, and HTML exports. A few basics:
+
+| Result | How to write it |
+| --- | --- |
+| **Bold** | `**bold text**` |
+| *Italic* | `*italic text*` |
+| `## Heading` | one to six `#` symbols, e.g. `### Subheading` |
+| Bullet list | lines starting with `-` |
+| Numbered list | lines starting with `1.`, `2.`, ... |
+| Link | `[text](https://example.com)` |
+| Table | pipe-separated rows with a header separator (below) |
+
+```
+| Task | Lead | Due |
+|------|------|-----|
+| Site survey | J. Smith | May 2026 |
+```
+
+RFP-imported sections use a few conventions: `**scoring criterion — N points**` is a bold label, and each required element is a `-` bullet. When the RFP suggests a short name for an element it is kept as a bold lead-in, e.g. `- **Deliverables:** List and describe deliverables.`
 
 ## Using Snippets
 Click the sidebar icon (&#9776;) to open the snippet library:

@@ -1,0 +1,75 @@
+{
+  "id": "94292ab1-196c-4d2a-bafe-d21b67a45213",
+  "title": "rfp-import",
+  "client_name": "",
+  "subtitle": "",
+  "created_at": "2026-08-13T16:54:06.490450",
+  "updated_at": "2026-08-13T17:17:36.439517",
+  "project_summary": "",
+  "scope": "",
+  "tasks": [],
+  "qualifications": "",
+  "budget_items": [],
+  "budget_item_timings": {},
+  "start_date": "2026-08-01",
+  "end_date": "2027-08-01",
+  "indirect_percent": 0.0,
+  "show_budget_description": false,
+  "budget_description": "",
+  "timeline_use_days": false,
+  "timeline_show_budget": false,
+  "custom_sections": [
+    {
+      "id": "9fd85d95-e7de-4fc4-8a9e-1b1abafc4d57",
+      "title": "Project Background (10 pts)",
+      "content": "Scoring 10 points\nAddress in SOW attachment, 5 pages?\n\n## AB 32\nThe project will further the purposes of AB32 by sequestering 2000 metric tonnes of carbon per year.\n\n## Deliverables\n\n## Consistent with goals\nDescribe how the business proposal is consistent with the goals of Wood Products and Bioenergy: contributes to a robust and diversified wood products industry; makes California a more competitive place for forest-sector business; creates financial incentives for clean technologies and a strong forest-sector workforce.\nRequired elements:\n- Include a detailed discussion of how the project will further the purposes of AB 32 and related statutes and facilitate GHG emission reductions, if applicable.\n\n## Additionality \n- Identify the additionality (e.g., biomass processing capacity increase) that would occur as a result of funding.",
+      "order": 0
+    },
+    {
+      "id": "5c9dd0f0-4831-4d38-9632-4e342b300a6f",
+      "title": "Business Plan (15 pts)",
+      "content": "**RFP scoring criterion \u2014 15 points**\n**Addressed per the RFP in:** Business Plan attachment\n\nRequired elements:\n- Provide a well-developed business plan with financial analysis covering: operational efficiency; price of product; costs of inputs (labor, raw material, equipment, rent or mortgage); discussion of match funding; market analysis; feedstock agreements; offtake agreements.\n- If you do not have an established business plan, you may apply for grant funding to have one developed.",
+      "order": 1
+    },
+    {
+      "id": "fe480930-97a6-4dcb-a93b-805858693beb",
+      "title": "Budget (20 pts)",
+      "content": "**RFP scoring criterion \u2014 20 points**\n**Addressed per the RFP in:** EUNA Grants Portal budget + Budget justification\n\nRequired elements:\n- Submit the budget through the EUNA GRANTS Portal.\n- Costs are justified and reasonable in proportion to the proposed deliverables and scope of work.\n- Specify the number of employees and contractors funded under the grant and the cost basis for each.\n- Clearly depict how grant funds will be spent (see Indirect Costs guidance for Business Development projects).\n- Match funding (described in the Business Plan attachment and identified in the Budget): match is secured; meets or exceeds the minimums in Table 1; will be expended during the project period; documented in the Letters of Participation attachment.",
+      "order": 2
+    },
+    {
+      "id": "73128916-cea0-4084-bc87-018120e7eea6",
+      "title": "Applicant Qualifications (10 pts)",
+      "content": "**RFP scoring criterion \u2014 10 points**\n**Addressed per the RFP in:** Applicant Qualifications attachment\n\nRequired elements:\n- Identify key persons.\n- Describe experience related to the proposed role, business, or operations.\n- Describe commitments of time and resources.\n- Include applicant and project partner resumes in the application packet.",
+      "order": 3
+    },
+    {
+      "id": "a8d50e7d-730b-48c8-ba90-17fbd6a4aa3f",
+      "title": "Project Impact (15 pts)",
+      "content": "**RFP scoring criterion \u2014 15 points**\n**Addressed per the RFP in:** Scope of Work attachment, EUNA application form, Grants Portal Goals section\n\n## Grant program goals alignment\n\n## Project outcomes measurs\n- Project outcome measures: tons of additional biomass utilized, number of additional people trained, and dates when projected outcomes will begin to be delivered (e.g., estimated date when biomass utilization infrastructure will be installed and operational).\n- Estimate annual acres of forest treatment supported when operational, plus annual forest-derived feedstock consumption and preferred feedstock type (e.g., chips, roundwood, residuals; preference for under-utilized feedstock such as small-diameter logs, shrubs, slash).\n- Job creation: full-time equivalent employees by classification, with wage ranges and average wages for each classification.\n\n## GHG Benefits & Co-Benefits\n- Describe GHG benefits and co-benefits (e.g., reduced fire risk, bioenergy or wood products produced, biomass diverted from landfill, improved air or water quality, improved wildlife habitat, benefits to local economy and culture, climate adaptation).\n- Include Priority Landscapes where applicable.",
+      "order": 4
+    },
+    {
+      "id": "8e09f786-c4dd-4724-877e-c367b763de80",
+      "title": "Project Readiness (20 pts)",
+      "content": "**RFP scoring criterion \u2014 20 points**\n**Addressed per the RFP in:** Scope of Work attachment (only the first 5 pages are evaluated)\n\n## Project readiness\n- Demonstrate the ability to complete the grant project during the performance period.\n- Provide a detailed chronology of milestones accomplished and required to reach operability.\n- Demonstrate community support: Letters of Support and Letters of Participation (describing partner commitments) included with the application.\n- Technology/Engineering guarantees: guaranteed performance or performance warranties may receive greater consideration.\n- Describe planning, permitting and environmental compliance status (CEQA/NEPA; complete the Environmental Compliance worksheet, Appendix C).\n- State the Technology Readiness Level (TRL) or other measure of reliability / commercial readiness.\n- Confirm site control has been established.\n- Obtain supplier bids that include costs and lead time (include in Letters of Participation).",
+      "order": 5
+    },
+    {
+      "id": "e91c3800-505d-45aa-9de4-95c7244875dd",
+      "title": "Priority Populations (10 pts)",
+      "content": "**RFP scoring criterion \u2014 10 points**\n**Addressed per the RFP in:** EUNA application form\n\nRequired elements:\n- Include a targeted hiring strategy, where applicable, focusing on workers from priority populations, women, those facing barriers to employment, and others underserved or underrepresented in the relevant sector.\n- Demonstrate that the project 1) is within a community identified as disadvantaged or low-income; 2) responds to an identified community or household need; and 3) provides priority population(s) with direct, meaningful, and assured benefits that will address the identified need(s) (Appendix E).",
+      "order": 6
+    }
+  ],
+  "map_config": {
+    "mode": "basemap",
+    "show_in_preview": false,
+    "image_url": ""
+  },
+  "is_template": false,
+  "template_name": "",
+  "template_category": "",
+  "milestones": [],
+  "reports": []
+}

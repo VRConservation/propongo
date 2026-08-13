@@ -3,6 +3,8 @@
 ## [Unreleased]\n\n## 1.6.1
 Added <br>
 
+- rfp reader from file
+- ui for app for running reacher
 
 Changed <br>
 

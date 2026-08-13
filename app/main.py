@@ -18,6 +18,7 @@ from .models import Proposal, PROPOSALS_DIR
 from .export import export_bp
 from .snippets import snippets_bp
 from .results import results_bp
+from .rfp import rfp_bp
 from .utils import (
     build_budget_by_year,
     build_export_context,
@@ -103,6 +104,7 @@ def create_app() -> Flask:
     app.register_blueprint(export_bp)
     app.register_blueprint(snippets_bp)
     app.register_blueprint(results_bp)
+    app.register_blueprint(rfp_bp)
     app.register_blueprint(auth_bp)
 
     PUBLIC_ENDPOINTS = {"static", "set_language_route", "healthz"}

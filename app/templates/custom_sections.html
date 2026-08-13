@@ -5,6 +5,9 @@
             <button class="btn btn-secondary" onclick="openExcelImportModal('{{ proposal.id }}')">
                 📊 {{ _('Import Excel') }}
             </button>
+            <button class="btn btn-secondary" onclick="openRfpImportModal('{{ proposal.id }}')">
+                📋 {{ _('Import RFP') }}
+            </button>
             <button class="btn btn-primary" onclick="addCustomSection('{{ proposal.id }}')">
                 + {{ _('Add Section') }}
             </button>
@@ -12,7 +15,7 @@
     </div>
 
     <p style="color: var(--text-muted); margin-bottom: 24px;">
-        {{ _('Add custom sections to your proposal. Use Markdown formatting for rich text. You can also import data from Excel spreadsheets.') }}
+        {{ _('Add custom sections to your proposal. Use Markdown formatting for rich text. You can also import data from Excel spreadsheets or create the sections required by a funder\'s RFP.') }}
     </p>
 
     <div id="custom-sections-list">
@@ -38,27 +41,15 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px; color: var(--text-muted);">
-                            {{ _('Content (Markdown)') }}
-                        </label>
-                        <textarea class="section-content-input" 
-                                  rows="12"
-                                  placeholder="{{ _('Enter section content...') }}&#10;&#10;**{{ _('Supports Markdown') }}:**&#10;- {{ _('Bullet lists') }}&#10;- **{{ _('Bold') }}** {{ _('and') }} *{{ _('italic') }}*&#10;- ## {{ _('Headings') }}&#10;- {{ _('Tables and more') }}"
-                                  onchange="updateSection('{{ proposal.id }}', '{{ section.id }}')"
-                                  style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 13px;">{{ section.content }}</textarea>
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px; color: var(--text-muted);">
-                            {{ _('Preview') }}
-                        </label>
-                        <div class="markdown-preview" 
-                             style="height: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; overflow-y: auto; max-height: 400px;">
-                            {{ section.content | md }}
-                        </div>
-                    </div>
+                <div>
+                    <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px; color: var(--text-muted);">
+                        {{ _('Content (Markdown)') }}
+                    </label>
+                    <textarea id="section-content-{{ section.id }}" class="section-content-input" 
+                              rows="12"
+                              placeholder="{{ _('Enter section content...') }}&#10;&#10;**{{ _('Supports Markdown') }}:**&#10;- {{ _('Bullet lists') }}&#10;- **{{ _('Bold') }}** {{ _('and') }} *{{ _('italic') }}*&#10;- ## {{ _('Headings') }}&#10;- {{ _('Tables and more') }}"
+                              onchange="updateSection('{{ proposal.id }}', '{{ section.id }}')"
+                              style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 13px;">{{ section.content }}</textarea>
                 </div>
             </div>
             {% endfor %}
@@ -99,6 +90,35 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeExcelImportModal()">{{ _('Cancel') }}</button>
             <button class="btn btn-primary" onclick="uploadExcelFile('{{ proposal.id }}')">{{ _('Import') }}</button>
+        </div>
+    </div>
+</div>
+
+<!-- RFP Import Modal -->
+<div id="rfp-import-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>{{ _('Import RFP Sections') }}</h2>
+            <button class="btn-icon" onclick="closeRfpImportModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="rfp-templates-loading" style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                {{ _('Loading RFP templates...') }}
+            </div>
+            <div id="rfp-templates-list" style="margin-bottom: 16px;"></div>
+            <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
+            <div class="form-group">
+                <label for="rfp-json-file">{{ _('Or import your own RFP sections file (.json)') }}</label>
+                <input type="file" id="rfp-json-file" accept=".json" 
+                       style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">
+                {{ _('RFP section files are produced from a funder\'s request for proposals. Each required section is added as a checklist you fill in with your project details.') }}
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeRfpImportModal()">{{ _('Cancel') }}</button>
+            <button class="btn btn-primary" onclick="importRfp('{{ proposal.id }}')">{{ _('Import') }}</button>
         </div>
     </div>
 </div>

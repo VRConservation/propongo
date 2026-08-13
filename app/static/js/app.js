@@ -657,6 +657,109 @@ async function uploadExcelFile(proposalId) {
     }
 }
 
+let rfpTemplates = [];
+
+function openRfpImportModal(proposalId) {
+    const modal = document.getElementById('rfp-import-modal');
+    modal.classList.remove('hidden');
+    document.getElementById('rfp-json-file').value = '';
+    loadRfpTemplates();
+}
+
+function closeRfpImportModal() {
+    document.getElementById('rfp-import-modal').classList.add('hidden');
+}
+
+async function loadRfpTemplates() {
+    const loading = document.getElementById('rfp-templates-loading');
+    const list = document.getElementById('rfp-templates-list');
+    loading.style.display = '';
+    try {
+        const response = await fetch('/api/rfp/templates');
+        rfpTemplates = await response.json();
+        loading.style.display = 'none';
+        if (!rfpTemplates.length) {
+            list.innerHTML = '<p style="color: var(--text-muted);">' + t('No RFP templates available.') + '</p>';
+            return;
+        }
+        list.innerHTML = rfpTemplates.map((tmpl, idx) => {
+            const trackSelect = tmpl.tracks.length > 1
+                ? '<select data-rfp-track="' + idx + '" style="padding:6px;border:1px solid var(--border);border-radius:4px;font-size:13px;background:var(--bg);">'
+                    + '<option value="">' + t('All') + '</option>'
+                    + tmpl.tracks.map(track => '<option value="' + escapeHTML(track) + '">' + escapeHTML(track) + '</option>').join('')
+                    + '</select>'
+                : '';
+            const meta = [tmpl.agency, tmpl.fiscal_year].filter(Boolean).join(' · ');
+            return '<div style="margin-bottom: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary);">'
+                + '<label style="display: flex; align-items: start; gap: 8px; cursor: pointer;">'
+                + '<input type="radio" name="rfp-template" value="' + escapeHTML(tmpl.id) + '">'
+                + '<span><strong>' + escapeHTML(tmpl.title) + '</strong></span>'
+                + '</label>'
+                + '<div style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 24px;">'
+                + escapeHTML(meta) + ' · ' + tmpl.section_count + ' ' + t('sections')
+                + '</div>'
+                + (trackSelect ? '<div style="margin: 8px 0 0 24px; font-size: 13px;">' + t('Track:') + ' ' + trackSelect + '</div>' : '')
+                + '</div>';
+        }).join('');
+        const first = list.querySelector('input[name="rfp-template"]');
+        if (first) first.checked = true;
+    } catch (error) {
+        loading.style.display = 'none';
+        list.innerHTML = '<p style="color: var(--text-muted);">' + t('Failed to load RFP templates.') + '</p>';
+    }
+}
+
+async function importRfp(proposalId) {
+    const fileInput = document.getElementById('rfp-json-file');
+    const file = fileInput.files[0];
+    let payload;
+
+    if (file) {
+        try {
+            payload = JSON.parse(await file.text());
+        } catch (error) {
+            alert(t('Invalid RFP sections file.'));
+            return;
+        }
+        if (!payload || !Array.isArray(payload.sections) || !payload.sections.length) {
+            alert(t('Invalid RFP sections file.'));
+            return;
+        }
+    } else {
+        const selected = document.querySelector('input[name="rfp-template"]:checked');
+        if (!selected) {
+            alert(t('Please select an RFP template or a sections file.'));
+            return;
+        }
+        const tmplIndex = rfpTemplates.findIndex(tmpl => tmpl.id === selected.value);
+        payload = { template_id: selected.value };
+        if (tmplIndex !== -1) {
+            const trackEl = document.querySelector('select[data-rfp-track="' + tmplIndex + '"]');
+            if (trackEl && trackEl.value) payload.track = trackEl.value;
+        }
+    }
+
+    try {
+        const response = await fetch(`/api/proposal/${proposalId}/import-rfp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            closeRfpImportModal();
+            const btn = document.querySelector('[data-tab="custom-sections"]');
+            if (btn) await switchTab(proposalId, 'custom-sections', btn);
+        } else {
+            alert(result.error || t('Failed to import RFP sections.'));
+        }
+    } catch (error) {
+        alert(t('Error importing RFP sections: ') + error.message);
+    }
+}
+
 window.addEventListener('beforeunload', function() {
     const match = window.location.pathname.match(/\/editor\/([^/]+)/);
     if (!match) return;

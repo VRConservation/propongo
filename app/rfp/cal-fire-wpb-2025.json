@@ -1,0 +1,183 @@
+{
+  "id": "cal-fire-wpb-2025",
+  "title": "CAL FIRE Wood Products and Bioenergy Business and Workforce Development Grants",
+  "agency": "California Department of Forestry and Fire Protection (CAL FIRE)",
+  "program": "California Climate Investments",
+  "fiscal_year": "FY 2025-2026",
+  "source": "~/Downloads/bwd_rfp.pdf (Grant Guidelines, February 2026)",
+  "summary": "Grant guidelines for business development and workforce development projects that support healthy, resilient California forests. Applications are scored against the criteria below; each required section is created as a checklist you fill in from your project details.",
+  "sections": [
+    {
+      "id": "cal-fire-wpb-2025-bg-bd",
+      "track": "Business Development",
+      "title": "Project Background",
+      "points": 10,
+      "attachment": "Scope of Work attachment (only the first 5 pages are evaluated)",
+      "requirements": [
+        "Include a detailed discussion of how the project will further the purposes of AB 32 and related statutes and facilitate GHG emission reductions, if applicable.",
+        "List and describe deliverables.",
+        "Describe how the business proposal is consistent with the goals of Wood Products and Bioenergy: contributes to a robust and diversified wood products industry; makes California a more competitive place for forest-sector business; creates financial incentives for clean technologies and a strong forest-sector workforce.",
+        "Identify the additionality (e.g., biomass processing capacity increase) that would occur as a result of funding."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-bp",
+      "track": "Business Development",
+      "title": "Business Plan",
+      "points": 15,
+      "attachment": "Business Plan attachment",
+      "requirements": [
+        "Provide a well-developed business plan with financial analysis covering: operational efficiency; price of product; costs of inputs (labor, raw material, equipment, rent or mortgage); discussion of match funding; market analysis; feedstock agreements; offtake agreements.",
+        "If you do not have an established business plan, you may apply for grant funding to have one developed."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-budget-bd",
+      "track": "Business Development",
+      "title": "Budget",
+      "points": 20,
+      "attachment": "EUNA Grants Portal budget + Budget justification",
+      "requirements": [
+        "Submit the budget through the EUNA GRANTS Portal.",
+        "Costs are justified and reasonable in proportion to the proposed deliverables and scope of work.",
+        "Specify the number of employees and contractors funded under the grant and the cost basis for each.",
+        "Clearly depict how grant funds will be spent (see Indirect Costs guidance for Business Development projects).",
+        "Match funding (described in the Business Plan attachment and identified in the Budget): match is secured; meets or exceeds the minimums in Table 1; will be expended during the project period; documented in the Letters of Participation attachment."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-quals",
+      "track": "Business Development",
+      "title": "Applicant Qualifications",
+      "points": 10,
+      "attachment": "Applicant Qualifications attachment",
+      "requirements": [
+        "Identify key persons.",
+        "Describe experience related to the proposed role, business, or operations.",
+        "Describe commitments of time and resources.",
+        "Include applicant and project partner resumes in the application packet."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-impact",
+      "track": "Business Development",
+      "title": "Project Impact",
+      "points": 15,
+      "attachment": "Scope of Work attachment, EUNA application form, Grants Portal Goals section",
+      "requirements": [
+        "Project goals align with the grant program goals.",
+        "Project outcome measures: tons of additional biomass utilized, number of additional people trained, and dates when projected outcomes will begin to be delivered (e.g., estimated date when biomass utilization infrastructure will be installed and operational).",
+        "Estimate annual acres of forest treatment supported when operational, plus annual forest-derived feedstock consumption and preferred feedstock type (e.g., chips, roundwood, residuals; preference for under-utilized feedstock such as small-diameter logs, shrubs, slash).",
+        "Job creation: full-time equivalent employees by classification, with wage ranges and average wages for each classification.",
+        "Describe GHG benefits and co-benefits (e.g., reduced fire risk, bioenergy or wood products produced, biomass diverted from landfill, improved air or water quality, improved wildlife habitat, benefits to local economy and culture, climate adaptation).",
+        "Include Priority Landscapes where applicable."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-readiness-bd",
+      "track": "Business Development",
+      "title": "Project Readiness",
+      "points": 20,
+      "attachment": "Scope of Work attachment (only the first 5 pages are evaluated)",
+      "requirements": [
+        "Demonstrate the ability to complete the grant project during the performance period.",
+        "Provide a detailed chronology of milestones accomplished and required to reach operability.",
+        "Demonstrate community support: Letters of Support and Letters of Participation (describing partner commitments) included with the application.",
+        "Technology/Engineering guarantees: guaranteed performance or performance warranties may receive greater consideration.",
+        "Describe planning, permitting and environmental compliance status (CEQA/NEPA; complete the Environmental Compliance worksheet, Appendix C).",
+        "State the Technology Readiness Level (TRL) or other measure of reliability / commercial readiness.",
+        "Confirm site control has been established.",
+        "Obtain supplier bids that include costs and lead time (include in Letters of Participation)."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-priority-bd",
+      "track": "Business Development",
+      "title": "Priority Populations",
+      "points": 10,
+      "attachment": "EUNA application form",
+      "requirements": [
+        "Include a targeted hiring strategy, where applicable, focusing on workers from priority populations, women, those facing barriers to employment, and others underserved or underrepresented in the relevant sector.",
+        "Demonstrate that the project 1) is within a community identified as disadvantaged or low-income; 2) responds to an identified community or household need; and 3) provides priority population(s) with direct, meaningful, and assured benefits that will address the identified need(s) (Appendix E)."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-bg-wd",
+      "track": "Workforce Development",
+      "title": "Project Background",
+      "points": 10,
+      "attachment": "Scope of Work attachment (only the first 5 pages are evaluated)",
+      "requirements": [
+        "Include a detailed narrative of how the project will facilitate GHG emission reductions and further the purposes of AB 32 and related statutes.",
+        "Describe the training/education provided: how the program fits within existing certificate or other programs; list of relevant certifications awarded and standardized courses completed; accreditation pursued; name of the certifying entity (NWCG, NIFC, etc.); estimated date when project outcomes begin to be delivered (e.g., when training courses start).",
+        "Describe how the project has the potential to positively impact the pace and scale of forest management in California.",
+        "Describe how the training project is consistent with the needs outlined in California's Wildfire and Forest Resilience Action Plan and other plans.",
+        "Explain post-training job placement goals, commitments, and plans.",
+        "Demonstrate project viability beyond the timeframe of CAL FIRE grant funding."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-budget-wd",
+      "track": "Workforce Development",
+      "title": "Budget",
+      "points": 20,
+      "attachment": "Scope of Work attachment + EUNA Grants Portal budget",
+      "requirements": [
+        "Submit the budget through the EUNA GRANTS Portal.",
+        "Efficiency of dollars spent per worker trained is demonstrated.",
+        "Budget worksheet clearly depicts how grant funds will be spent.",
+        "Greater consideration may be given to proposals with match funding, including in-kind contributions."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-collab",
+      "track": "Workforce Development",
+      "title": "Collaboration, Community Engagement and Local Support",
+      "points": 20,
+      "attachment": "Scope of Work attachment, EUNA application form, Letters of Support/Participation attachments",
+      "requirements": [
+        "Demonstrate collaboration with multiple stakeholders.",
+        "Provide Letters of Support and Letters of Participation (preferred letters are from potential employers)."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-readiness-wd",
+      "track": "Workforce Development",
+      "title": "Readiness",
+      "points": 25,
+      "attachment": "Scope of Work attachment (only the first 5 pages are evaluated)",
+      "requirements": [
+        "Demonstrate the ability to complete the project during the performance period.",
+        "Project proponents demonstrate administrative capacity.",
+        "Applicant has a history of successful and timely project execution.",
+        "Describe planning, permitting and environmental compliance status (CEQA/NEPA; complete the Environmental Compliance worksheet, Appendix C). Costs are eligible expenses if proposed.",
+        "Proponents will implement upon grant award and within the proposed schedule, including, if applicable, a Letter of Commitment from the CEQA lead agency to complete all necessary CEQA documentation within one year of the execution of the grant agreement.",
+        "Include Letters of Participation from project partners."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-jobs",
+      "track": "Workforce Development",
+      "title": "Job Creation",
+      "points": 15,
+      "attachment": "Scope of Work attachment + Grants Portal Goals",
+      "requirements": [
+        "Include a narrative describing the need for training in the job market.",
+        "Provide estimates of average wages.",
+        "Show geographic demand for the training.",
+        "Explain long-term demand for the trained workforce."
+      ]
+    },
+    {
+      "id": "cal-fire-wpb-2025-priority-wd",
+      "track": "Workforce Development",
+      "title": "Priority Populations",
+      "points": 10,
+      "attachment": "EUNA application form",
+      "requirements": [
+        "Include a targeted hiring strategy, where applicable, focusing on workers from priority populations, women, those facing barriers to employment, and others underserved or underrepresented in the relevant sector.",
+        "Demonstrate that the project 1) is within a census tract/land identified as a disadvantaged community or low-income community; 2) responds to an identified community or household need; and 3) provides priority population(s) with direct, meaningful, and assured benefits that will address the identified need(s) (Appendix E)."
+      ]
+    }
+  ]
+}
