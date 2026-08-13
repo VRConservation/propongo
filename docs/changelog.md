@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.6.1
+## [Unreleased]\n\n## 1.6.2\n\n## 1.6.1
 Added <br>
 
 - rfp reader from file
