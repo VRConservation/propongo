@@ -5,7 +5,7 @@ Added <br>
 
 
 Changed <br>
-- button sizee fixes on landing page
+- button size fixes on landing page
 
 ## 1.6.2
 Added <br>
