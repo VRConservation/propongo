@@ -8,16 +8,6 @@ We also hope that use for underserved communities, startup businesses, and nonpr
 ## How do I export to PDF?
 Click the "Export PDF" button in the Preview tab. PDF export requires GTK3 to be installed.
 
-## Share link URL for GeoLibre?
-1. Create a share token once: sign in at [share.geolibre.app/settings](https://share.geolibre.app/settings), open **Settings → API tokens**, and generate a token.
-2. In the GeoLibre app, open **Settings → Environment Variables**, paste the token into the **Share.GeoLibre API token** field. This is one-time only.
-3. Build your map — add layers, style them, and set the map view you want viewers to land on.
-4. Open **Project → Share...**, confirm the project title, and upload. GeoLibre returns a public URL to your project file:
-   ```
-   https://share.geolibre.app/<username>/<project>.geolibre.json
-   ```
-5. Paste that URL into the Map tab's "Shared GeoLibre project (.geolibre.json)" field in Propongo. The `.geolibre.json` extension is optional — Propongo adds it automatically for `share.geolibre.app` links.
-
 ## AI capabilities?
 Yes, but not for generating the written content. We think that proposals written by AI are bound to get rejected by funders and reviewers, or AI reviewers will be able to easily sniff them out for being too general, generic, and inauthentic. Besides, who is better than you to write about your business, organization, and the project you want to fund?
 
