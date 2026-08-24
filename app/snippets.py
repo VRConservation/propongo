@@ -2,7 +2,6 @@
 
 import json
 import os
-import shutil
 import uuid
 import logging
 from typing import Tuple, Dict, List, Any
@@ -14,12 +13,12 @@ logger = logging.getLogger(__name__)
 
 snippets_bp = Blueprint("snippets", __name__)
 
-# Stock seed snippets ship inside the package; live (user) data lives under
-# the resolved data root alongside proposals and templates, scoped per user
-# when multi-user auth is enabled.
-_PKG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snippets")
+# Snippet data lives under the resolved data root alongside proposals and
+# templates, scoped per user when multi-user auth is enabled. New installs
+# start empty; organization/deliverables list files are still honored for
+# data written by older versions.
 SNIPPETS_DIR = os.path.join(models.DATA_ROOT, "snippets")
-_STOCK_FILES = ("organization.json", "deliverables.json")
+_STOCK_SOURCES = ("organization", "deliverables")
 
 
 def _snippets_root() -> str:
@@ -36,16 +35,10 @@ def _custom_dir() -> str:
 
 
 def ensure_dirs():
-    """Ensure per-user snippet directories exist and seed stock snippets."""
+    """Ensure per-user snippet directories exist."""
     root = _snippets_root()
     os.makedirs(root, exist_ok=True)
     os.makedirs(_custom_dir(), exist_ok=True)
-    for name in _STOCK_FILES:
-        dest = os.path.join(root, name)
-        if not os.path.exists(dest):
-            src = os.path.join(_PKG_DIR, name)
-            if os.path.exists(src):
-                shutil.copyfile(src, dest)
 
 
 def load_snippets(filename):
@@ -79,43 +72,112 @@ def load_custom_snippets():
     return snippets
 
 
+_STOCK_SOURCES = ("organization", "deliverables")
+
+
+def _with_source(snippets, source):
+    """Copy each snippet dict and tag where it is stored.
+
+    The storage source (which file/directory holds the snippet) is kept
+    separate from the display `category`, which users can edit freely.
+    """
+    tagged = []
+    for s in snippets:
+        item = dict(s)
+        item["source"] = source
+        tagged.append(item)
+    return tagged
+
+
 @snippets_bp.route("/snippets")
 def get_all_snippets():
-    """Return all snippets grouped by category."""
+    """Return all snippets grouped by category, tagged with their source."""
     return jsonify({
-        "organization": load_snippets("organization.json"),
-        "deliverables": load_snippets("deliverables.json"),
-        "custom": load_custom_snippets(),
+        "organization": _with_source(load_snippets("organization.json"), "organization"),
+        "deliverables": _with_source(load_snippets("deliverables.json"), "deliverables"),
+        "custom": _with_source(load_custom_snippets(), "custom"),
     })
 
 
 @snippets_bp.route("/snippets/<category>", methods=["POST"])
 def add_snippet(category):
-    """Add a new snippet to the given category."""
+    """Add a new snippet to the given category.
+
+    Stock categories (`organization`, `deliverables`) append to their list
+    files; anything else — including free-form labels sent in the body's
+    `category` field — is stored under custom/ so it stays user-editable.
+    """
     data = request.get_json()
     if not data or "title" not in data or "content" not in data:
         return jsonify({"error": "title and content required"}), 400
+
+    if category in _STOCK_SOURCES:
+        label = category
+    else:
+        label = str(data.get("category") or "").strip() or category
 
     snippet = {
         "id": data.get("id", uuid.uuid4().hex[:8]),
         "title": data["title"],
         "content": data["content"],
-        "category": category,
+        "category": label,
     }
 
-    if category == "custom":
-        ensure_dirs()
-        filepath = os.path.join(_custom_dir(), f"{snippet['id']}.json")
-        with open(filepath, "w") as f:
-            json.dump(snippet, f, indent=2)
-    elif category in ("organization", "deliverables"):
+    if category in _STOCK_SOURCES:
         snippets = load_snippets(f"{category}.json")
         snippets.append(snippet)
         save_snippets(f"{category}.json", snippets)
     else:
-        return jsonify({"error": "Invalid category"}), 400
+        ensure_dirs()
+        filepath = os.path.join(_custom_dir(), f"{snippet['id']}.json")
+        with open(filepath, "w") as f:
+            json.dump(snippet, f, indent=2)
 
     return jsonify(snippet), 201
+
+
+@snippets_bp.route("/snippets/<category>/<snippet_id>", methods=["PUT"])
+def update_snippet(category, snippet_id):
+    """Update a snippet's title, content, and/or category.
+
+    Only the display fields change; the snippet stays in its current storage
+    location (list file or custom directory), which is identified by the URL.
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "no fields to update"}), 400
+
+    updates = {}
+    for field in ("title", "content", "category"):
+        if field in data and str(data[field]).strip():
+            updates[field] = str(data[field])
+    if not updates:
+        return jsonify({"error": "no fields to update"}), 400
+
+    if category == "custom":
+        filepath = os.path.join(_custom_dir(), f"{snippet_id}.json")
+        if not os.path.exists(filepath):
+            return jsonify(ERROR_MESSAGES['SECTION_NOT_FOUND']), 404
+        with open(filepath, "r") as f:
+            snippet = json.load(f)
+        snippet.update(updates)
+        tmp = filepath + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(snippet, f, indent=2)
+        os.replace(tmp, filepath)
+        return jsonify(snippet)
+
+    if category in _STOCK_SOURCES:
+        snippets = load_snippets(f"{category}.json")
+        for i, s in enumerate(snippets):
+            if s.get("id") == snippet_id:
+                updated = dict(s)
+                updated.update(updates)
+                snippets[i] = updated
+                save_snippets(f"{category}.json", snippets)
+                return jsonify(updated), 200
+
+    return jsonify(ERROR_MESSAGES['SECTION_NOT_FOUND']), 404
 
 
 @snippets_bp.route("/snippets/<category>/<snippet_id>", methods=["DELETE"])

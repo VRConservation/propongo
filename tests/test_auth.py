@@ -246,13 +246,11 @@ def test_snippets_are_per_user():
     assert resp.status_code == 201
     admin_custom = admin.get("/snippets").get_json()["custom"]
     assert any(s["title"] == "Admin Snippet" for s in admin_custom)
-    assert admin.get("/snippets").get_json()["organization"]
 
     alice = _client()
     _register(alice, "alice", "password123")
     alice_snippets = alice.get("/snippets").get_json()
     assert alice_snippets["custom"] == []
-    assert alice_snippets["organization"]
 
     resp = alice.post("/snippets/custom", json={"title": "Alice Snippet", "content": "Alice only"}, content_type="application/json")
     assert resp.status_code == 201

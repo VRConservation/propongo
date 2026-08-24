@@ -8,11 +8,11 @@ Click the **sidebar toggle** (hamburger icon in the top-left corner) to open the
 
 ## Snippet Categories
 
-Snippets are grouped into three categories:
+You start with no snippets — everything in the panel is yours. Snippets are grouped by **category**:
 
-- **Organization** — Stock snippets for common org descriptions (About, Mission, Experience, Team).
-- **Deliverables** — Stock snippets for deliverable types (Field Survey, Assessment, Management Plan, Monitoring, GIS Mapping).
-- **Custom** — Snippets you create or import yourself.
+- Leave the **Category** field blank to file a snippet under **Custom**.
+- Type any name — e.g. *Team*, *Budget*, *Reports* — to give snippets their own group.
+- The field suggests categories you already use, so groups stay consistent.
 
 ## Inserting a Snippet
 
@@ -23,16 +23,20 @@ Snippets are grouped into three categories:
 
 ## Adding a Custom Snippet
 
-1. In the **Custom** category, click **+ Custom**.
-2. Enter a **title** and the **Markdown content**.
-3. Click **Save**.
+1. In the **Add Custom Snippet** form, enter a **title** and the **Markdown content**.
+2. Optionally enter a **category** to place the snippet in its own group. The field suggests categories you already use; leave it blank to file the snippet under **Custom**.
+3. Click **Add Snippet**.
+
+## Editing a Snippet
+
+Hover over any snippet and click the **pencil icon** to edit it inline. You can change the title, content, and category — moving a snippet between groups is just an edit away. Click **Save** to apply or **Cancel** to discard changes.
 
 ## Importing Snippets from Files
 
-1. Click **Import** in the snippet panel.
+1. Click **Choose File to Import** in the snippet panel.
 2. Select a `.md`, `.txt`, or `.docx` file.
-3. The file content becomes a new custom snippet.
+3. The file content becomes a new custom snippet (under **Custom**, where you can recategorize or edit it).
 
 ## Deleting a Snippet
 
-Click the **trash icon** next to any custom snippet to remove it. Stock snippets cannot be deleted.
+Click the **trash icon** next to any snippet to remove it.

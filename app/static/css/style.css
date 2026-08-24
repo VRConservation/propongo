@@ -110,16 +110,6 @@ body {
     text-overflow: ellipsis;
 }
 
-.snippet-item .snippet-delete {
-    float: right;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.snippet-item:hover .snippet-delete {
-    opacity: 1;
-}
-
 .snippet-add-form {
     padding: 12px;
     border-top: 1px solid var(--border);
@@ -130,6 +120,30 @@ body {
 .snippet-add-form textarea {
     width: 100%;
     margin-bottom: 6px;
+}
+
+.snippet-item .snippet-delete,
+.snippet-item .snippet-edit-btn {
+    float: right;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.snippet-item:hover .snippet-delete,
+.snippet-item:hover .snippet-edit-btn {
+    opacity: 1;
+}
+
+.snippet-edit-form input,
+.snippet-edit-form textarea {
+    width: 100%;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.snippet-edit-actions {
+    display: flex;
+    gap: 6px;
 }
 
 .main-content {

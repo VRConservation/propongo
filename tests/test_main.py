@@ -3,11 +3,13 @@ import os
 import tempfile
 import shutil
 import app.models as models
+import app.snippets as snippets
 from app.main import create_app
 from app.models import Proposal
 
 
 _orig_dir = models.PROPOSALS_DIR
+_orig_snippets_dir = snippets.SNIPPETS_DIR
 _test_dir = None
 
 
@@ -15,11 +17,13 @@ def setup_function():
     global _test_dir
     _test_dir = tempfile.mkdtemp()
     models.PROPOSALS_DIR = _test_dir
+    snippets.SNIPPETS_DIR = os.path.join(_test_dir, "snippets")
 
 
 def teardown_function():
     global _test_dir
     models.PROPOSALS_DIR = _orig_dir
+    snippets.SNIPPETS_DIR = _orig_snippets_dir
     if _test_dir and os.path.exists(_test_dir):
         shutil.rmtree(_test_dir)
 
@@ -443,12 +447,13 @@ def test_preview_prefers_image_url_when_set():
         assert "geolibre-embed" not in html
 
 
-def test_snippets_endpoint_serves_stock_and_custom():
+def test_snippets_endpoint_starts_empty():
     app = create_app()
     app.config["TESTING"] = True
     with app.test_client() as client:
         resp = client.get("/snippets")
         assert resp.status_code == 200
         data = resp.get_json()
-        assert len(data["organization"]) > 0
-        assert len(data["deliverables"]) > 0
+        assert data["organization"] == []
+        assert data["deliverables"] == []
+        assert data["custom"] == []

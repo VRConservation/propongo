@@ -55,13 +55,9 @@ To create a table, use pipe-separated rows with a header separator as follows
 RFP-imported sections use a few conventions: `**scoring criterion — N points**` is a bold label, and each required element is a `-` bullet. When the RFP suggests a short name for an element it is kept as a bold lead-in, e.g. `- **Deliverables:** List and describe deliverables.`
 
 ## Using Snippets
-Click the sidebar icon (&#9776;) to open the snippet library:
+Click the sidebar icon (&#9776;) to open the snippet library. You start with an empty library — add your own reusable snippets and group them by category (e.g. Organization, Deliverables, Team), or import them from `.md`, `.txt`, and `.docx` files.
 
-- **Organization** - Pre-written organization descriptions
-- **Deliverables** - Templates for common deliverable types (surveys, assessments, plans)
-- **Custom** - Create and save your own reusable snippets
-
-Click a snippet to insert it at the cursor position in any text field.
+Click a snippet to insert it at the cursor position in any text field; hover a snippet to edit or delete it.
 
 ## Exporting
 - **PDF** - Click "Export PDF" to generate a clean, professional PDF document

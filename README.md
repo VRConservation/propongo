@@ -181,13 +181,9 @@ Add custom sections to your proposal for any additional content:
 
 ### Using Snippets
 
-Click the sidebar icon (&#9776;) to open the snippet library:
+Click the sidebar icon (&#9776;) to open the snippet library. You start with an empty library — add your own reusable snippets and group them by category (e.g. Organization, Deliverables, Team), or import them from `.md`, `.txt`, and `.docx` files.
 
-- **Organization** - Pre-written organization descriptions
-- **Deliverables** - Templates for common deliverable types (surveys, assessments, plans)
-- **Custom** - Create and save your own reusable snippets
-
-Click a snippet to insert it at the cursor position in any text field.
+Click a snippet to insert it at the cursor position in any text field; hover a snippet to edit or delete it.
 
 ### Exporting
 
@@ -254,10 +250,6 @@ propongo/
 │   │       ├── budget.js       # Budget calculations
 │   │       ├── gantt.js        # Gantt chart rendering
 │   │       └── snippets.js     # Snippet panel logic
-│   ├── snippets/               # Stock snippet data
-│   │   ├── organization.json
-│   │   ├── deliverables.json
-│   │   └── custom/             # User-created snippets
 │   └── data/
 │       ├── proposals/          # Saved proposals (JSON)
 │       └── exports/            # Generated PDF/HTML exports

@@ -1,6 +1,22 @@
 document.addEventListener('DOMContentLoaded', loadSnippets);
 
 let lastFocusedField = null;
+let currentSnippets = {};
+
+const CATEGORY_LABELS = { organization: 'Organization', deliverables: 'Deliverables', custom: 'Custom' };
+
+function categoryLabel(category) {
+    const known = Object.keys(CATEGORY_LABELS).find(k => k === String(category).toLowerCase());
+    return known ? t(CATEGORY_LABELS[known]) : category;
+}
+
+function sortCategories(categories) {
+    const known = ['organization', 'deliverables', 'custom'].filter(c => categories.includes(c));
+    const extra = categories
+        .filter(c => !known.includes(c))
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    return known.concat(extra);
+}
 
 document.addEventListener('focusin', function(e) {
     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
@@ -15,30 +31,33 @@ function loadSnippets() {
             const container = document.getElementById('snippet-list');
             if (!container) return;
 
-            let html = '';
+            currentSnippets = {};
+            const groups = {};
+            ['organization', 'deliverables', 'custom'].forEach(source => {
+                (data[source] || []).forEach(s => {
+                    s.source = source;
+                    currentSnippets[s.id] = s;
+                    const cat = s.category || 'custom';
+                    (groups[cat] = groups[cat] || []).push(s);
+                });
+            });
 
-            if (data.organization && data.organization.length) {
-                html += '<div class="snippet-category"><h4>' + t('Organization') + '</h4>';
-                data.organization.forEach(s => {
-                    html += snippetHTML(s, 'organization');
+            let html = '<datalist id="snippet-category-options">';
+            sortCategories(Object.keys(groups)).forEach(cat => {
+                html += `<option value="${escapeHTML(cat)}">`;
+            });
+            html += '</datalist>';
+
+            sortCategories(Object.keys(groups)).forEach(cat => {
+                html += '<div class="snippet-category"><h4>' + escapeHTML(categoryLabel(cat)) + '</h4>';
+                groups[cat].forEach(s => {
+                    html += snippetHTML(s);
                 });
                 html += '</div>';
-            }
+            });
 
-            if (data.deliverables && data.deliverables.length) {
-                html += '<div class="snippet-category"><h4>' + t('Deliverables') + '</h4>';
-                data.deliverables.forEach(s => {
-                    html += snippetHTML(s, 'deliverables');
-                });
-                html += '</div>';
-            }
-
-            if (data.custom && data.custom.length) {
-                html += '<div class="snippet-category"><h4>' + t('Custom') + '</h4>';
-                data.custom.forEach(s => {
-                    html += snippetHTML(s, 'custom');
-                });
-                html += '</div>';
+            if (!Object.keys(currentSnippets).length) {
+                html += '<p class="snippet-loading">' + t('No snippets yet. Add one below.') + '</p>';
             }
 
             html += `
@@ -46,6 +65,7 @@ function loadSnippets() {
                     <h4 style="margin-bottom:8px;font-size:13px;">${t('Add Custom Snippet')}</h4>
                     <input type="text" id="new-snippet-title" placeholder="${t('Title')}">
                     <textarea id="new-snippet-content" rows="3" placeholder="${t('Markdown content...')}"></textarea>
+                    <input type="text" id="new-snippet-category" list="snippet-category-options" placeholder="${t('Category')}">
                     <button class="btn btn-primary btn-sm" onclick="addCustomSnippet()" style="width:100%">${t('Add Snippet')}</button>
                 </div>
                 <div class="snippet-add-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
@@ -56,7 +76,7 @@ function loadSnippets() {
                 </div>
             `;
 
-            container.innerHTML = html || '<p class="snippet-loading">' + t('No snippets yet. Add one below.') + '</p>';
+            container.innerHTML = html;
         })
         .catch(() => {
             const container = document.getElementById('snippet-list');
@@ -66,17 +86,67 @@ function loadSnippets() {
         });
 }
 
-function snippetHTML(snippet, category) {
+function snippetHTML(snippet) {
     const preview = snippet.content ? snippet.content.substring(0, 80) + (snippet.content.length > 80 ? '...' : '') : '';
     return `
-        <div class="snippet-item" onclick="insertSnippet('${escapeAttr(snippet.content)}')">
+        <div class="snippet-item" data-snippet-id="${escapeHTML(snippet.id)}" onclick="insertSnippet('${escapeAttr(snippet.content)}')">
             <div class="snippet-title">${escapeHTML(snippet.title)}
                 <button class="btn-icon btn-danger-icon snippet-delete btn-sm"
-                        onclick="event.stopPropagation(); deleteSnippet('${category}', '${snippet.id}')">&times;</button>
+                        onclick="event.stopPropagation(); deleteSnippet('${snippet.source}', '${snippet.id}')">&times;</button>
+                <button class="btn-icon snippet-edit-btn btn-sm"
+                        onclick="event.stopPropagation(); editSnippet('${snippet.id}')">&#9998;</button>
             </div>
             <div class="snippet-preview">${escapeHTML(preview)}</div>
         </div>
     `;
+}
+
+function editSnippet(id) {
+    const s = currentSnippets[id];
+    if (!s) return;
+    const card = document.querySelector(`.snippet-item[data-snippet-id="${CSS.escape(id)}"]`);
+    if (!card) return;
+
+    card.onclick = null;
+    card.innerHTML = `
+        <div class="snippet-edit-form">
+            <input type="text" id="edit-snippet-title" value="${escapeHTML(s.title)}" placeholder="${t('Title')}">
+            <input type="text" id="edit-snippet-category" list="snippet-category-options" value="${escapeHTML(s.category || '')}" placeholder="${t('Category')}">
+            <textarea id="edit-snippet-content" rows="5" placeholder="${t('Markdown content...')}">${escapeHTML(s.content)}</textarea>
+            <div class="snippet-edit-actions">
+                <button class="btn btn-primary btn-sm" onclick="saveSnippet('${id}')">${t('Save')}</button>
+                <button class="btn btn-secondary btn-sm" onclick="loadSnippets()">${t('Cancel')}</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('edit-snippet-title').focus();
+}
+
+function saveSnippet(id) {
+    const s = currentSnippets[id];
+    if (!s) return;
+    const title = document.getElementById('edit-snippet-title').value.trim();
+    const content = document.getElementById('edit-snippet-content').value.trim();
+    const category = document.getElementById('edit-snippet-category').value.trim() || 'custom';
+    if (!title || !content) {
+        alert(t('Enter a title and content.'));
+        return;
+    }
+
+    fetch(`/snippets/${s.source}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, category })
+    })
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) {
+            alert(data.error || t('Failed to update snippet.'));
+            return;
+        }
+        showToast(t('Snippet updated!'));
+        loadSnippets();
+    });
 }
 
 function insertSnippet(content) {
@@ -123,6 +193,7 @@ function showToast(message) {
 function addCustomSnippet() {
     const title = document.getElementById('new-snippet-title').value.trim();
     const content = document.getElementById('new-snippet-content').value.trim();
+    const category = document.getElementById('new-snippet-category').value.trim() || 'custom';
     if (!title || !content) {
         alert(t('Enter a title and content.'));
         return;
@@ -131,11 +202,12 @@ function addCustomSnippet() {
     fetch('/snippets/custom', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content })
+        body: JSON.stringify({ title, content, category })
     })
     .then(() => {
         document.getElementById('new-snippet-title').value = '';
         document.getElementById('new-snippet-content').value = '';
+        document.getElementById('new-snippet-category').value = '';
         loadSnippets();
     });
 }
