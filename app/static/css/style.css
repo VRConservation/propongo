@@ -540,14 +540,23 @@ textarea {
 
 .budget-item-edit-form {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 8px;
     flex: 1;
+    padding: 8px 12px;
+    background: var(--surface-alt);
+    border-radius: 4px;
+}
+
+.budget-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .budget-item-edit-form input,
 .budget-item-edit-form select {
-    width: auto;
     padding: 4px 8px;
     border: 1px solid var(--border);
     border-radius: 4px;
@@ -556,8 +565,14 @@ textarea {
     color: var(--text);
 }
 
-.budget-item-edit-form .flex-grow {
+.budget-item-edit-form .edit-name {
     flex: 1;
+    min-width: 120px;
+}
+
+.budget-item-edit-form .edit-cost,
+.budget-item-edit-form .edit-units {
+    width: 90px;
 }
 
 .budget-item-edit-actions {

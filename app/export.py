@@ -18,7 +18,7 @@ GTK3_MISSING_MSG = (
 from flask import Blueprint, render_template, request, send_file, jsonify, Response
 from markupsafe import Markup
 from .models import Proposal
-from .utils import build_export_context, build_tracker_export_context
+from .utils import build_export_context, build_tracker_export_context, build_map_export_image
 from .config import Config, ERROR_MESSAGES
 
 logger = logging.getLogger(__name__)
@@ -251,34 +251,37 @@ def _build_proposal_docx(proposal) -> BytesIO:
             if line.strip():
                 doc.add_paragraph(line.strip())
 
-    if proposal.scope:
-        doc.add_heading('Scope', level=1)
-        for line in _md_to_plain(proposal.scope).split('\n'):
-            if line.strip():
-                doc.add_paragraph(line.strip())
-
     map_config = getattr(proposal, 'map_config', None) or {}
     if map_config.get("show_in_preview"):
-        from .utils import build_geolibre_embed_src
-        doc.add_heading('Map', level=1)
+        map_img_bytes = None
         image_url = (map_config.get("image_url") or "").strip()
         if image_url:
             try:
                 import urllib.request
                 with urllib.request.urlopen(image_url, timeout=15) as resp:
-                    img_buf = BytesIO(resp.read())
-                doc.add_picture(img_buf, width=Inches(6))
+                    map_img_bytes = resp.read()
             except Exception:
                 logger.warning(f"Could not fetch map image for DOCX export: {image_url}")
-        p = doc.add_paragraph()
-        p.add_run("Interactive map: ").bold = True
-        p.add_run(build_geolibre_embed_src(map_config))
-        p = doc.add_paragraph()
-        p.add_run("Map powered by GeoLibre — Wu, Q. (2026). GeoLibre: A lightweight, "
-                  "cloud-native GIS platform for visualizing, exploring, and analyzing "
-                  "geospatial data. Zenodo. https://doi.org/10.5281/zenodo.20785400")
-        p.runs[0].font.size = Pt(9)
-        p.runs[0].font.color.rgb = RGBColor(0x77, 0x77, 0x77)
+
+        if not map_img_bytes:
+            map_img_bytes = build_map_export_image(proposal)
+
+        if map_img_bytes:
+            doc.add_picture(BytesIO(map_img_bytes), width=Inches(6))
+            caption = (map_config.get("caption") or "").strip().rstrip(".")
+            attr_text = "Wu, Q. (2026). GeoLibre: A lightweight, " \
+                        "cloud-native GIS platform for visualizing, exploring, and analyzing " \
+                        "geospatial data. Zenodo. https://doi.org/10.5281/zenodo.20785400"
+            p = doc.add_paragraph()
+            run = p.add_run(f"Figure 1. {caption}. {attr_text}" if caption else attr_text)
+            run.font.size = Pt(9)
+            run.font.color.rgb = RGBColor(0x77, 0x77, 0x77)
+
+    if proposal.scope:
+        doc.add_heading('Scope', level=1)
+        for line in _md_to_plain(proposal.scope).split('\n'):
+            if line.strip():
+                doc.add_paragraph(line.strip())
 
     if proposal.budget_items:
         doc.add_heading('Budget', level=1)
@@ -569,6 +572,14 @@ def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
         return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
     ctx = build_export_context(proposal)
+
+    map_png = build_map_export_image(proposal)
+    if map_png:
+        import base64
+        ctx["map_static_data_uri"] = "data:image/png;base64," + base64.b64encode(map_png).decode()
+    else:
+        ctx["map_static_data_uri"] = None
+
     html_content = render_template("export_proposal.html", **ctx)
 
     ensure_export_dir()
@@ -585,13 +596,19 @@ def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
 
 @export_bp.route("/export/html/<proposal_id>")
 def export_html(proposal_id: str) -> Tuple[Response, int] | Response:
-    """Export proposal as HTML file."""
+    """Export proposal as HTML file.
+
+    Uses the live GeoLibre iframe (same as preview) — no static image
+    needed since HTML renders in a browser.
+    """
     proposal = Proposal.load(proposal_id)
     if not proposal:
         logger.warning(f"Proposal not found for HTML export: {proposal_id}")
         return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
     ctx = build_export_context(proposal)
+    ctx["map_static_data_uri"] = None
+
     html_content = render_template("export_proposal.html", **ctx)
 
     return Response(

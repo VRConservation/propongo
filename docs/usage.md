@@ -79,6 +79,14 @@ Reuse proposal structures by saving them as templates:
 
 Templates preserve: scope, tasks, budget items, qualifications, custom sections, timeline settings, and budget timing. Client-specific fields like title and client name are left blank for the new proposal.
 
+## Map
+Documents for producing a GeoLibre map can be found at the [GeoLibre.app](https://geolibre.app/) website.
+
+1. Create the map in GeoLibre after installation or use the [Launch GeoLibre Web](https://geolibre.app/demo/) in the left side panel of the GeoLibre site.
+2. Click Project/Share. Before sharing you need to get an API token. Follow the instructions for doing so.
+3. Once the token is generated, click share and copy the url link to the map.
+4. On the ma page click the pulldown menu under Context layer and select Shared GeoLibre project, then past the url in the box below. Click on Include map in the proposal then click the blue Save map settings button. Your map will appear on the map screen. If it has any large size layers it may take a few seconds for them to render. The map will appear in the Preview and exports. Make sure to enter a caption for the map under Figure caption (optional).
+
 ## Updating
 ### From PyPI
 

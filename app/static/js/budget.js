@@ -195,6 +195,12 @@ function addBudgetItem(proposalId) {
     });
 }
 
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
 function editBudgetItem(proposalId, btn) {
     const card = btn.closest('.budget-item-card');
     if (card.querySelector('.budget-item-edit-form')) return;
@@ -211,7 +217,7 @@ function editBudgetItem(proposalId, btn) {
     let taskOptions = '';
     for (const opt of taskSelect.options) {
         if (opt.value) {
-            taskOptions += `<option value="${opt.value}" ${opt.value === taskId ? 'selected' : ''}>${opt.text}</option>`;
+            taskOptions += `<option value="${escapeHtml(opt.value)}" ${opt.value === taskId ? 'selected' : ''}>${escapeHtml(opt.text)}</option>`;
         }
     }
 
@@ -228,11 +234,13 @@ function editBudgetItem(proposalId, btn) {
     const form = document.createElement('div');
     form.className = 'budget-item-edit-form';
     form.innerHTML = `
-        <select class="edit-task-id">${taskOptions}</select>
-        <input type="text" class="edit-name flex-grow" value="${name}" placeholder="${t('Item name')}">
-        <input type="number" class="edit-cost" value="${cost}" min="0" step="0.01" placeholder="${t('Cost/unit')}">
-        <input type="number" class="edit-units" value="${units}" min="0" step="1" placeholder="${t('Units')}">
-        <div class="budget-timing-fields">
+        <div class="budget-edit-row">
+            <select class="edit-task-id">${taskOptions}</select>
+            <input type="text" class="edit-name" value="${escapeHtml(name)}" placeholder="${t('Item name')}">
+            <input type="number" class="edit-cost" value="${cost}" min="0" step="0.01" placeholder="${t('Cost/unit')}">
+            <input type="number" class="edit-units" value="${units}" min="0" step="1" placeholder="${t('Units')}">
+        </div>
+        <div class="budget-edit-row budget-timing-fields">
             <select class="edit-start-month">${budgetMonthOptions(startMonth)}</select>
             <select class="edit-start-year">${budgetYearOptions(startYear)}</select>
             <input type="number" class="edit-duration" value="${duration}" min="1" placeholder="${t('Months')}">

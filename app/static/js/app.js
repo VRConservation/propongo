@@ -195,6 +195,8 @@ function saveCurrentTabData(proposalId) {
         }
         if (mapCheckbox) mapConfig.show_in_preview = mapCheckbox.checked;
         if (mapImageUrl) mapConfig.image_url = mapImageUrl.value.trim();
+        const mapCaption = document.getElementById('map-caption');
+        if (mapCaption) mapConfig.caption = mapCaption.value.trim();
         data.map_config = mapConfig;
     }
 
@@ -902,8 +904,10 @@ function normalizeProjectUrl(url) {
 function toggleMapImageField() {
     const checkbox = document.getElementById('map-show-in-preview');
     const imageGroup = document.getElementById('map-image-url-group');
-    if (!checkbox || !imageGroup) return;
-    imageGroup.style.display = checkbox.checked ? '' : 'none';
+    const captionGroup = document.getElementById('map-caption-group');
+    if (!checkbox) return;
+    if (imageGroup) imageGroup.style.display = checkbox.checked ? '' : 'none';
+    if (captionGroup) captionGroup.style.display = checkbox.checked ? '' : 'none';
 }
 
 function readMapConfig() {
@@ -911,6 +915,7 @@ function readMapConfig() {
     const url = document.getElementById('map-context-url');
     const checkbox = document.getElementById('map-show-in-preview');
     const imageUrl = document.getElementById('map-image-url');
+    const caption = document.getElementById('map-caption');
     const mapConfig = { mode: mode ? mode.value : 'basemap' };
     if (mode && mode.value === 'project_url' && url) {
         url.value = normalizeProjectUrl(url.value);
@@ -920,6 +925,7 @@ function readMapConfig() {
     }
     if (checkbox) mapConfig.show_in_preview = checkbox.checked;
     if (imageUrl) mapConfig.image_url = imageUrl.value.trim();
+    if (caption) mapConfig.caption = caption.value.trim();
     return mapConfig;
 }
 

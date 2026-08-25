@@ -60,6 +60,9 @@ TRANSLATIONS = {
         "Basemaps are chosen in the map below. To show your own layers, build them in the full GeoLibre app, share the project, and paste its URL above. A share.geolibre.app link is fine with or without the .geolibre.json extension — it is added automatically.": "Los mapas base se eligen en el mapa de abajo. Para mostrar tus propias capas, créalas en la aplicación GeoLibre completa, comparte el proyecto y pega su URL arriba. Un enlace de share.geolibre.app sirve con o sin la extensión .geolibre.json — se añade automáticamente.",
         "Save map settings": "Guardar configuración del mapa",
         "Map powered by GeoLibre": "Mapa con tecnología de GeoLibre",
+        "Figure caption (optional)": "Pie de figura (opcional)",
+        "Appears below the map in exports as \"Figure. [your caption]\"": "Aparece debajo del mapa en las exportaciones como \"Figura. [tu pie de figura]\"",
+        "e.g. Map of project area showing proposed restoration zones": "ej. Mapa del área del proyecto mostrando las zonas de restauración propuestas",
         # Modals
         "Your Proposals": "Tus propuestas",
         "Save As": "Guardar como",
@@ -372,6 +375,9 @@ TRANSLATIONS = {
         "Basemaps are chosen in the map below. To show your own layers, build them in the full GeoLibre app, share the project, and paste its URL above. A share.geolibre.app link is fine with or without the .geolibre.json extension — it is added automatically.": "Le fond de carte se choisit dans la carte ci-dessous. Pour afficher vos propres couches, créez-les dans l'application GeoLibre complète, partagez le projet et collez son URL ci-dessus. Un lien share.geolibre.app fonctionne avec ou sans l'extension .geolibre.json — elle est ajoutée automatiquement.",
         "Save map settings": "Enregistrer les paramètres de la carte",
         "Map powered by GeoLibre": "Carte propulsée par GeoLibre",
+        "Figure caption (optional)": "Légende de la figure (facultatif)",
+        "Appears below the map in exports as \"Figure. [your caption]\"": "Apparaît sous la carte dans les exportations sous forme de \"Figure. [votre légende]\"",
+        "e.g. Map of project area showing proposed restoration zones": "ex. Carte de la zone du projet montrant les zones de restauration proposées",
         # Modals
         "Your Proposals": "Vos propositions",
         "Save As": "Enregistrer sous",

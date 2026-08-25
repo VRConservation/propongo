@@ -4,7 +4,7 @@
   "client_name": "Department of Forestry",
   "subtitle": "Forest Health Resilience",
   "created_at": "2026-07-28T18:17:39.096747",
-  "updated_at": "2026-08-24T17:47:06.389292",
+  "updated_at": "2026-08-25T19:14:45.428677",
   "project_summary": "This proposal outlines a comprehensive approach to reduce wildfire risk and restore forest resilience across 15,000 acres of priority landscape in the Colorado Front Range. The project will implement mechanical thinning, prescribed fire, and fuel break construction in the wildland-urban interface, targeting areas identified in the Colorado Forest Action Plan as high-risk. Key tasks include: (1) hazardous fuel reduction using hand crews and mastication equipment on 8,000 acres; (2) ecological prescribed burns on 5,000 acres conducted over three spring and fall windows; (3) shaded fuel break installation along 12 miles of evacuation corridors; (4) post-treatment monitoring for regeneration, wildlife response, and soil health; and (5) community engagement through public field tours and defensible space workshops for 500 landowners. Treatment prescriptions follow the Collaborative Forest Landscape Restoration Program framework and incorporate input from the Front Range Roundtable. Outcomes are measured against federal Cohesive Wildfire Strategy goals for fire-adapted communities and resilient landscapes.",
   "scope": "## A. Need\nThe Colorado Front Range faces a growing wildfire crisis driven by climate change, drought, and a century of fire suppression, with over 1.4 million homes in the wildland-urban interface at risk. Without treatment, severe wildfires threaten watersheds supplying drinking water to 3 million residents, critical infrastructure, and endangered species habitat.\n### 1. Scalability\nThe project is designed as a modular treatment framework that can be replicated across the Front Range's 12 priority landscapes, with standardized prescriptions and monitoring protocols that reduce per-acre costs as program size increases. Phased implementation allows for adaptive management and integration with existing federal, state, and county wildfire mitigation programs, enabling expansion from 15,000 to 100,000 acres over five years.\n### 2. Impact\nTreatment will reduce flame lengths from 20+ feet to under 4 feet across treated areas, enabling direct suppression and improving firefighter safety. Long-term ecological benefits include restored ponderosa pine and mixed-conifer stand structure, improved wildlife connectivity for species such as the Mexican spotted owl, and reduced post-fire erosion and flooding that currently costs the region an average of $50 million per wildfire season.\n\n## B. Background\nForest Conservation Now (FCN) is a Colorado-based 501(c)(3) nonprofit founded in 2014 to accelerate forest restoration and wildfire resilience across the Rocky Mountain region. FCN has completed over 40,000 acres of treatment across 12 landscapes, leveraging $18 million in federal, state, and private funding through partnerships with the US Forest Service, Colorado State Forest Service, and county wildfire councils. The organization maintains a 12-person technical team\u2014including certified silviculturists, prescribed fire managers, and restoration ecologists\u2014and operates two mechanical thinning crews and a Type 6 prescribed fire module.\n## C. Qualifications\nFCN has worked on the following key projects:\n\n1. **Upper South Platte Collaborative** (2016\u20132021) \u2014 FCN led mechanical thinning and prescribed fire on 8,200 acres of the Pike-San Isabel National Forest to protect the Cheesman Reservoir watershed, which supplies drinking water to 1.5 million Denver-area residents. The project reduced predicted flame lengths by 60% and was recognized as a national model for source-water protection partnerships.\n2. **Boulder County Wildfire Risk Reduction Initiative** (2018\u20132023) \u2014 In response to the 2010 Fourmile Canyon Fire, FCN treated 4,500 acres of private and county-owned land in the Boulder County WUI, including shaded fuel breaks along 22 miles of evacuation routes. Post-treatment assessments documented a 75% reduction in canopy bulk density and zero structure loss in treated areas during subsequent wildfire events.\n3. **San Juan Mountains Landscape Restoration** (2020\u2013present) \u2014 FCN is implementing a 12,000-acre restoration program across the Rio Grande and San Juan National Forests, combining uneven-aged thinning with low-severity prescribed fire to restore historic ponderosa pine and dry mixed-conifer stand conditions. Early monitoring shows increased understory forb diversity by 40% and improved foraging habitat for the federally threatened Gunnison sage-grouse.\n\n## C. Key Staff\nA brief description of staff and roles is provided below, with more detail on experience and bios in the qualifications section\n\n**Dr. Sarah Kettering, Project Manager** \u2014 A certified silviculturist and former USFS district ecologist with 14 years of experience in Front Range forest restoration. Sarah has managed over 25,000 acres of treatment across six collaborative landscape projects and holds an M.S. in Forest Ecology from Colorado State University.\n**Marcus Delgado, Senior Data Analyst** \u2014 A geospatial systems engineer specializing in remote sensing-based treatment monitoring and fire behavior modeling. Marcus has developed the organization's adaptive management tracking platform and previous",
   "tasks": [
@@ -102,10 +102,7 @@
     "ef61a780": {
       "start_month": 10,
       "start_year": 2026,
-      "duration_months": 3,
-      "lead_entity": "",
-      "recurring": false,
-      "recurring_interval": 3
+      "duration_months": 3
     },
     "63768ae8": {
       "start_month": 12,
@@ -148,7 +145,13 @@
   "timeline_use_days": false,
   "timeline_show_budget": true,
   "custom_sections": [],
-  "map_config": {},
+  "map_config": {
+    "mode": "project_url",
+    "url": "https://share.geolibre.app/vinny-raster/sample-11.geolibre.json",
+    "show_in_preview": true,
+    "image_url": "",
+    "caption": "Map of project area with NLCD Land cover."
+  },
   "is_template": false,
   "template_name": "",
   "template_category": "",

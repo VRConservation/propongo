@@ -78,7 +78,15 @@ Custom sections appear in the preview and export in the order you set.
 
 ![Custom sections](img/custom.png)
 
-## 7. Preview & Export
+## 7. Map
+Documents for producing a GeoLibre map can be found at the [GeoLibre.app](https://geolibre.app/) website.
+
+1. Create the map in GeoLibre after installation or use the [Launch GeoLibre Web](https://geolibre.app/demo/) in the left side panel of the GeoLibre site.
+2. Click Project/Share. Before sharing you need to get an API token. Follow the instructions for doing so.
+3. Once the token is generated, click share and copy the url link to the map.
+4. On the ma page click the pulldown menu under Context layer and select Shared GeoLibre project, then past the url in the box below. Click on Include map in the proposal then click the blue Save map settings button. Your map will appear on the map screen. If it has any large size layers it may take a few seconds for them to render. The map will appear in the Preview and exports. Make sure to enter a caption for the map under Figure caption (optional).
+
+## 8. Preview & Export
 
 1. Switch to the **Preview** tab to see the full proposal rendered with all sections.
 2. Click **Export** → choose **PDF**, **HTML**, or **DOCX**.
@@ -88,7 +96,7 @@ Custom sections appear in the preview and export in the order you set.
 
 ![Preview tab continued](img/preview2.png)
 
-## 8. Snippets
+## 9. Snippets
 Any text that you frequently use in proposals can be added to the snippets panel:
 1. To add a snippet, insert a Title under Add Custom Snippet, then write or paste content into the Markdown content box. Any markdown headers or annotations will appear as rendered. Then click the blue Add Snippet button.
 2. To use, click on the snippet you want under CUSTOM to copy to the clipboard, then paste into the proposal section. Alternatively, put the cursor in the proposal window where you want the snippet, and then click the snippet you want inserted.

@@ -37,7 +37,7 @@
                 style="border:0;border-radius:4px;" loading="lazy" allow="fullscreen; geolocation"></iframe>
         {% endif %}
         <p style="margin:8px 0 0;font-size:12px;color:var(--text-muted);">
-            {{ _('Map powered by GeoLibre') }} — Wu, Q. (2026). <em>GeoLibre: A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data</em>. Zenodo. <a href="https://doi.org/10.5281/zenodo.20785400" target="_blank" rel="noopener">https://doi.org/10.5281/zenodo.20785400</a>
+            {% if map_ctx.caption %}Figure 1. {{ map_ctx.caption }}. {% endif %}Wu, Q. (2026). <em>GeoLibre: A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data</em>. Zenodo. <a href="https://doi.org/10.5281/zenodo.20785400" target="_blank" rel="noopener">https://doi.org/10.5281/zenodo.20785400</a>
         </p>
     </div>
     {% endif %}
