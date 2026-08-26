@@ -311,9 +311,9 @@ def build_map_export_image(proposal):
 def _generate_map_from_project(project_url):
     """Generate a map image for *project_url*.
 
-    Tries Playwright (headless browser) first, capturing just the map
-    canvas from the GeoLibre embed.  Falls back to tile-stitching with
-    rasterio overlays if Playwright is not available.
+    Tries Playwright first (renders all layers via the browser's native
+    COG tiling).  Falls back to tile-stitching if Playwright is not
+    available.
     """
     embed_src = build_geolibre_embed_src(
         {"mode": "project_url", "url": project_url},
@@ -452,8 +452,9 @@ def _generate_map_from_project_tiles(project_url):
 def _render_cog_layer(cog_url, bbox, target_size, style=None):
     """Render a COG raster as a semi-transparent RGBA overlay.
 
-    Uses the lowest available overview to keep reads fast.  Returns a
-    PIL RGBA Image or *None* on failure.
+    Picks the coarsest overview that still gives at least 2× the target
+    resolution, so the output is sharp when downscaled.  Returns a PIL
+    RGBA Image or *None* on failure.
     """
     try:
         import rasterio
@@ -470,8 +471,14 @@ def _render_cog_layer(cog_url, bbox, target_size, style=None):
     try:
         with rasterio.open(cog_url) as src:
             overviews = src.overviews(1)
+            # Pick the coarsest overview that still gives ≥2× target width
+            target_w = width * 2
             if overviews:
                 decimation = overviews[-1]
+                for ov in overviews:
+                    if src.width // ov >= target_w:
+                        decimation = ov
+                        break
             else:
                 decimation = 1
 
@@ -552,7 +559,11 @@ def _render_geojson_layer(geojson_data, bbox, target_size, style=None):
     fill_opacity = style.get("fillOpacity", 0.3)
 
     def _hex_to_rgba(hex_color, alpha=255):
+        if not hex_color or not isinstance(hex_color, str):
+            return (0, 0, 0, 0)
         h = hex_color.lstrip("#")
+        if len(h) < 6 or not all(c in "0123456789abcdefABCDEF" for c in h[:6]):
+            return (0, 0, 0, 0)
         r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
         return (r, g, b, alpha)
 
