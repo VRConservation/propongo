@@ -425,7 +425,8 @@ def test_preview_shows_embed_when_enabled():
         assert resp.status_code == 200
         html = resp.data.decode()
         assert "url=https%3A%2F%2Fshare.geolibre.app%2Fgiswqs%2Fdemo.geolibre.json" in html
-        assert "<img" not in html
+        assert "preview-map-iframe" in html
+        assert "preview-map-print" in html
         summary_idx = html.index("Project Summary")
         map_idx = html.index("Project Map")
         scope_idx = html.index("Scope")

@@ -267,7 +267,7 @@ def _build_proposal_docx(proposal) -> BytesIO:
             map_img_bytes = build_map_export_image(proposal)
 
         if map_img_bytes:
-            doc.add_picture(BytesIO(map_img_bytes), width=Inches(6))
+            doc.add_picture(BytesIO(map_img_bytes), width=Inches(6.5))
             caption = (map_config.get("caption") or "").strip().rstrip(".")
             attr_text = "Wu, Q. (2026). GeoLibre: A lightweight, " \
                         "cloud-native GIS platform for visualizing, exploring, and analyzing " \

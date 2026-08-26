@@ -1118,6 +1118,8 @@ textarea {
     .main-content { margin-left: 0 !important; }
     .tab-content { padding: 0 !important; max-width: none !important; }
     .preview-document { border: none !important; box-shadow: none !important; padding: 0 !important; }
+    .preview-map-iframe { display: none !important; }
+    .preview-map-print { display: block !important; }
 }
 
 /* Sidebar toggle arrow */

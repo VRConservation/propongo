@@ -311,14 +311,12 @@ def build_map_export_image(proposal):
 def _generate_map_from_project(project_url):
     """Generate a map image for *project_url*.
 
-    Tries Playwright (headless browser) first, opening the GeoLibre embed
-    in ``layout=print`` mode for a clean map-only rendering.  Falls back
-    to tile-stitching with rasterio overlays if Playwright is not
-    available.
+    Tries Playwright (headless browser) first, capturing just the map
+    canvas from the GeoLibre embed.  Falls back to tile-stitching with
+    rasterio overlays if Playwright is not available.
     """
     embed_src = build_geolibre_embed_src(
         {"mode": "project_url", "url": project_url},
-        layout="print",
     )
     screenshot = _screenshot_embed(embed_src)
     if screenshot:
@@ -327,12 +325,12 @@ def _generate_map_from_project(project_url):
     return _generate_map_from_project_tiles(project_url)
 
 
-def _screenshot_embed(embed_url, width=800, height=500, timeout=30):
-    """Open *embed_url* in a headless browser and return a PNG screenshot.
+def _screenshot_embed(embed_url, width=1200, height=800, timeout=30):
+    """Open *embed_url* in a headless browser and screenshot just the map canvas.
 
-    Waits for network idle (so large COGs finish loading) before
-    capturing.  Returns PNG bytes or *None* if Playwright is not
-    installed or fails.
+    Uses 2× device pixel ratio so the captured image is crisp when
+    printed.  Resizes the result to 800×450 for export figures.
+    Returns PNG bytes or *None* if Playwright is not installed or fails.
     """
     try:
         from playwright.sync_api import sync_playwright
@@ -342,16 +340,38 @@ def _screenshot_embed(embed_url, width=800, height=500, timeout=30):
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": width, "height": height})
+            page = browser.new_page(
+                viewport={"width": width, "height": height},
+                device_scale_factor=2,
+            )
             page.goto(embed_url, timeout=timeout * 1000)
             try:
                 page.wait_for_load_state("networkidle", timeout=timeout * 1000)
             except Exception:
                 pass
-            page.wait_for_timeout(2000)
-            buf = page.screenshot(type="png")
+            page.wait_for_timeout(4000)
+
+            canvas = page.locator("canvas")
+            if canvas.count() > 0:
+                buf = canvas.first.screenshot(type="png")
+            else:
+                buf = page.screenshot(type="png")
+
             browser.close()
-            return buf if buf else None
+
+            if buf:
+                from PIL import Image
+                import io
+                im = Image.open(io.BytesIO(buf))
+                # Canvas at 2x DPR is ~1600×900; resize to 800×450
+                target = (800, 450)
+                if im.size != target:
+                    im = im.resize(target, Image.LANCZOS)
+                    out = io.BytesIO()
+                    im.save(out, format="PNG", optimize=True)
+                    return out.getvalue()
+                return buf
+            return None
     except Exception as exc:
         logger.debug("Playwright screenshot failed: %s", exc)
         return None

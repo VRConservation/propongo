@@ -23,6 +23,7 @@ from .utils import (
     build_budget_by_year,
     build_export_context,
     build_geolibre_embed_src,
+    build_map_export_image,
 )
 from .config import Config, ERROR_MESSAGES
 from .i18n import translate, LANGUAGES, DEFAULT_LANG, LANG_COOKIE, TRANSLATIONS
@@ -694,6 +695,18 @@ def create_app() -> Flask:
 
         ctx = build_export_context(proposal)
         return render_template("preview.html", **ctx)
+
+    @app.route("/api/map-image/<proposal_id>")
+    def map_image(proposal_id):
+        """Return a static PNG map image for print preview."""
+        proposal = Proposal.load(proposal_id)
+        if not proposal:
+            return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
+        map_png = build_map_export_image(proposal)
+        if not map_png:
+            return "", 204
+        from flask import Response
+        return Response(map_png, mimetype="image/png")
 
     @app.route("/api/task/<proposal_id>", methods=["POST"])
     def add_task(proposal_id):
