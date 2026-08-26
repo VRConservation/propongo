@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
     DEBUG=False \
     PROPONGO_DATA_DIR=/app/data
 
-# System libraries required by WeasyPrint for PDF export, plus fonts.
+# System libraries required by WeasyPrint (PDF) and Playwright/Chromium (map exports).
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpango-1.0-0 \
     libpangoft2-1.0-0 \
@@ -16,6 +16,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     shared-mime-info \
     fonts-dejavu-core \
     fonts-liberation \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libasound2t64 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -24,7 +38,9 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir gunicorn
+    && pip install --no-cache-dir gunicorn \
+    && pip install --no-cache-dir playwright \
+    && playwright install chromium-headless-shell
 
 # Install the application (deps already present, so skip re-resolving them).
 COPY . .
