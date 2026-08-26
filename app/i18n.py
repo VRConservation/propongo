@@ -50,7 +50,7 @@ TRANSLATIONS = {
         "Preview": "Vista previa",
         # Map
         "Project Map": "Mapa del proyecto",
-        "Experimental: this feature is a work in progress and may change.": "Experimental: esta función está en desarrollo y puede cambiar.",
+        "Experimental: Map page is a work in progress and some features may not work.": "Experimental: la página de mapas está en desarrollo y algunas funciones pueden no funcionar.",
         "Context layer": "Capa de contexto",
         "Basemap only": "Solo mapa base",
         "Public data URL (GeoJSON, COG, PMTiles)": "URL de datos públicos (GeoJSON, COG, PMTiles)",
@@ -365,7 +365,7 @@ TRANSLATIONS = {
         "Preview": "Aperçu",
         # Map
         "Project Map": "Carte du projet",
-        "Experimental: this feature is a work in progress and may change.": "Expérimental : cette fonctionnalité est en cours de développement et peut évoluer.",
+        "Experimental: Map page is a work in progress and some features may not work.": "Expérimental : la page cartographique est en cours de développement et certaines fonctionnalités peuvent ne pas fonctionner.",
         "Context layer": "Couche de contexte",
         "Basemap only": "Fond de carte uniquement",
         "Public data URL (GeoJSON, COG, PMTiles)": "URL de données publiques (GeoJSON, COG, PMTiles)",

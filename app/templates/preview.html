@@ -2,10 +2,9 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <h2>{{ _('Proposal Preview') }}</h2>
         <div class="preview-actions">
-            <button class="btn btn-primary" onclick="window.print()">{{ _('Print') }}</button>
-            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'html')">{{ _('Export HTML') }}</button>
-            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'pdf')">{{ _('Export PDF') }}</button>
-            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'docx')">{{ _('Export DOCX') }}</button>
+            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'html')">&#x2B07; HTML</button>
+            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'pdf')">&#x2B07; PDF</button>
+            <button class="btn btn-primary" onclick="exportProposal('{{ proposal.id }}', 'docx')">&#x2B07; DOCX</button>
         </div>
     </div>
 
