@@ -276,9 +276,11 @@ def build_map_export_image(proposal):
 
     Returns a ``bytes`` PNG payload or *None*.  Checks, in order:
     1. A user-supplied ``image_url`` in map_config (fetched over HTTP).
-    2. An auto-generated tile map from a GeoJSON ``data_url``.
-    3. For project_url mode, fetches the .geolibre.json project file,
+    2. A Playwright screenshot of the GeoLibre embed (all modes).
+    3. An auto-generated tile map from a GeoJSON ``data_url``.
+    4. For project_url mode, fetches the .geolibre.json project file,
        looks for embedded data URLs, and generates a tile map from the first one.
+    5. For basemap-only mode (no data URL), stitches a default basemap.
     """
     map_config = getattr(proposal, "map_config", None) or {}
     if not map_config.get("show_in_preview"):
@@ -296,6 +298,11 @@ def build_map_export_image(proposal):
         except Exception as exc:
             logger.warning("Could not fetch map image_url %s: %s", image_url, exc)
 
+    embed_src = build_geolibre_embed_src(map_config)
+    screenshot = _screenshot_embed(embed_src)
+    if screenshot:
+        return screenshot
+
     url = (map_config.get("url") or "").strip()
     mode = map_config.get("mode", "")
 
@@ -303,9 +310,11 @@ def build_map_export_image(proposal):
         return generate_static_map_image(url)
 
     if url and mode == "project_url":
-        return _generate_map_from_project(url)
+        return _generate_map_from_project_tiles(
+            normalize_geolibre_project_url(url)
+        )
 
-    return None
+    return _generate_basemap_image()
 
 
 def _generate_map_from_project(project_url):
@@ -731,6 +740,17 @@ def generate_static_map_image(data_url, width=800, height=500):
         return None
 
     return _stitch_basemap_tiles(bbox, width, height)
+
+
+def _generate_basemap_image(width=800, height=500):
+    """Generate a static basemap image with no data layers.
+
+    Used as a last-resort fallback for ``basemap`` mode (no URL) when a
+    Playwright screenshot is not available.  Stitches OSM tiles for a
+    default world-view bounding box.
+    """
+    default_bbox = (-170, -58, 170, 72)
+    return _stitch_basemap_tiles(default_bbox, width, height)
 
 
 def _stitch_basemap_tiles(bbox, width=800, height=500):
