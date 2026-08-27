@@ -146,7 +146,7 @@ function exportTracker(proposalId, format) {
         window.open('/export/tracker/pdf/' + proposalId + t, '_blank');
     } else if (format === 'html') {
         window.open('/export/tracker/html/' + proposalId + t, '_blank');
-    } else if (format === 'docx') {
-        window.open('/export/tracker/docx/' + proposalId + t, '_blank');
+    } else if (format === 'markdown') {
+        window.open('/export/tracker/markdown/' + proposalId + t, '_blank');
     }
 }

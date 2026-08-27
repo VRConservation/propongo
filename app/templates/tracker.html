@@ -68,7 +68,7 @@
                     {% endfor %}
                 </select>
                 <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'pdf')">{{ _('Export PDF') }}</button>
-                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'docx')">{{ _('Export DOCX') }}</button>
+                <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'markdown')">{{ _('Export Markdown') }}</button>
                 <button class="btn btn-secondary btn-sm" onclick="exportTracker('{{ proposal.id }}', 'html')">{{ _('Export HTML') }}</button>
                 <a href="/editor/{{ proposal.id }}" class="btn btn-secondary">{{ _('Back to Editor') }}</a>
             </div>

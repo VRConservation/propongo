@@ -33,7 +33,7 @@ Add custom sections to your proposal for any additional content:
 **RFP Import:** Click **Import RFP** to create the sections a funder's request for proposals requires. Each required section is added as a checklist of the RFP's requirements, which you fill in with your project details. Choose the applicant track when the RFP offers more than one, or upload your own RFP sections file (`.json`).
 
 ## Markdown Formatting
-Section content is written in Markdown and rendered in the **Preview** tab and in PDF, DOCX, and HTML exports. A few basics:
+Section content is written in Markdown and rendered in the **Preview** tab and in PDF, Markdown, and HTML exports. A few basics:
 
 | Result | How to write it |
 | --- | --- |

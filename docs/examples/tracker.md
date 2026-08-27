@@ -48,4 +48,4 @@ The budget table shows:
 
 ## Exporting Tracker Data
 
-From the tracker page, export to **PDF**, **HTML**, or **DOCX** using the export buttons. The exported document includes the KPI summary, task status table, budget tracking, milestones, and reports.
+From the tracker page, export to **PDF**, **HTML**, or **Markdown** using the export buttons. The exported document includes the KPI summary, task status table, budget tracking, milestones, and reports.

@@ -30,7 +30,7 @@
             {{ _('Include map in the proposal') }}
         </label>
         <p style="margin:6px 0 0;font-size:12px;color:var(--text-muted);">
-            {{ _('Adds the map as a figure in the preview and in the HTML export. For a raster figure in PDF and DOCX exports, add a static map image URL below.') }}
+            {{ _('Adds the map as a figure in the preview and in the HTML, PDF, and Markdown exports.') }}
         </p>
     </div>
 
@@ -40,7 +40,7 @@
                placeholder="{{ _('https://example.org/area.png') }}"
                style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
         <p style="margin:6px 0 0;font-size:12px;color:var(--text-muted);">
-            {{ _('Export a PNG in GeoLibre (Project → Print Layout... → PNG), host it somewhere public, and paste its URL here so PDF and DOCX exports include the map image.') }}
+            {{ _('Optional: export a PNG in GeoLibre (Project → Print Layout... → PNG), host it somewhere public, and paste its URL here to use a static map image in exports.') }}
         </p>
     </div>
 

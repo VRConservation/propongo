@@ -29,7 +29,7 @@ Flask + HTMX proposal generator for conservation projects. Local single-user app
 
 - i18n: UI strings live in `app/i18n.py` as dicts keyed by the English string (en/es/fr). When adding user-visible text in templates or JS, add matching es/fr keys (JS uses `js_translations`).
 - Markdown is rendered with the `markdown` lib + tables/nl2br/fenced_code/sane_lists extensions (`app.main:markdown_to_html`).
-- Exports: PDF via WeasyPrint (needs GTK on Windows), DOCX via python-docx. Both degrade to a 500 with a message if libs are missing.
+- Exports: PDF is the HTML export printed via headless Chromium (Playwright; degrades to a 500 message if missing). Markdown via html2text. Timeline PNG uses WeasyPrint (needs GTK on Windows).
 
 ## Releases
 

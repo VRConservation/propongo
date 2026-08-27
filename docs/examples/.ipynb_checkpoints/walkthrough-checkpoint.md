@@ -81,7 +81,7 @@ Custom sections appear in the preview and export in the order you set.
 ## 7. Preview & Export
 
 1. Switch to the **Preview** tab to see the full proposal rendered with all sections.
-2. Click **Export** → choose **PDF**, **HTML**, or **DOCX**.
+2. Click **Export** → choose **PDF**, **HTML**, or **Markdown**.
 3. The PDF includes a cover page, scope, budget table grouped by task, qualifications, custom sections, and a landscape Gantt chart.
 
 ![Preview tab](img/preview.png)

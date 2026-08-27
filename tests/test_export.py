@@ -78,12 +78,15 @@ def test_export_timeline_png():
         assert img.width > 0 and img.height > 0
 
 
-def test_export_docx_includes_timeline():
-    import io
-    from docx import Document
-    from docx.oxml.ns import qn
-
-    p = Proposal(title="Docx Export Test")
+def test_export_markdown():
+    p = Proposal(title="Markdown Export Test")
+    p.project_summary = "Strong summary."
+    p.map_config = {
+        "mode": "project_url",
+        "url": "https://share.geolibre.app/vinny-raster/sample-11",
+        "show_in_preview": True,
+        "caption": "Sample project map",
+    }
     p.tasks = [
         {"id": "t1", "name": "Phase 1", "start_month": 1, "start_year": 2026, "duration_months": 3},
     ]
@@ -98,27 +101,55 @@ def test_export_docx_includes_timeline():
     app = create_app()
     app.config["TESTING"] = True
     with app.test_client() as client:
-        resp = client.get(f"/export/docx/{p.id}")
+        resp = client.get(f"/export/markdown/{p.id}")
         assert resp.status_code == 200
+        assert resp.mimetype == "text/markdown"
+        body = resp.data.decode()
+        assert "Markdown Export Test" in body
+        assert "Project Summary" in body
+        assert "Strong summary." in body
+        assert "share.geolibre.app/vinny-raster/sample-11" in body
 
-    doc = Document(io.BytesIO(resp.data))
-    texts = [para.text for para in doc.paragraphs]
-    assert "Timeline" in texts
 
-    table = doc.tables[-1]
-    month_header = [cell.text for cell in table.rows[1].cells]
-    assert "Task" in month_header
-    assert any("Jan" in c for c in month_header)
-    year_header = [cell.text for cell in table.rows[0].cells]
-    assert any("2026" in c for c in year_header)
-    fills = {
-        cell._tc.tcPr.find(qn('w:shd')).get(qn('w:fill'))
-        for row in table.rows[2:]
-        for cell in row.cells
-        if cell._tc.tcPr is not None
-        and cell._tc.tcPr.find(qn('w:shd')) is not None
+def test_export_markdown_share_link_extension_stripped():
+    p = Proposal(title="Share Link Test")
+    p.map_config = {
+        "mode": "project_url",
+        "url": "https://share.geolibre.app/vinny-raster/sample-11.geolibre.json",
+        "show_in_preview": True,
     }
-    assert "#1d4ed8" in fills
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/export/markdown/{p.id}")
+        body = resp.data.decode()
+        assert "share.geolibre.app/vinny-raster/sample-11" in body
+        assert ".geolibre.json" not in body
+
+
+def test_export_tracker_markdown():
+    p = Proposal(title="Tracker Markdown Export Test")
+    p.tasks = [{"id": "t1", "name": "Fieldwork", "status": "in_progress", "progress_pct": 40}]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item A", "cost_per_unit": 100, "units": 1}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/export/tracker/markdown/{p.id}")
+        assert resp.status_code == 200
+        assert resp.mimetype == "text/markdown"
+        assert "Tracker Markdown Export Test" in resp.data.decode()
+
+
+def test_export_markdown_missing_proposal():
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get("/export/markdown/nonexistent")
+        assert resp.status_code == 404
 
 
 def test_export_missing_proposal():

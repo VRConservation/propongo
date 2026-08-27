@@ -257,24 +257,34 @@ def build_map_export_context(proposal) -> Dict[str, Any]:
     """Build the Map figure context for preview and export templates.
 
     Returns None unless the proposal opts in via map_config.show_in_preview.
-    When a static image URL is configured it is preferred (raster figures
-    render in PDF/DOCX exports); otherwise the live GeoLibre embed URL is
-    provided for browser previews and HTML exports.
+    When a static image URL is configured it is preferred; otherwise the live
+    GeoLibre embed URL is provided (renders in browsers and, once captured to
+    a clean map image, in the Chromium PDF export). ``share_url`` is the
+    human-facing GeoLibre project link used in the Markdown export.
     """
     map_config = getattr(proposal, "map_config", None) or {}
     if not map_config.get("show_in_preview"):
         return None
+    url = (map_config.get("url") or "").strip()
+    share_url = None
+    if url and map_config.get("mode") in ("project_url", "data_url"):
+        share_url = url.rstrip("/")
+        if share_url.endswith(".geolibre.json"):
+            share_url = share_url[: -len(".geolibre.json")]
     return {
         "embed_src": build_geolibre_embed_src(map_config),
         "image_url": (map_config.get("image_url") or "").strip(),
+        "share_url": share_url,
         "caption": (map_config.get("caption") or "").strip().rstrip("."),
     }
 
 
 def build_map_export_image(proposal):
-    """Try to produce a raster image for PDF/DOCX exports.
+    """Try to produce a raster PNG image of the map.
 
-    Returns a ``bytes`` PNG payload or *None*.  Checks, in order:
+    Used by the on-screen print preview so a static image can be swapped in
+    for printing. Returns a ``bytes`` PNG payload or *None*.  Checks, in
+    order:
     1. A user-supplied ``image_url`` in map_config (fetched over HTTP).
     2. A Playwright screenshot of the GeoLibre embed (all modes).
     3. An auto-generated tile map from a GeoJSON ``data_url``.
