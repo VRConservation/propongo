@@ -7,10 +7,13 @@ A proposal generator for conservation and natural resource projects available as
 - **Budget** - Line-item budgeting with cost/unit calculations, totals, and indirect costs
 - **Qualifications** - Document team background and relevant experience
 - **Timeline** - Auto-derived task timing from budget items with Gantt chart visualization
-- **Custom Sections** - Add unlimited custom sections with Markdown formatting (NEW!)
-- **Excel Import** - Import Excel spreadsheets as formatted tables into custom sections (NEW!)
+- **Custom Sections** - Add unlimited custom sections with Markdown formatting
+- **PDF Import** - Import a pdf of an RFP to the custom section and it will read then add required sections
+- **Excel Import** - Import Excel spreadsheets as formatted tables into custom sections
+- **Map** - Experimental map page allows import of project map from GeoLibre.
 - **Preview** - View the complete proposal with task-grouped budget and timeline bars
 - **PDF Export** - Clean, professional PDF output via WeasyPrint
+- **PDF Import** - Import a pdf of an RFP to the custom section and it will read then add required sections
 - **HTML Export** - Standalone HTML file with embedded styles
 - **Snippet Library** - Reusable markdown components for organization descriptions, deliverable templates, and custom content
 - **Save/Load** - Proposals stored as JSON files on disk, auto-save as you work
