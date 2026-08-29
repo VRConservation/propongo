@@ -36,6 +36,16 @@ GTK3_MISSING_MSG = (
 )
 
 
+def _chromium_missing_error(exc: Exception) -> bool:
+    """True if *exc* indicates Playwright's browser executable is missing.
+
+    Playwright raises ``Error: Executable doesn't exist at ...`` when the
+    Chromium build (``playwright install chromium``) has not been installed,
+    even though the Python package itself is present.
+    """
+    return "executable doesn't exist" in str(exc).lower()
+
+
 def _map_image_ready(png: bytes) -> bool:
     """Heuristic for whether a canvas screenshot contains an actual drawn map.
 
@@ -141,6 +151,8 @@ def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
     except ImportError:
         return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
     except Exception as e:
+        if _chromium_missing_error(e):
+            return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
         logger.error(f"PDF export failed: {e}")
         return jsonify({"error": f"PDF export failed: {str(e)}"}), 500
 
@@ -262,6 +274,8 @@ def export_tracker_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
     except ImportError:
         return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
     except Exception as e:
+        if _chromium_missing_error(e):
+            return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
         logger.error(f"Tracker PDF export failed: {e}")
         return jsonify({"error": f"PDF export failed: {str(e)}"}), 500
 
