@@ -7,8 +7,10 @@ in the PDF; WeasyPrint (still used for the timeline PNG) drops iframes.
 """
 
 import os
-import base64
+import re
 import time
+import base64
+import calendar
 import logging
 from io import BytesIO
 from typing import Tuple
@@ -77,12 +79,18 @@ def _render_pdf(html_content: str, map_wait: float = 15.0) -> bytes:
     """
     from playwright.sync_api import sync_playwright
 
+    chromium_args = [
+        "--disable-dev-shm-usage",
+        "--no-sandbox",
+        "--disable-extensions",
+        "--force-color-profile=srgb",
+    ]
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=True, args=chromium_args)
         try:
             page = browser.new_page(
                 viewport={"width": 1400, "height": 1000},
-                device_scale_factor=2,
+                device_scale_factor=1.5,
             )
             page.set_content(html_content, wait_until="load")
 
@@ -132,6 +140,95 @@ def _html_to_markdown(html_content: str) -> str:
     h.body_width = 0
     h.hide_inline_images = False
     return h.handle(html_content).strip()
+
+
+def _strip_timeline_chart(html_content: str) -> str:
+    """Remove the visual ``.timeline-chart`` gantt from an export document.
+
+    The gantt is built from absolutely-positioned divs that collapse into a
+    garbled blob when converted to Markdown. The Markdown export replaces it
+    with a real table (see ``_timeline_markdown_table``), so the raw div chart
+    is dropped here. The PDF/HTML exports are unaffected.
+    """
+    pattern = re.compile(r'<div class="timeline-chart"[^>]*>.*?</div>\s*</div>', re.DOTALL)
+    return pattern.sub("", html_content, count=1)
+
+
+def _timeline_markdown_table(proposal, ctx: dict) -> str:
+    """Render the timeline as an ASCII-gantt Markdown table.
+
+    One row per task (indented for budget sub-rows), one column per month,
+    quarter, or year depending on ``timeline_granularity``. Active cells are
+    marked with a full block ``█`` (fully covered) or a light block ``░``
+    (partial overlap), reproducing the visual gantt as plain text.
+    """
+    all_rows = ctx.get("all_rows") or []
+    if not all_rows:
+        return ""
+    total_months = ctx.get("timeline_total_months") or 1
+    granularity = ctx.get("timeline_granularity") or "months"
+
+    try:
+        start_year = int(proposal.start_date[:4])
+        start_month = int(proposal.start_date[5:7])
+    except (TypeError, ValueError, IndexError):
+        start_year, start_month = 2025, 1
+
+    cell_size = {"months": 1, "quarters": 3, "years": 12}[granularity]
+    ncols = (total_months + cell_size - 1) // cell_size
+
+    def _col_start_year(c):
+        return start_year + (start_month - 1 + c * cell_size) // 12
+
+    if granularity == "months":
+        heads = [
+            calendar.month_abbr[(start_month - 1 + m) % 12 + 1]
+            + ("'" + str(_col_start_year(m))[2:] if _col_start_year(m) != start_year else "")
+            for m in range(ncols)
+        ]
+    elif granularity == "quarters":
+        heads = [
+            f"Q{(start_month - 1 + q * 3) % 12 // 3 + 1}"
+            + ("'" + str(_col_start_year(q))[2:] if _col_start_year(q) != start_year else "")
+            for q in range(ncols)
+        ]
+    else:
+        heads = [str(start_year + i) for i in range(ncols)]
+
+    headers = ["Task"] + heads
+    header_line = "| " + " | ".join(headers) + " |"
+    sep = "| " + " | ".join(["---"] + [":---:"] * ncols) + " |"
+
+    def _active_fraction(bars) -> list:
+        active = [0] * ncols
+        for bar in bars:
+            boff, bdur = int(bar.get("offset") or 0), int(bar.get("duration") or 1)
+            for c in range(ncols):
+                c_start = c * cell_size
+                c_end = c_start + cell_size
+                overlap = min(c_end, boff + bdur) - max(c_start, boff)
+                if overlap > 0:
+                    active[c] += overlap
+        return active
+
+    rows = []
+    for r in all_rows:
+        active = _active_fraction(r.get("bars") or [])
+        name = r.get("name", "")
+        if r.get("is_indent"):
+            name = f"    {name}"
+        cells = []
+        for c in range(ncols):
+            frac = active[c] / cell_size
+            if frac >= 0.999:
+                cells.append("█")
+            elif frac > 0:
+                cells.append("░")
+            else:
+                cells.append(" ")
+        rows.append("| " + " | ".join([name] + cells) + " |")
+
+    return "\n".join([header_line, sep] + rows)
 
 
 @export_bp.route("/export/pdf/<proposal_id>")
@@ -204,7 +301,14 @@ def export_markdown(proposal_id: str) -> Tuple[Response, int] | Response:
     ctx["map_static_data_uri"] = None
 
     html_content = render_template("export_proposal.html", **ctx)
+    html_content = _strip_timeline_chart(html_content)
     md_content = _html_to_markdown(html_content)
+
+    timeline_table = _timeline_markdown_table(proposal, ctx)
+    if timeline_table:
+        md_content = md_content.replace(
+            "## Timeline\n", f"## Timeline\n\n{timeline_table}\n"
+        )
 
     return Response(
         md_content,

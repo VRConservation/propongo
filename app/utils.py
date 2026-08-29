@@ -356,9 +356,15 @@ def _screenshot_embed(embed_url, width=1200, height=800, timeout=30):
     except ImportError:
         return None
 
+    chromium_args = [
+        "--disable-dev-shm-usage",
+        "--no-sandbox",
+        "--disable-extensions",
+        "--force-color-profile=srgb",
+    ]
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=True, args=chromium_args)
             page = browser.new_page(
                 viewport={"width": width, "height": height},
                 device_scale_factor=2,
