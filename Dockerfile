@@ -5,7 +5,8 @@ ENV PYTHONUNBUFFERED=1 \
     HOST=0.0.0.0 \
     PORT=5000 \
     DEBUG=False \
-    PROPONGO_DATA_DIR=/app/data
+    PROPONGO_DATA_DIR=/app/data \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # System libraries required by WeasyPrint (PDF) and Playwright/Chromium (map exports).
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -39,8 +40,10 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn \
-    && pip install --no-cache-dir playwright \
-    && playwright install chromium-headless-shell
+    && pip install --no-cache-dir "playwright==1.62.0" \
+    && playwright install chromium \
+    && playwright install chromium-headless-shell \
+    && chmod -R a+rX /ms-playwright
 
 # Install the application (deps already present, so skip re-resolving them).
 COPY . .

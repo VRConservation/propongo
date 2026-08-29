@@ -7,5 +7,5 @@ python-docx>=1.0
 pandas>=2.0
 openpyxl>=3.0
 tabulate>=0.9
-playwright>=1.40
+playwright==1.62.0
 html2text==2025.4.15
