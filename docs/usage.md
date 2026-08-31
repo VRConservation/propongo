@@ -60,9 +60,9 @@ Click the sidebar icon (&#9776;) to open the snippet library. You start with an 
 Click a snippet to insert it at the cursor position in any text field; hover a snippet to edit or delete it.
 
 ## Exporting
-- **PDF** - Click "Export PDF" to generate a clean, professional PDF document
-- **HTML** - Click "Export HTML" to download a standalone HTML file
-- **Print** - Use Ctrl+P / Cmd+P in the Preview tab for browser printing
+- **PDF** - Click "⬇️ PDF" to generate a clean, professional PDF document.
+- **HTML** - Click "⬇️ HTML" to download a standalone HTML file.
+- **Markdown** - Click "⬇️ Markdown" button to generate a markdown file from your proposal.
 
 ## Managing Proposals
 - Proposals auto-save as you work

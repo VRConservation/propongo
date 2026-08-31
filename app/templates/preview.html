@@ -29,7 +29,9 @@
     {% if map_ctx %}
     <div class="form-group">
         <h3>{{ _('Project Map') }}</h3>
-        {% if map_ctx.image_url %}
+        {% if map_ctx.local_image_url %}
+        <img src="{{ map_ctx.local_image_url }}" alt="{{ _('Project map') }}" style="max-width:100%;border-radius:4px;">
+        {% elif map_ctx.image_url %}
         <img src="{{ map_ctx.image_url }}" alt="{{ _('Project map') }}" style="max-width:100%;border-radius:4px;">
         {% else %}
         <iframe class="preview-map-iframe" src="{{ map_ctx.embed_src }}" title="GeoLibre map" width="100%" height="450"

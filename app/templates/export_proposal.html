@@ -206,8 +206,14 @@
         <h2>Map</h2>
         {% if map_static_data_uri %}
         <img src="{{ map_static_data_uri }}" alt="Project map" style="max-width:100%;display:block;" />
+        {% elif map_ctx.local_image_url %}
+        <img src="{{ map_ctx.local_image_url }}" alt="Project map" style="max-width:100%;display:block;" />
         {% elif map_ctx.image_url %}
         <img src="{{ map_ctx.image_url }}" alt="Project map" style="max-width:100%;display:block;" />
+        {% elif for_pdf %}
+        <p style="font-size:9pt;color:#888;font-style:italic;">
+            A static map image is required to include the map in the PDF. Upload a PNG/JPG image in the Map tab, or use the HTML export to see the live GeoLibre map.
+        </p>
         {% else %}
         <iframe id="map-export-frame" src="{{ map_ctx.embed_src }}" title="GeoLibre map" width="100%" height="450"
                 style="border:0;border-radius:4px;" allow="fullscreen; geolocation"></iframe>

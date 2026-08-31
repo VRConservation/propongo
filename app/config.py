@@ -20,6 +20,7 @@ class Config:
     DATA_DIR = DATA_ROOT
     PROPOSALS_DIR = os.path.join(DATA_DIR, 'proposals')
     EXPORTS_DIR = os.path.join(DATA_DIR, 'exports')
+    MAPS_DIR = os.path.join(DATA_DIR, 'maps')
 
     # GeoLibre embed base URL. Points at the hosted app by default; set to a
     # self-hosted instance (e.g. http://localhost:8080) when running one.

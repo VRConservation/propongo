@@ -2,21 +2,15 @@
 A proposal generator for conservation and natural resource projects available as an app at [propongo.org](https://propongo.org). Create professional proposals in English, French, or Spanish with scope of work, budgets, qualifications, timelines, and export to PDF or HTML. Detailed documentation, examples, and tutorials can be found at https://3point.xyz/propongo. 
 
 ## Features
-
 - **Scope of Work** - Define project summary, tasks, and deliverables
 - **Budget** - Line-item budgeting with cost/unit calculations, totals, and indirect costs
 - **Qualifications** - Document team background and relevant experience
 - **Timeline** - Auto-derived task timing from budget items with Gantt chart visualization
 - **Custom Sections** - Add unlimited custom sections with Markdown formatting
-- **PDF Import** - Import a pdf of an RFP to the custom section and it will read then add required sections
-- **Excel Import** - Import Excel spreadsheets as formatted tables into custom sections
-- **Map** - Experimental map page allows import of project map from GeoLibre.
-- **Preview** - View the complete proposal with task-grouped budget and timeline bars
-- **PDF Export** - Clean, professional PDF output via WeasyPrint
-- **PDF Import** - Import a pdf of an RFP to the custom section and it will read then add required sections
-- **HTML Export** - Standalone HTML file with embedded styles
+- **Map** - Experimental map page allows import of project map from GeoLibre or as a png/jpg
+- **Preview** - View the complete proposal with task-grouped budget and timeline bars and export your proposla as a HTML, PDF, or Markdown file.
 - **Snippet Library** - Reusable markdown components for organization descriptions, deliverable templates, and custom content
-- **Save/Load** - Proposals stored as JSON files on disk, auto-save as you work
+- **Import** - Import a pdf of an RFP to the custom section and it will read then add required sections or import Excel spreadsheets as formatted tables into custom sections
 - **Project tracking** - When a proposal is secured, use the tracking feature to manage project deliverables, timeline, and budget spend.
 
 ## Quick Start

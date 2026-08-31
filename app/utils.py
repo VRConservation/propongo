@@ -257,10 +257,14 @@ def build_map_export_context(proposal) -> Dict[str, Any]:
     """Build the Map figure context for preview and export templates.
 
     Returns None unless the proposal opts in via map_config.show_in_preview.
-    When a static image URL is configured it is preferred; otherwise the live
-    GeoLibre embed URL is provided (renders in browsers and, once captured to
-    a clean map image, in the Chromium PDF export). ``share_url`` is the
-    human-facing GeoLibre project link used in the Markdown export.
+    Resolution for the figure source, in order:
+
+    * ``static_image`` mode (uploaded local PNG/JPG) → ``local_image_url``.
+    * A remote ``image_url`` in map_config → used directly.
+    * Otherwise the live GeoLibre embed URL is provided (renders in browsers).
+
+    ``share_url`` is the human-facing GeoLibre project link used in the
+    Markdown export.
     """
     map_config = getattr(proposal, "map_config", None) or {}
     if not map_config.get("show_in_preview"):
@@ -274,9 +278,24 @@ def build_map_export_context(proposal) -> Dict[str, Any]:
     return {
         "embed_src": build_geolibre_embed_src(map_config),
         "image_url": (map_config.get("image_url") or "").strip(),
+        "local_image_url": _local_map_image_url(proposal),
         "share_url": share_url,
         "caption": (map_config.get("caption") or "").strip().rstrip("."),
     }
+
+
+def _local_map_image_url(proposal) -> str | None:
+    """Return the served URL for the proposal's uploaded static map image.
+
+    Returns None unless the proposal is in ``static_image`` mode with an
+    ``image_path`` configured.
+    """
+    map_config = getattr(proposal, "map_config", None) or {}
+    if map_config.get("mode") != "static_image":
+        return None
+    if not (map_config.get("image_path") or "").strip():
+        return None
+    return f"/map-image/{proposal.id}"
 
 
 def build_map_export_image(proposal):

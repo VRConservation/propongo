@@ -64,6 +64,7 @@ DATA_ROOT = _DATA_ROOT
 
 PROPOSALS_DIR = os.path.join(_DATA_ROOT, "proposals")
 TEMPLATES_DIR = os.path.join(_DATA_ROOT, "templates")
+MAPS_DIR = os.path.join(_DATA_ROOT, "maps")
 
 # Demo proposals bundled with the package, seeded into the admin account's
 # proposals dir on first use so the gallery is not empty on fresh deploys.
@@ -74,6 +75,7 @@ def ensure_dirs() -> None:
     """Ensure data directories exist."""
     os.makedirs(PROPOSALS_DIR, exist_ok=True)
     os.makedirs(TEMPLATES_DIR, exist_ok=True)
+    os.makedirs(MAPS_DIR, exist_ok=True)
 
 
 def _auth_enabled() -> bool:

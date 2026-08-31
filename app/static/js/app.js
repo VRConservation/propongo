@@ -245,6 +245,7 @@ async function switchTab(proposalId, tabName, btn) {
     if (tabName === 'map') {
         toggleMapUrlInput();
         toggleMapImageField();
+        toggleStaticImageField();
     }
 }
 
@@ -884,13 +885,53 @@ function toggleMapUrlInput() {
     const url = document.getElementById('map-context-url');
     if (!mode || !url) return;
     const urlGroup = document.getElementById('map-context-url-group');
-    if (mode.value === 'basemap') {
+    const isStatic = mode.value === 'static_image';
+    const isBasemap = mode.value === 'basemap';
+    if (urlGroup) urlGroup.style.display = isStatic ? 'none' : '';
+    if (isStatic || isBasemap) {
         url.disabled = true;
         if (urlGroup) urlGroup.style.opacity = '0.5';
     } else {
         url.disabled = false;
         if (urlGroup) urlGroup.style.opacity = '1';
     }
+}
+
+function toggleStaticImageField() {
+    const mode = document.getElementById('map-context-mode');
+    const group = document.getElementById('map-static-image-group');
+    if (!mode || !group) return;
+    group.style.display = mode.value === 'static_image' ? '' : 'none';
+}
+
+async function uploadMapImage(proposalId) {
+    const input = document.getElementById('map-image-file');
+    if (!input || !input.files || input.files.length === 0) {
+        alert('Please choose a PNG or JPG image to upload.');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    const resp = await fetch(`/api/map/${proposalId}/upload`, { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) {
+        alert(data.error || 'Upload failed.');
+        return;
+    }
+    alert('Map image uploaded.');
+    const btn = document.querySelector('[data-tab="map"]');
+    if (btn) await switchTab(proposalId, 'map', btn);
+}
+
+async function removeMapImage(proposalId) {
+    const resp = await fetch(`/api/map/${proposalId}/remove-image`, { method: 'POST' });
+    const data = await resp.json();
+    if (!resp.ok) {
+        alert(data.error || 'Remove failed.');
+        return;
+    }
+    const btn = document.querySelector('[data-tab="map"]');
+    if (btn) await switchTab(proposalId, 'map', btn);
 }
 
 function normalizeProjectUrl(url) {

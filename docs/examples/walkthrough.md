@@ -89,7 +89,7 @@ Documents for producing a GeoLibre map can be found at the [GeoLibre.app](https:
 ## 8. Preview & Export
 
 1. Switch to the **Preview** tab to see the full proposal rendered with all sections.
-2. Click **Export** → choose **PDF**, **HTML**, or **Markdown**.
+2. Click and of the blue download buttons to download a **PDF**, **HTML**, or **Markdown** file of your proposal.
 3. The PDF includes a cover page, scope, budget table grouped by task, qualifications, custom sections, and a landscape Gantt chart.
 
 ![Preview tab](img/preview.png)

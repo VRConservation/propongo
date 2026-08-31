@@ -1,15 +1,15 @@
 """Export functionality for HTML, PDF, and Markdown generation.
 
-PDF exports are produced by printing the exact same HTML document the HTML
-export serves with headless Chromium. Only a real browser engine executes the
-JavaScript behind the live GeoLibre map iframe, so this is what keeps the map
-in the PDF; WeasyPrint (still used for the timeline PNG) drops iframes.
+PDF exports are produced by printing the export HTML document with WeasyPrint.
+WeasyPrint is lightweight and self-contained (no headless browser), so PDF
+export stays within memory limits on constrained instances. Because it does
+not execute JavaScript, the live GeoLibre map iframe cannot be printed — the
+export template shows the uploaded static map image instead, and omits the map
+otherwise.
 """
 
 import os
 import re
-import time
-import base64
 import calendar
 import logging
 from io import BytesIO
@@ -26,11 +26,6 @@ logger = logging.getLogger(__name__)
 
 export_bp = Blueprint("export", __name__)
 
-CHROMIUM_MISSING_MSG = (
-    "PDF export requires headless Chromium. Install it with: "
-    "pip install playwright && playwright install chromium"
-)
-
 GTK3_MISSING_MSG = (
     "Timeline PNG export requires GTK3. Download the installer: "
     "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/"
@@ -38,100 +33,51 @@ GTK3_MISSING_MSG = (
 )
 
 
-def _chromium_missing_error(exc: Exception) -> bool:
-    """True if *exc* indicates Playwright's browser executable is missing.
+def _render_pdf(html_content: str, base_url: str | None = None) -> bytes:
+    """Print *html_content* to PDF bytes with WeasyPrint.
 
-    Playwright raises ``Error: Executable doesn't exist at ...`` when the
-    Chromium build (``playwright install chromium``) has not been installed,
-    even though the Python package itself is present.
-    """
-    return "executable doesn't exist" in str(exc).lower()
-
-
-def _map_image_ready(png: bytes) -> bool:
-    """Heuristic for whether a canvas screenshot contains an actual drawn map.
-
-    A blank/loading GeoLibre canvas is near-uniform light gray; a rendered map
-    has a high ratio of colored pixels. Falls back to a byte-size check when
-    Pillow/numpy are unavailable.
+    WeasyPrint is a lightweight, self-contained renderer (no headless browser
+    dependency), so PDF export stays well within memory limits on constrained
+    instances (e.g. Render free/basic). Because it does not execute JavaScript,
+    the live GeoLibre map iframe cannot be rendered — the export template
+    omits the map (or shows the uploaded static image) instead, see
+    ``export_proposal.html``.
     """
     try:
-        import io
-        import numpy as np
-        from PIL import Image
+        from weasyprint import HTML
+    except (OSError, ImportError) as exc:
+        raise RuntimeError("WeasyPrint is not installed or missing its system libraries") from exc
 
-        a = np.array(Image.open(io.BytesIO(png)).convert("RGB")).reshape(-1, 3).astype(int)
-        colored = ((np.abs(a - 255).sum(axis=1)) > 60).mean()
-        return float(colored) >= 0.4
-    except Exception:
-        return len(png) > 50000
+    buf = BytesIO()
+    HTML(string=html_content, base_url=base_url).write_pdf(buf)
+    return buf.getvalue()
 
 
-def _render_pdf(html_content: str, map_wait: float = 15.0) -> bytes:
-    """Print *html_content* to PDF bytes with headless Chromium.
+def _local_map_data_uri(proposal) -> str | None:
+    """Return an embedded data URI for the proposal's uploaded static map image.
 
-    The live GeoLibre map iframe loads the full workspace app (buttons,
-    panels, settings), which would clutter the PDF. Instead we screenshot just
-    the map canvas from inside the iframe (once it has actually drawn content)
-    and swap the iframe for that clean image before printing. Waits are
-    bounded — no blanket ``networkidle`` on the map frame, which keeps the
-    export fast.
+    Reads the image stored under the data dir (``map_config.image_path`` in
+    ``static_image`` mode) so WeasyPrint can embed it without fetching over the
+    network. Returns *None* when no local image is configured.
     """
-    from playwright.sync_api import sync_playwright
+    maps_dir = os.path.join(Config.DATA_DIR, "maps")
+    map_config = getattr(proposal, "map_config", None) or {}
+    image_path = (map_config.get("image_path") or "").strip()
+    if not image_path or map_config.get("mode") != "static_image":
+        return None
 
-    chromium_args = [
-        "--disable-dev-shm-usage",
-        "--no-sandbox",
-        "--disable-extensions",
-        "--force-color-profile=srgb",
-    ]
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True, args=chromium_args)
-        try:
-            page = browser.new_page(
-                viewport={"width": 1400, "height": 1000},
-                device_scale_factor=1.5,
-            )
-            page.set_content(html_content, wait_until="load")
+    full = os.path.join(maps_dir, image_path)
+    try:
+        with open(full, "rb") as fh:
+            data = fh.read()
+    except (OSError, IOError):
+        return None
 
-            geo_frame = next((f for f in page.frames if "geolibre" in f.url), None)
-            if geo_frame is not None:
-                try:
-                    canvas = geo_frame.locator("canvas").first
-                    canvas.wait_for(state="attached", timeout=10000)
-                    png = b""
-                    start = time.monotonic()
-                    while time.monotonic() - start < map_wait:
-                        candidate = canvas.screenshot()
-                        if _map_image_ready(candidate):
-                            png = candidate
-                            break
-                        png = candidate
-                        page.wait_for_timeout(500)
-                    if _map_image_ready(png):
-                        data_uri = "data:image/png;base64," + base64.b64encode(png).decode()
-                        page.evaluate(
-                            """(src) => {
-                                const el = document.getElementById('map-export-frame');
-                                if (el) {
-                                    const img = document.createElement('img');
-                                    img.src = src;
-                                    img.style.maxWidth = '100%';
-                                    img.style.display = 'block';
-                                    el.replaceWith(img);
-                                }
-                            }""",
-                            data_uri,
-                        )
-                except Exception as exc:
-                    logger.debug("Map capture for PDF export failed: %s", exc)
-
-            return page.pdf(
-                format="Letter",
-                print_background=True,
-            )
-        finally:
-            browser.close()
+    ext = os.path.splitext(image_path)[1].lower()
+    mime = {"": "image/png", ".png": "image/png", ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg"}.get(ext, "application/octet-stream")
+    import base64
+    return f"data:{mime};base64,{base64.b64encode(data).decode('ascii')}"
 
 
 def _html_to_markdown(html_content: str) -> str:
@@ -233,23 +179,25 @@ def _timeline_markdown_table(proposal, ctx: dict) -> str:
 
 @export_bp.route("/export/pdf/<proposal_id>")
 def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
-    """Export proposal as PDF by printing the HTML export in headless Chromium."""
+    """Export proposal as PDF by printing the HTML export with WeasyPrint.
+
+    The map is included only when a static image is available (uploaded PNG/JPG
+    or a remote ``image_url``); the live GeoLibre iframe cannot be rendered by
+    WeasyPrint and is omitted with a note.
+    """
     proposal = Proposal.load(proposal_id)
     if not proposal:
         logger.warning(f"Proposal not found for PDF export: {proposal_id}")
         return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
     ctx = build_export_context(proposal)
-    ctx["map_static_data_uri"] = None
+    ctx["map_static_data_uri"] = _local_map_data_uri(proposal)
+    ctx["for_pdf"] = True
     html_content = render_template("export_proposal.html", **ctx)
 
     try:
-        pdf_bytes = _render_pdf(html_content)
-    except ImportError:
-        return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
+        pdf_bytes = _render_pdf(html_content, base_url=request.host_url)
     except Exception as e:
-        if _chromium_missing_error(e):
-            return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
         logger.error(f"PDF export failed: {e}")
         return jsonify({"error": f"PDF export failed: {str(e)}"}), 500
 
@@ -374,12 +322,8 @@ def export_tracker_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
     html_content = render_template("export_tracker.html", **ctx)
 
     try:
-        pdf_bytes = _render_pdf(html_content)
-    except ImportError:
-        return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
+        pdf_bytes = _render_pdf(html_content, base_url=request.host_url)
     except Exception as e:
-        if _chromium_missing_error(e):
-            return jsonify({"error": CHROMIUM_MISSING_MSG}), 500
         logger.error(f"Tracker PDF export failed: {e}")
         return jsonify({"error": f"PDF export failed: {str(e)}"}), 500
 

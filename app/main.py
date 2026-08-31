@@ -10,7 +10,7 @@ import threading
 from datetime import datetime
 from typing import Any, Optional, Tuple
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, g
+from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, g, send_file
 from markupsafe import Markup
 from flask_login import current_user
 import markdown
@@ -429,6 +429,77 @@ def create_app() -> Flask:
             map_config=map_config,
             geolibre_src=build_geolibre_embed_src(map_config),
         )
+
+    @app.route("/api/map/<proposal_id>/upload", methods=["POST"])
+    def upload_map_image(proposal_id):
+        """Upload a static map image (PNG/JPG) for a proposal.
+
+        Saves it under the data dir as ``<proposal_id>.<ext>`` and switches the
+        map to ``static_image`` mode so the image is used in preview and the
+        WeasyPrint PDF (which cannot run the live GeoLibre iframe).
+        """
+        proposal = Proposal.load(proposal_id)
+        if not proposal:
+            return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
+        if 'file' not in request.files:
+            return jsonify(ERROR_MESSAGES['NO_FILE']), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        ext = os.path.splitext(file.filename)[1].lower()
+        if ext not in ('.png', '.jpg', '.jpeg'):
+            return jsonify(ERROR_MESSAGES['INVALID_FILE_TYPE']), 400
+
+        os.makedirs(Config.MAPS_DIR, exist_ok=True)
+        filename = f"{proposal.id}{ext}"
+        file.save(os.path.join(Config.MAPS_DIR, filename))
+
+        map_config = dict(getattr(proposal, 'map_config', None) or {})
+        map_config.update({
+            "mode": "static_image",
+            "image_path": filename,
+            "show_in_preview": True,
+        })
+        proposal.map_config = map_config
+        proposal.save()
+        return jsonify({"ok": True, "url": f"/map-image/{proposal.id}"}), 200
+
+    @app.route("/map-image/<proposal_id>")
+    def serve_map_image(proposal_id):
+        """Serve the proposal's uploaded static map image."""
+        proposal = Proposal.load(proposal_id)
+        if not proposal:
+            return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
+        map_config = getattr(proposal, 'map_config', None) or {}
+        image_path = (map_config.get('image_path') or '').strip()
+        if map_config.get('mode') != 'static_image' or not image_path:
+            return jsonify({"error": "No map image"}), 404
+        full = os.path.join(Config.MAPS_DIR, image_path)
+        if not os.path.isfile(full):
+            return jsonify({"error": "Map image not found"}), 404
+        return send_file(full)
+
+    @app.route("/api/map/<proposal_id>/remove-image", methods=["POST"])
+    def remove_map_image(proposal_id):
+        """Remove the proposal's uploaded static map image."""
+        proposal = Proposal.load(proposal_id)
+        if not proposal:
+            return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
+        map_config = dict(getattr(proposal, 'map_config', None) or {})
+        image_path = (map_config.get('image_path') or '').strip()
+        if image_path:
+            full = os.path.join(Config.MAPS_DIR, image_path)
+            if os.path.isfile(full):
+                try:
+                    os.remove(full)
+                except OSError:
+                    pass
+        map_config.pop('image_path', None)
+        if map_config.get('mode') == 'static_image':
+            map_config['mode'] = 'basemap'
+        proposal.map_config = map_config
+        proposal.save()
+        return jsonify({"ok": True}), 200
 
     @app.route("/budget/<proposal_id>")
     def budget_tab(proposal_id):
