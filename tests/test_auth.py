@@ -167,6 +167,7 @@ def test_registration_rejects_mismatched_passwords():
         "/register",
         data={
             "username": "alice",
+            "email": "alice@example.org",
             "password": "password123",
             "confirm_password": "different123",
         },
@@ -185,6 +186,7 @@ def test_registration_rejects_duplicate_username():
         "/register",
         data={
             "username": "alice",
+            "email": "alice2@example.org",
             "password": "password456",
             "confirm_password": "password456",
         },
@@ -193,11 +195,48 @@ def test_registration_rejects_duplicate_username():
     assert b"already taken" in resp.data
 
 
-def _register(client, username, password):
+def test_registration_requires_email():
+    _enable_auth()
+    client = _client()
+    resp = client.post(
+        "/register",
+        data={
+            "username": "nobody",
+            "email": "",
+            "password": "password123",
+            "confirm_password": "password123",
+        },
+        follow_redirects=True,
+    )
+    assert b"email" in resp.data.lower()
+    assert auth.load_user("nobody") is None
+
+
+def test_registration_rejects_invalid_email():
+    _enable_auth()
+    client = _client()
+    resp = client.post(
+        "/register",
+        data={
+            "username": "nobody",
+            "email": "not-an-email",
+            "password": "password123",
+            "confirm_password": "password123",
+        },
+        follow_redirects=True,
+    )
+    assert b"email" in resp.data.lower()
+    assert auth.load_user("nobody") is None
+
+
+def _register(client, username, password, email=None):
+    if email is None:
+        email = f"{username}@example.org"
     return client.post(
         "/register",
         data={
             "username": username,
+            "email": email,
             "password": password,
             "confirm_password": password,
         },

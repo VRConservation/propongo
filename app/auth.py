@@ -284,6 +284,8 @@ def _validate_signup(username: str, email: str, password: str, confirm: str) -> 
             "Usernames must be 3-32 characters using letters, numbers, dots, dashes, or underscores.",
             lang,
         )
+    if not email or not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        return translate("A valid email address is required.", lang)
     if len(password) < 8:
         return translate("Password must be at least 8 characters.", lang)
     if password != confirm:
