@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import time
 
 import app.auth as auth
 import app.models as models
@@ -278,3 +279,116 @@ def test_results_library_is_per_user():
     resp = alice.post("/api/results", json={"title": "Alice Finding", "evidence": "data"}, content_type="application/json")
     assert resp.status_code == 201
     assert not any(r["title"] == "Alice Finding" for r in admin.get("/api/results").get_json())
+
+
+def test_forgot_password_page_renders():
+    _enable_auth()
+    client = _client()
+    resp = client.get("/forgot-password")
+    assert resp.status_code == 200
+    assert b"forgot" in resp.data.lower() or b"password" in resp.data.lower()
+
+
+def test_forgot_password_shows_confirmation_even_if_unknown_email():
+    _enable_auth()
+    client = _client()
+    resp = client.post("/forgot-password", data={"email": "nobody@example.org"}, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"Check your inbox" in resp.data
+
+
+def test_forgot_password_requires_email():
+    _enable_auth()
+    client = _client()
+    resp = client.post("/forgot-password", data={"email": ""}, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"required" in resp.data.lower() or b"Email address" in resp.data
+
+
+def test_reset_password_flow():
+    _enable_auth()
+    client = _client()
+    # Register a user with an email
+    client.post(
+        "/register",
+        data={
+            "username": "bob",
+            "email": "bob@example.org",
+            "password": "oldpass123",
+            "confirm_password": "oldpass123",
+        },
+        follow_redirects=True,
+    )
+    client.get("/logout")
+
+    # Request a reset
+    resp = client.post("/forgot-password", data={"email": "bob@example.org"}, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"Check your inbox" in resp.data
+
+    # Extract token from user data
+    user_data = auth._load_users().get("bob", {})
+    token = auth.generate_reset_token("bob")
+    assert token
+
+    # Reset password
+    resp = client.post(
+        "/reset-password",
+        data={"token": token, "password": "newpass456", "confirm_password": "newpass456"},
+        follow_redirects=True,
+    )
+    assert resp.status_code == 200
+    assert b"successfully" in resp.data.lower() or b"reset" in resp.data.lower()
+
+    # Login with new password
+    resp = client.post("/login", data={"username": "bob", "password": "newpass456"}, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"Propongo" in resp.data
+
+    # Old password should not work
+    client.get("/logout")
+    resp = client.post("/login", data={"username": "bob", "password": "oldpass123"}, follow_redirects=True)
+    assert b"Invalid username or password" in resp.data
+
+
+def test_reset_password_rejects_invalid_token():
+    _enable_auth()
+    client = _client()
+    resp = client.get("/reset-password?token=garbage", follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"invalid" in resp.data.lower() or b"expired" in resp.data.lower()
+
+
+def test_reset_password_rejects_expired_token():
+    _enable_auth()
+    client = _client()
+    # Register a user
+    client.post(
+        "/register",
+        data={
+            "username": "carol",
+            "email": "carol@example.org",
+            "password": "password123",
+            "confirm_password": "password123",
+        },
+        follow_redirects=True,
+    )
+
+    # Generate token then manually expire it
+    token = auth.generate_reset_token("carol")
+    with auth._lock:
+        users = auth._load_users()
+        users["carol"]["reset_token_expires"] = time.time() - 100
+        auth._save_users(users)
+
+    resp = client.get(f"/reset-password?token={token}", follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"invalid" in resp.data.lower() or b"expired" in resp.data.lower()
+
+
+def test_forgot_password_page_visible_when_auth_disabled():
+    os.environ.pop("PROPONGO_AUTH_ENABLED", None)
+    client = _client()
+    resp = client.get("/forgot-password")
+    # When auth is disabled, should redirect to index
+    assert resp.status_code == 302
