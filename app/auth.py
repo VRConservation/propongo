@@ -302,11 +302,15 @@ def login():
             user = _find_user_by_email(identifier)
         if user and user.check_password(password):
             login_user(user)
+            client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "unknown").split(",")[0].strip()
+            logger.info("Login: user '%s' from %s", user.username, client_ip)
             next_url = request.args.get("next", "")
             if next_url.startswith("/") and not next_url.startswith("//"):
                 return redirect(next_url)
             return redirect(url_for("index"))
         error = translate("Invalid username or password.", getattr(g, "lang", DEFAULT_LANG))
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "unknown").split(",")[0].strip()
+        logger.warning("Failed login: identifier '%s' from %s", identifier, client_ip)
 
     return render_template("login.html", error=error)
 
