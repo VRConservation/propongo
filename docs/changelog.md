@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [Unreleased]\n\n## 1.6.9
 Added <br>
 
 - Username or email accepted on the login page
