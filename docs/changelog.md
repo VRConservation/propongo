@@ -1,6 +1,27 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.6.8\n\n## 1.6.7\n\n## 1.6.6\n\n## 1.6.5\n\n## 1.6.4\n\n## 1.6.3
+## [Unreleased]
+Added <br>
+
+- Username or email accepted on the login page
+- Password reset emails now include a clickable link (multipart HTML) and correct public URLs behind the Run/proxy
+- Bot protection on registration: hidden honeypot field and per-IP / per-email rate limiting
+
+Changed <br>
+
+- SMTP settings (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM) now load from a `.env` file or the `Config` class, and failures to send reset emails are surfaced instead of silently ignored
+
+## 1.6.8
+
+## 1.6.7
+
+## 1.6.6
+
+## 1.6.5
+
+## 1.6.4
+
+## 1.6.3
 Added <br>
 
 
