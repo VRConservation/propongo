@@ -13,6 +13,7 @@ from typing import Any, Optional, Tuple
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, g, send_file
 from markupsafe import Markup
 from flask_login import current_user
+from werkzeug.middleware.proxy_fix import ProxyFix
 import markdown
 from .models import Proposal, PROPOSALS_DIR
 from .export import export_bp
@@ -90,6 +91,9 @@ def create_app() -> Flask:
         Configured Flask application
     """
     app = Flask(__name__)
+    # Trust Render's proxy so request.host/scheme (used by url_for(_external=True)
+    # for password-reset links) reflect the public URL, not an internal one.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.secret_key = Config.SECRET_KEY
     app.config.update(
         SESSION_COOKIE_HTTPONLY=True,

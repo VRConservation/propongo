@@ -29,6 +29,19 @@ services:
         sync: false
       - key: PROPONGO_ADMIN_EMAIL
         sync: false
+      # SMTP settings for password-reset emails. Set SMTP_PASS (the Proton
+      # SMTP token) in the Render dashboard — it is a secret and must not
+      # be committed. The others can be set here or in the dashboard.
+      - key: SMTP_HOST
+        value: "smtp.protonmail.ch"
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        value: "info@3point.xyz"
+      - key: SMTP_FROM
+        value: "info@3point.xyz"
+      - key: SMTP_PASS
+        sync: false
       - key: PROPONGO_SESSION_COOKIE_SECURE
         value: "true"
       - key: DEBUG

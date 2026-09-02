@@ -26,6 +26,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .i18n import DEFAULT_LANG, LANG_COOKIE, translate
 from .models import DATA_ROOT
+from .config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -131,29 +132,47 @@ def _find_user_by_email(email: str) -> Optional["User"]:
 
 def _send_reset_email(to_email: str, username: str, reset_url: str) -> bool:
     """Send a password-reset email via SMTP. Returns True on success."""
-    host = os.environ.get("SMTP_HOST", "")
-    port = int(os.environ.get("SMTP_PORT", "587"))
-    user = os.environ.get("SMTP_USER", "")
-    password = os.environ.get("SMTP_PASS", "")
-    from_addr = os.environ.get("SMTP_FROM", "") or user
+    host = Config.SMTP_HOST or os.environ.get("SMTP_HOST", "")
+    port = Config.SMTP_PORT or int(os.environ.get("SMTP_PORT", "587"))
+    user = Config.SMTP_USER or os.environ.get("SMTP_USER", "")
+    password = Config.SMTP_PASS or os.environ.get("SMTP_PASS", "")
+    from_addr = Config.SMTP_FROM or user
 
     if not host:
-        logger.warning("SMTP_HOST not configured — cannot send reset email")
+        logger.warning(
+            "SMTP not configured (SMTP_HOST is empty) — no reset email sent to %s. "
+            "Set SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS to enable password reset emails.",
+            to_email,
+        )
         return False
 
-    msg = MIMEMultipart()
+    if not user:
+        logger.warning("SMTP_USER is empty — proceeding without SMTP auth for %s", host)
+
+    msg = MIMEMultipart("alternative")
     msg["From"] = from_addr
     msg["To"] = to_email
     msg["Subject"] = "Propongo – Password Reset"
-    msg.attach(MIMEText(
+
+    text_body = (
         f"Hello {username},\n\n"
         f"You requested a password reset for your Propongo account.\n\n"
         f"Click the link below to set a new password:\n\n"
         f"{reset_url}\n\n"
         f"This link expires in 1 hour. If you did not request this, "
-        f"you can safely ignore this email.\n",
-        "plain",
-    ))
+        f"you can safely ignore this email.\n"
+    )
+    html_body = (
+        f"<p>Hello <strong>{username}</strong>,</p>"
+        f"<p>You requested a password reset for your Propongo account.</p>"
+        f"<p><a href=\"{reset_url}\">Set a new password</a></p>"
+        f"<p>Or copy and paste this link into your browser:</p>"
+        f"<p><code>{reset_url}</code></p>"
+        f"<p>This link expires in 1 hour. If you did not request this, "
+        f"you can safely ignore this email.</p>"
+    )
+    msg.attach(MIMEText(text_body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
 
     try:
         with smtplib.SMTP(host, port, timeout=10) as smtp:
@@ -351,7 +370,20 @@ def forgot_password():
                 raw_token = generate_reset_token(user.username)
                 if raw_token:
                     reset_url = url_for("auth.reset_password", token=raw_token, _external=True)
-                    _send_reset_email(user.email, user.username, reset_url)
+                    sent = _send_reset_email(user.email, user.username, reset_url)
+                    if not sent:
+                        logger.error(
+                            "Password reset email FAILED to send to %s (SMTP_HOST=%r, SMTP_USER=%r). "
+                            "The reset token for '%s' has been generated but the user cannot receive it.",
+                            user.email,
+                            Config.SMTP_HOST or os.environ.get("SMTP_HOST", ""),
+                            Config.SMTP_USER or os.environ.get("SMTP_USER", ""),
+                            user.username,
+                        )
+                        error = translate(
+                            "Could not send the reset email right now. Please contact the administrator.",
+                            lang,
+                        )
             # Always show the same message regardless of whether the email exists
             message = translate("Check your inbox for a password reset link.", lang)
 

@@ -63,3 +63,5 @@ features.md
 CODE_AUDIT.MD
 FIXES_APPLIED.MD
 IMPLEMENTATION_NOTES.md
+# Local secrets
+.env
