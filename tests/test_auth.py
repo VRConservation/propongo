@@ -127,6 +127,17 @@ def test_login_rejects_bad_credentials():
     assert b"Invalid username or password" in resp.data
 
 
+def test_login_accepts_email_instead_of_username():
+    _enable_auth()
+    client = _client()
+    _register(client, "alice", "password123", email="alice@example.org")
+    client.get("/logout")
+
+    resp = client.post("/login", data={"username": "alice@example.org", "password": "password123"}, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b"Propongo" in resp.data
+
+
 def test_logout():
     _enable_auth()
     client = _client()
@@ -431,3 +442,53 @@ def test_forgot_password_page_visible_when_auth_disabled():
     resp = client.get("/forgot-password")
     # When auth is disabled, should redirect to index
     assert resp.status_code == 302
+
+
+def test_registration_blocked_by_honeypot():
+    _enable_auth()
+    client = _client()
+    resp = client.post(
+        "/register",
+        data={
+            "username": "botuser",
+            "email": "bot@example.org",
+            "password": "password123",
+            "confirm_password": "password123",
+            "website": "http://spam.example.com",
+        },
+        follow_redirects=True,
+    )
+    assert resp.status_code == 200
+    assert auth.load_user("botuser") is None
+
+
+def test_registration_rate_limited():
+    _enable_auth()
+    with auth._rate_lock:
+        auth._rate_events.clear()
+    # A fresh client per attempt simulates anonymous bot traffic (separate
+    # sessions, so the post-signup auto-login guard doesn't short-circuit).
+    for i in range(auth._RATE_MAX):
+        fresh = _client()
+        fresh.post(
+            "/register",
+            data={
+                "username": f"user{i}",
+                "email": f"user{i}@example.org",
+                "password": "password123",
+                "confirm_password": "password123",
+            },
+            follow_redirects=True,
+        )
+    resp = _client().post(
+        "/register",
+        data={
+            "username": "blocked",
+            "email": "blocked@example.org",
+            "password": "password123",
+            "confirm_password": "password123",
+        },
+        follow_redirects=True,
+    )
+    assert b"Too many signup attempts" in resp.data
+    assert auth.load_user("blocked") is None

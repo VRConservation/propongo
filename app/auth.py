@@ -16,6 +16,7 @@ import secrets
 import smtplib
 import threading
 import time
+from collections import defaultdict, deque
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional
@@ -36,6 +37,26 @@ DEFAULT_PLAN = "free"
 RESET_TOKEN_TTL = 3600  # 1 hour
 
 _lock = threading.Lock()
+
+# Simple in-memory rate limiting for registration (per IP and per email).
+# Tracks up to 30 attempts per key within a sliding 1-hour window.
+_RATE_WINDOW = 3600  # seconds
+_RATE_MAX = 30
+_rate_events: dict = defaultdict(deque)
+_rate_lock = threading.Lock()
+
+
+def _rate_limited(key: str) -> bool:
+    """Return True if too many registration attempts for `key` recently."""
+    now = time.time()
+    with _rate_lock:
+        events = _rate_events[key]
+        while events and events[0] < now - _RATE_WINDOW:
+            events.popleft()
+        if len(events) >= _RATE_MAX:
+            return True
+        events.append(now)
+    return False
 
 
 def auth_enabled() -> bool:
@@ -274,9 +295,11 @@ def login():
 
     error = None
     if request.method == "POST":
-        username = request.form.get("username", "").strip()
+        identifier = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        user = load_user(username)
+        user = load_user(identifier)
+        if user is None:
+            user = _find_user_by_email(identifier)
         if user and user.check_password(password):
             login_user(user)
             next_url = request.args.get("next", "")
@@ -322,10 +345,23 @@ def register():
 
     error = None
     if request.method == "POST":
+        # Honeypot: humans never see/fill the hidden "website" field, bots do.
+        if request.form.get("website", ""):
+            logger.info("Registration blocked: honeypot field filled")
+            return render_template("register.html", error=None)
+
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         confirm = request.form.get("confirm_password", "")
+
+        # Rate-limit by client IP and by email to blunt bot/spam signups.
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "unknown").split(",")[0].strip()
+        if _rate_limited(f"ip:{client_ip}") or _rate_limited(f"email:{email.lower()}"):
+            logger.warning("Registration rate limit hit (ip=%s, email=%s)", client_ip, email)
+            error = translate("Too many signup attempts. Please try again later.", getattr(g, "lang", DEFAULT_LANG))
+            return render_template("register.html", error=error)
+
         error = _validate_signup(username, email, password, confirm)
         if error is None:
             with _lock:
