@@ -59,6 +59,7 @@ site/
 # Generated exports and transient save files stay out of git
 data/exports/*
 data/proposals/*.tmp
+data/map_cache/*
 features.md
 CODE_AUDIT.MD
 FIXES_APPLIED.MD

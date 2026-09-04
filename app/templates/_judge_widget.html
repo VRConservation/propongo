@@ -1,0 +1,44 @@
+{% macro widget(proposal, section_key, content_el_id) %}
+{% set result = proposal.judging.get(section_key) %}
+<div class="judge-widget" data-section-key="{{ section_key }}" data-content-el="{{ content_el_id }}"
+     style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);">
+    <div style="display:flex;gap:8px;align-items:center;">
+        <select id="judge-model-{{ section_key }}" class="judge-model-select"
+                style="padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:13px;">
+            <option value="ollama">{{ _('Ollama (local, free)') }}</option>
+            <option value="sonnet">{{ _('Claude Sonnet 5') }}</option>
+            <option value="opus">{{ _('Claude Opus 5') }}</option>
+        </select>
+        <button type="button" class="btn btn-secondary btn-sm judge-score-btn"
+                onclick="scoreSection('{{ proposal.id }}', '{{ section_key }}', this)">{{ _('Score') }}</button>
+    </div>
+    <p style="margin:6px 0 0;font-size:11px;color:var(--text-muted);">
+        {{ _('Ollama runs locally and needs a one-time setup (install Ollama, pull a model) - see .env.example. Claude Sonnet/Opus need ANTHROPIC_API_KEY set.') }}
+    </p>
+    <div class="judge-result" data-content-hash="{{ result.content_hash if result else '' }}"
+         {% if not result %}style="display:none;"{% endif %}>
+        {% if result %}
+        <div style="margin-top:10px;">
+            <span class="judge-score-badge" style="font-weight:700;font-size:14px;">{{ _('Score') }}: {{ result.score }}/5</span>
+            <span class="judge-score-model" style="font-size:11px;color:var(--text-muted);margin-left:8px;">({{ result.model }})</span>
+        </div>
+        <p class="judge-rationale" style="font-size:13px;margin:6px 0;">{{ result.rationale }}</p>
+        {% if result.strengths %}
+        <p style="font-size:12px;font-weight:600;margin:8px 0 2px;">{{ _('Strengths') }}</p>
+        <ul style="margin:0 0 4px 18px;font-size:12px;">
+            {% for s in result.strengths %}<li>{{ s }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% if result.gaps %}
+        <p style="font-size:12px;font-weight:600;margin:8px 0 2px;">{{ _('Gaps') }}</p>
+        <ul style="margin:0 0 4px 18px;font-size:12px;">
+            {% for g in result.gaps %}<li>{{ g }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        <p class="judge-stale-note" style="display:none;font-size:12px;color:#b45309;margin-top:6px;">
+            &#9888; {{ _('Content changed since this score — re-score for an up-to-date result.') }}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

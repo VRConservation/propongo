@@ -3,9 +3,11 @@
 PDF exports are produced by printing the export HTML document with WeasyPrint.
 WeasyPrint is lightweight and self-contained (no headless browser), so PDF
 export stays within memory limits on constrained instances. Because it does
-not execute JavaScript, the live GeoLibre map iframe cannot be printed — the
-export template shows the uploaded static map image instead, and omits the map
-otherwise.
+not execute JavaScript, the live GeoLibre map iframe cannot be printed —
+instead the export template shows an uploaded static map image, a remote
+``image_url``, or (failing both) an auto-generated snapshot of the Map tab's
+live map, cached on disk so only the first export after a config change pays
+the render cost. See ``get_cached_map_export_image`` in ``utils.py``.
 """
 
 import os
@@ -19,7 +21,7 @@ import html2text
 
 from flask import Blueprint, render_template, request, send_file, jsonify, Response
 from .models import Proposal
-from .utils import build_export_context, build_tracker_export_context
+from .utils import build_export_context, build_tracker_export_context, get_cached_map_export_image
 from .config import Config, ERROR_MESSAGES
 
 logger = logging.getLogger(__name__)
@@ -39,9 +41,9 @@ def _render_pdf(html_content: str, base_url: str | None = None) -> bytes:
     WeasyPrint is a lightweight, self-contained renderer (no headless browser
     dependency), so PDF export stays well within memory limits on constrained
     instances (e.g. Render free/basic). Because it does not execute JavaScript,
-    the live GeoLibre map iframe cannot be rendered — the export template
-    omits the map (or shows the uploaded static image) instead, see
-    ``export_proposal.html``.
+    the live GeoLibre map iframe cannot be rendered — by the time *html_content*
+    reaches here, the map has already been resolved to a static image (or
+    omitted), see ``export_pdf`` and ``export_proposal.html``.
     """
     try:
         from weasyprint import HTML
@@ -78,6 +80,22 @@ def _local_map_data_uri(proposal) -> str | None:
             ".jpeg": "image/jpeg"}.get(ext, "application/octet-stream")
     import base64
     return f"data:{mime};base64,{base64.b64encode(data).decode('ascii')}"
+
+
+def _auto_map_data_uri(proposal) -> str | None:
+    """Return a data URI for an auto-generated snapshot of the live map.
+
+    PDF fallback for proposals that have no uploaded static image and no
+    remote ``image_url``: renders (and caches) a screenshot of whatever is
+    configured on the Map tab instead of requiring a manual PNG export. See
+    ``get_cached_map_export_image``. Returns *None* when generation fails
+    (e.g. no network access, or Playwright unavailable on this host).
+    """
+    image = get_cached_map_export_image(proposal)
+    if not image:
+        return None
+    import base64
+    return f"data:image/png;base64,{base64.b64encode(image).decode('ascii')}"
 
 
 def _html_to_markdown(html_content: str) -> str:
@@ -181,9 +199,11 @@ def _timeline_markdown_table(proposal, ctx: dict) -> str:
 def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
     """Export proposal as PDF by printing the HTML export with WeasyPrint.
 
-    The map is included only when a static image is available (uploaded PNG/JPG
-    or a remote ``image_url``); the live GeoLibre iframe cannot be rendered by
-    WeasyPrint and is omitted with a note.
+    The live GeoLibre iframe cannot be rendered by WeasyPrint, so the map is
+    resolved to a static image in priority order: an uploaded PNG/JPG, a
+    remote ``image_url``, then an auto-generated (and cached) snapshot of
+    whatever is configured on the Map tab. Only if all of those fail is the
+    map omitted with a note.
     """
     proposal = Proposal.load(proposal_id)
     if not proposal:
@@ -192,6 +212,8 @@ def export_pdf(proposal_id: str) -> Tuple[Response, int] | Response:
 
     ctx = build_export_context(proposal)
     ctx["map_static_data_uri"] = _local_map_data_uri(proposal)
+    if not ctx["map_static_data_uri"] and ctx.get("map_ctx") and not ctx["map_ctx"].get("image_url"):
+        ctx["map_static_data_uri"] = _auto_map_data_uri(proposal)
     ctx["for_pdf"] = True
     html_content = render_template("export_proposal.html", **ctx)
 

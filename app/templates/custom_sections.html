@@ -1,3 +1,4 @@
+{% import "_judge_widget.html" as judgewidget with context %}
 <div class="section">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2>{{ _('Custom') }}</h2>
@@ -51,6 +52,7 @@
                               onchange="updateSection('{{ proposal.id }}', '{{ section.id }}')"
                               style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 13px;">{{ section.content }}</textarea>
                 </div>
+                {{ judgewidget.widget(proposal, section.id, 'section-content-' ~ section.id) }}
             </div>
             {% endfor %}
         {% else %}

@@ -1,8 +1,10 @@
 """Utility functions for Propongo."""
 
 import io
+import os
 import json
 import math
+import hashlib
 import logging
 import urllib.request
 from typing import Dict, Any, Optional
@@ -327,7 +329,7 @@ def build_map_export_image(proposal):
         except Exception as exc:
             logger.warning("Could not fetch map image_url %s: %s", image_url, exc)
 
-    embed_src = build_geolibre_embed_src(map_config)
+    embed_src = build_geolibre_embed_src(map_config, layout="print")
     screenshot = _screenshot_embed(embed_src)
     if screenshot:
         return screenshot
@@ -346,6 +348,62 @@ def build_map_export_image(proposal):
     return _generate_basemap_image()
 
 
+def _map_cache_key(map_config: dict) -> str:
+    """Hash of the map_config fields that affect the auto-generated snapshot."""
+    payload = json.dumps(
+        {"mode": map_config.get("mode", ""), "url": (map_config.get("url") or "").strip()},
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def get_cached_map_export_image(proposal) -> Optional[bytes]:
+    """Return a cached snapshot of the live map for PDF export, generating it if needed.
+
+    Used as the PDF export's fallback when a proposal has no uploaded static
+    image and no remote ``image_url``: rather than requiring the user to
+    manually export a PNG from GeoLibre, this renders whatever is configured
+    on the Map tab via ``build_map_export_image`` (a Playwright screenshot,
+    falling back to tile-stitching) and caches the PNG to disk, keyed by a
+    hash of ``mode``/``url``. Later exports reuse the cached file instantly;
+    the snapshot is only regenerated when the Map tab configuration changes.
+
+    Returns *None* when the map isn't shown, is in ``static_image`` mode
+    (handled separately via the uploaded file), or generation fails.
+    """
+    map_config = getattr(proposal, "map_config", None) or {}
+    if not map_config.get("show_in_preview") or map_config.get("mode") == "static_image":
+        return None
+
+    cache_key = _map_cache_key(map_config)
+    cache_path = os.path.join(Config.MAP_CACHE_DIR, f"{proposal.id}_{cache_key}.png")
+    try:
+        with open(cache_path, "rb") as fh:
+            return fh.read()
+    except (OSError, IOError):
+        pass
+
+    image = build_map_export_image(proposal)
+    if not image:
+        return None
+
+    try:
+        os.makedirs(Config.MAP_CACHE_DIR, exist_ok=True)
+        # Drop this proposal's stale snapshot(s) from a prior config.
+        for name in os.listdir(Config.MAP_CACHE_DIR):
+            if name.startswith(f"{proposal.id}_") and name != os.path.basename(cache_path):
+                try:
+                    os.remove(os.path.join(Config.MAP_CACHE_DIR, name))
+                except OSError:
+                    pass
+        with open(cache_path, "wb") as fh:
+            fh.write(image)
+    except OSError:
+        logger.warning("Could not write map export cache for %s", proposal.id)
+
+    return image
+
+
 def _generate_map_from_project(project_url):
     """Generate a map image for *project_url*.
 
@@ -354,7 +412,7 @@ def _generate_map_from_project(project_url):
     available.
     """
     embed_src = build_geolibre_embed_src(
-        {"mode": "project_url", "url": project_url},
+        {"mode": "project_url", "url": project_url}, layout="print",
     )
     screenshot = _screenshot_embed(embed_src)
     if screenshot:

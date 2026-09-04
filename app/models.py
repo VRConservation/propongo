@@ -28,6 +28,8 @@ Custom Section dict:
         'title': str,             # Section title
         'content': str,           # Markdown content
         'order': int,             # Display order
+        'rfp_template_id': str,   # optional: set when created via Import RFP
+        'rfp_section_id': str,    # optional: the RFP template's section id
     }
 
 map_config dict (Map tab): which context layer the embedded GeoLibre map
@@ -35,6 +37,23 @@ opens with. One of:
     {'mode': 'basemap'}                                  # bare map, pick basemap in-app
     {'mode': 'data_url', 'url': '<public data URL>'}     # GeoJSON/COG/PMTiles/etc.
     {'mode': 'project_url', 'url': '<shared .geolibre.json URL>'}
+
+judging dict: LLM-as-judge scores, keyed by section identifier ('scope',
+'qualifications', or a custom section's id). Scoring criteria are fixed,
+app-owned code (see app/judge_criteria.py), not user-edited - this only
+stores the result of the last scoring run. See app/judge.py.
+    {
+        '<section_key>': {
+            'score': int,             # 1-5
+            'rationale': str,
+            'strengths': [str, ...],
+            'gaps': [str, ...],       # required points not (fully) addressed
+            'model': str,             # 'ollama/<model>' | 'claude-sonnet-5' | 'claude-opus-5'
+            'scored_at': str,         # ISO timestamp
+            'content_hash': str,      # sha256(section content), for staleness checks
+        },
+        ...
+    }
 """
 
 import json
@@ -162,6 +181,7 @@ class Proposal:
     timeline_show_budget: bool = False
     custom_sections: list = field(default_factory=list)
     map_config: dict = field(default_factory=dict)
+    judging: dict = field(default_factory=dict)
 
     is_template: bool = False
     template_name: str = ""

@@ -152,6 +152,102 @@ def test_export_markdown_missing_proposal():
         assert resp.status_code == 404
 
 
+def test_export_pdf_auto_generates_and_caches_map_image(monkeypatch, tmp_path):
+    """PDF export should auto-generate a map snapshot when there's no upload/URL,
+    and reuse the cached file (not regenerate) on a later export."""
+    import app.utils as utils_mod
+    from app.config import Config
+
+    monkeypatch.setattr(Config, "MAP_CACHE_DIR", str(tmp_path))
+
+    calls = {"count": 0}
+
+    def fake_build_map_export_image(proposal):
+        calls["count"] += 1
+        return b"\x89PNG\r\n\x1a\nfake-map-bytes"
+
+    monkeypatch.setattr(utils_mod, "build_map_export_image", fake_build_map_export_image)
+
+    p = Proposal(title="Auto Map Test")
+    p.map_config = {
+        "mode": "project_url",
+        "url": "https://share.geolibre.app/vinny-raster/geo-test.geolibre.json",
+        "show_in_preview": True,
+    }
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp1 = client.get(f"/export/pdf/{p.id}")
+        assert resp1.status_code == 200
+        resp2 = client.get(f"/export/pdf/{p.id}")
+        assert resp2.status_code == 200
+
+    assert calls["count"] == 1, "second export should hit the cache, not regenerate"
+
+
+def test_export_pdf_regenerates_map_when_config_changes(monkeypatch, tmp_path):
+    import app.utils as utils_mod
+    from app.config import Config
+
+    monkeypatch.setattr(Config, "MAP_CACHE_DIR", str(tmp_path))
+
+    calls = {"count": 0}
+
+    def fake_build_map_export_image(proposal):
+        calls["count"] += 1
+        return b"\x89PNG\r\n\x1a\nfake-map-bytes"
+
+    monkeypatch.setattr(utils_mod, "build_map_export_image", fake_build_map_export_image)
+
+    p = Proposal(title="Reconfig Map Test")
+    p.map_config = {
+        "mode": "project_url",
+        "url": "https://share.geolibre.app/vinny-raster/geo-test.geolibre.json",
+        "show_in_preview": True,
+    }
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        assert client.get(f"/export/pdf/{p.id}").status_code == 200
+
+        p.map_config = {**p.map_config, "url": "https://share.geolibre.app/vinny-raster/sample-11.geolibre.json"}
+        p.save()
+        assert client.get(f"/export/pdf/{p.id}").status_code == 200
+
+    assert calls["count"] == 2, "changing the map URL should invalidate the cache"
+
+
+def test_export_pdf_static_image_upload_skips_auto_generation(monkeypatch, tmp_path):
+    """Uploaded static images take priority and should never trigger a screenshot."""
+    import app.utils as utils_mod
+    from app.config import Config
+
+    monkeypatch.setattr(Config, "MAP_CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(Config, "DATA_DIR", str(tmp_path))
+
+    def fail_build_map_export_image(proposal):
+        raise AssertionError("should not auto-generate when a static image is uploaded")
+
+    monkeypatch.setattr(utils_mod, "build_map_export_image", fail_build_map_export_image)
+
+    maps_dir = tmp_path / "maps"
+    maps_dir.mkdir()
+    p = Proposal(title="Static Image Test")
+    (maps_dir / f"{p.id}.png").write_bytes(b"\x89PNG\r\n\x1a\nreal-upload")
+    p.map_config = {"mode": "static_image", "image_path": f"{p.id}.png", "show_in_preview": True}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/export/pdf/{p.id}")
+        assert resp.status_code == 200
+
+
 def test_export_missing_proposal():
     app = create_app()
     app.config["TESTING"] = True

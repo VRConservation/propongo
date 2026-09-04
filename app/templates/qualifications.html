@@ -1,3 +1,4 @@
+{% import "_judge_widget.html" as judgewidget with context %}
 <div class="section">
     <h2>{{ _('Qualifications') }}</h2>
 
@@ -9,6 +10,7 @@
                   hx-put="/api/proposal/{{ proposal.id }}"
                   hx-encoding="json"
                   hx-vals='{"qualifications": "JS(document.getElementById(\'qualifications-text\').value)"}'>{{ proposal.qualifications }}</textarea>
+        {{ judgewidget.widget(proposal, 'qualifications', 'qualifications-text') }}
     </div>
 
     <div class="callout callout-info">

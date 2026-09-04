@@ -28,7 +28,10 @@ when the RFP has no named requirement.
 Applying a template adds one custom section per entry, titled
 ``Project Background (10 pts)``, whose markdown content is a checklist of
 the RFP requirements. Importing the same template twice never duplicates
-sections — entries whose title already exists are skipped.
+sections — entries whose title already exists are skipped. Each created
+section is also tagged with ``rfp_template_id``/``rfp_section_id`` so the
+LLM-as-judge feature (app/judge_criteria.py) can apply criteria tuned to
+this specific RFP, reused every time it's imported into a new proposal.
 """
 
 import json
@@ -140,11 +143,18 @@ def _section_title(section: dict) -> str:
     return title
 
 
-def apply_sections(proposal, sections: list) -> dict:
+def apply_sections(proposal, sections: list, template_id: str = "") -> dict:
     """Add RFP-derived sections to ``proposal`` as custom sections.
 
     Entries whose generated title already exists in the proposal are
     skipped so re-importing a template is idempotent.
+
+    When ``template_id`` is given, each created section is tagged with it
+    plus its own RFP section id (``rfp_template_id``/``rfp_section_id``).
+    The judge (app/judge.py, app/judge_criteria.py) uses that tag to apply
+    criteria tuned to this specific RFP, if any have been written for it -
+    the tag travels with the section, so it applies again on every proposal
+    built from the same RFP.
 
     Returns a summary dict with ``added``, ``skipped`` and ``created``.
     """
@@ -165,6 +175,8 @@ def apply_sections(proposal, sections: list) -> dict:
             "title": title,
             "content": build_section_content(section),
             "order": len(existing) + len(created),
+            "rfp_template_id": template_id,
+            "rfp_section_id": section.get("id") or "",
         }
         created.append(new_section)
         existing_titles.add(title.lower())
@@ -231,6 +243,7 @@ def import_rfp(proposal_id: str) -> Tuple[Response, int] | Response:
         sections, errors = _validate_template(data)
         if errors:
             return jsonify({"error": "Invalid RFP data", "details": errors}), 400
+        template_id = (data.get("id") or "").strip()
     else:
         template_id = (data.get("template_id") or "").strip()
         template = load_template(template_id) if template_id else None
@@ -243,7 +256,7 @@ def import_rfp(proposal_id: str) -> Tuple[Response, int] | Response:
         if track:
             sections = [s for s in sections if (s.get("track") or "").strip() == track]
 
-    result = apply_sections(proposal, sections)
+    result = apply_sections(proposal, sections, template_id=template_id)
     proposal.save()
     logger.info(
         "Imported RFP sections into proposal %s: %s added, %s skipped",

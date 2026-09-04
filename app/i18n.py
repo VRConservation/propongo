@@ -366,6 +366,19 @@ TRANSLATIONS = {
         "Export": "Exportar",
         "Download proposals as PDF, HTML, or Markdown. Print-ready formatting with no vendor lock-in.": "Descarga propuestas como PDF, HTML o Markdown. Formato listo para imprimir sin dependencia de proveedores.",
         "Documentation": "Documentación",
+        # Judge / scoring
+        "Scoring guide (what makes a 1 vs. 3 vs. 5)": "Guía de puntuación (qué distingue un 1 de un 3 o un 5)",
+        "1 = ...": "1 = ...",
+        "3 = ...": "3 = ...",
+        "5 = ...": "5 = ...",
+        "Ollama (local, free)": "Ollama (local, gratis)",
+        "Score": "Puntuar",
+        "Scoring…": "Puntuando…",
+        "Scoring failed.": "Error al puntuar.",
+        "Strengths": "Puntos fuertes",
+        "Gaps": "Carencias",
+        "Content changed since this score — re-score for an up-to-date result.": "El contenido cambió desde esta puntuación — vuelve a puntuar para un resultado actualizado.",
+        "Ollama runs locally and needs a one-time setup (install Ollama, pull a model) - see .env.example. Claude Sonnet/Opus need ANTHROPIC_API_KEY set.": "Ollama se ejecuta localmente y requiere una configuración única (instalar Ollama, descargar un modelo) — consulta .env.example. Claude Sonnet/Opus requieren ANTHROPIC_API_KEY.",
     },
     "fr": {
         # Navigation / chrome
@@ -718,6 +731,19 @@ TRANSLATIONS = {
         "Export": "Exporter",
         "Download proposals as PDF, HTML, or Markdown. Print-ready formatting with no vendor lock-in.": "Téléchargez les propositions en PDF, HTML ou Markdown. Mise en forme prête à imprimer sans dépendance fournisseur.",
         "Documentation": "Documentation",
+        # Judge / scoring
+        "Scoring guide (what makes a 1 vs. 3 vs. 5)": "Guide de notation (ce qui distingue un 1 d'un 3 ou d'un 5)",
+        "1 = ...": "1 = ...",
+        "3 = ...": "3 = ...",
+        "5 = ...": "5 = ...",
+        "Ollama (local, free)": "Ollama (local, gratuit)",
+        "Score": "Noter",
+        "Scoring…": "Notation…",
+        "Scoring failed.": "Échec de la notation.",
+        "Strengths": "Points forts",
+        "Gaps": "Lacunes",
+        "Content changed since this score — re-score for an up-to-date result.": "Le contenu a changé depuis cette note — notez à nouveau pour un résultat à jour.",
+        "Ollama runs locally and needs a one-time setup (install Ollama, pull a model) - see .env.example. Claude Sonnet/Opus need ANTHROPIC_API_KEY set.": "Ollama s'exécute localement et nécessite une configuration unique (installer Ollama, télécharger un modèle) — voir .env.example. Claude Sonnet/Opus nécessitent ANTHROPIC_API_KEY.",
     },
 }
 

@@ -119,6 +119,23 @@ def test_import_rfp_idempotent():
     assert len(loaded.custom_sections) == 10
 
 
+def test_import_rfp_tags_sections_with_rfp_source():
+    p = _make_proposal()
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        client.post(
+            f"/api/proposal/{p.id}/import-rfp",
+            json={"template_id": "cal-fire-wpb-2025"},
+        )
+
+    loaded = Proposal.load(p.id)
+    assert loaded.custom_sections
+    for section in loaded.custom_sections:
+        assert section["rfp_template_id"] == "cal-fire-wpb-2025"
+        assert section["rfp_section_id"]
+
+
 def test_apply_sections_skips_existing():
     p = _make_proposal()
     p.custom_sections = [

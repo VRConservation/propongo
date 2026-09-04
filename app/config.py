@@ -46,6 +46,7 @@ class Config:
     PROPOSALS_DIR = os.path.join(DATA_DIR, 'proposals')
     EXPORTS_DIR = os.path.join(DATA_DIR, 'exports')
     MAPS_DIR = os.path.join(DATA_DIR, 'maps')
+    MAP_CACHE_DIR = os.path.join(DATA_DIR, 'map_cache')
 
     # GeoLibre embed base URL. Points at the hosted app by default; set to a
     # self-hosted instance (e.g. http://localhost:8080) when running one.
@@ -61,6 +62,13 @@ class Config:
     SMTP_PASS = os.environ.get('SMTP_PASS', '')
     SMTP_FROM = os.environ.get('SMTP_FROM', '') or os.environ.get('SMTP_USER', '')
 
+    # LLM-as-judge section scoring (see app/judge.py). The free default model
+    # runs against a local Ollama server - no key needed, nothing leaves the
+    # machine. ANTHROPIC_API_KEY only gates the paid Sonnet/Opus options.
+    ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+    OLLAMA_BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
+    OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'llama3.1')
+
 
 # Error messages
 ERROR_MESSAGES = {
@@ -75,4 +83,5 @@ ERROR_MESSAGES = {
     'EXCEL_NOT_INSTALLED': {'error': 'Excel support not installed. Install pandas and openpyxl.'},
     'EXCEL_INVALID_FILE': {'error': 'Invalid Excel file'},
     'EXCEL_PROCESSING_ERROR': {'error': 'Failed to process Excel file'},
+    'SECTION_KEY_NOT_FOUND': {'error': 'Section not found'},
 }
