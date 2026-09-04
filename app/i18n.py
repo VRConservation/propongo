@@ -355,6 +355,17 @@ TRANSLATIONS = {
         "This reset link is invalid or has expired.": "Este enlace de restablecimiento no es válido o ha expirado.",
         "Return to login": "Volver a iniciar sesión",
         "Show password": "Mostrar contraseña",
+        # Landing page
+        "Create, manage, and export professional conservation and grant proposals with a free, open-source tool.": "Crea, gestiona y exporta propuestas profesionales de conservación y subvenciones con una herramienta gratuita y de código abierto.",
+        "Proposal Editor": "Editor de propuestas",
+        "Write scopes, qualifications, and custom sections with Markdown support and reusable snippets.": "Redacta alcances, cualificaciones y secciones personalizadas con soporte Markdown y fragmentos reutilizables.",
+        "Budget Tracking": "Seguimiento de presupuesto",
+        "Build detailed budgets with task-linked items, multi-year timing, and Excel import/export.": "Crea presupuestos detallados con ítems vinculados a tareas, calendario plurianual e importación/exportación de Excel.",
+        "Timeline & Gantt": "Cronograma y Gantt",
+        "Visualize your project schedule with an interactive Gantt chart and export it as a PNG.": "Visualiza la cronología de tu proyecto con un diagrama de Gantt interactivo y exportalo como PNG.",
+        "Export Anywhere": "Exporta donde quieras",
+        "Download proposals as PDF, HTML, or Markdown. Print-ready formatting with no vendor lock-in.": "Descarga propuestas como PDF, HTML o Markdown. Formato listo para imprimir sin dependencia de proveedores.",
+        "Documentation": "Documentación",
     },
     "fr": {
         # Navigation / chrome
@@ -696,6 +707,17 @@ TRANSLATIONS = {
         "This reset link is invalid or has expired.": "Ce lien de réinitialisation est invalide ou a expiré.",
         "Return to login": "Retour à la connexion",
         "Show password": "Afficher le mot de passe",
+        # Landing page
+        "Create, manage, and export professional conservation and grant proposals with a free, open-source tool.": "Créez, gérez et exportez des propositions professionnelles de conservation et de subventions avec un outil gratuit et open source.",
+        "Proposal Editor": "Éditeur de propositions",
+        "Write scopes, qualifications, and custom sections with Markdown support and reusable snippets.": "Rédigez des périmètres, des qualifications et des sections personnalisées avec support Markdown et extraits réutilisables.",
+        "Budget Tracking": "Suivi budgétaire",
+        "Build detailed budgets with task-linked items, multi-year timing, and Excel import/export.": "Créez des budgets détaillés avec des postes liés aux tâches, une planification pluriannuelle et l'import/export Excel.",
+        "Timeline & Gantt": "Calendrier et Gantt",
+        "Visualize your project schedule with an interactive Gantt chart and export it as a PNG.": "Visualisez le calendrier de votre projet avec un diagramme de Gantt interactif et exportez-le en PNG.",
+        "Export Anywhere": "Exportez n'importe où",
+        "Download proposals as PDF, HTML, or Markdown. Print-ready formatting with no vendor lock-in.": "Téléchargez les propositions en PDF, HTML ou Markdown. Mise en forme prête à imprimer sans dépendance fournisseur.",
+        "Documentation": "Documentation",
     },
 }
 

@@ -7,41 +7,87 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div style="max-width: 400px; margin: 80px auto; padding: 0 20px;">
-        <h1 style="font-size: 28px; text-align: center;">Propongo</h1>
-        <p style="text-align: center; color: #64748b; margin-bottom: 24px;">{{ _('Please sign in to continue.') }}</p>
-
-        {% if error %}
-        <div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;padding:10px 12px;margin-bottom:16px;font-size:14px;">{{ error }}</div>
-        {% endif %}
-
-        <form method="post" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}">
-            <div class="form-group">
-                <label for="username">{{ _('Username or email') }}</label>
-                <input type="text" id="username" name="username" autocomplete="username" autofocus required>
-            </div>
-            <div class="form-group" style="position:relative;">
-                <label for="password">{{ _('Password') }}</label>
-                <input type="password" id="password" name="password" autocomplete="current-password" required style="padding-right:40px;">
-                <button type="button" onclick="togglePassword('password', this)" style="position:absolute;right:8px;top:32px;background:none;border:none;cursor:pointer;padding:4px;" aria-label="{{ _('Show password') }}">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </button>
-            </div>
-            <p style="text-align:right;margin-top:-8px;margin-bottom:16px;"><a href="{{ url_for('auth.forgot_password') }}" style="font-size:13px;color:#64748b;">{{ _('Forgot password?') }}</a></p>
-            <button type="submit" class="btn btn-primary" style="width:100%;">{{ _('Sign in') }}</button>
-        </form>
-
-        {% if allow_registration %}
-        <p style="text-align:center;margin-top:16px;">{{ _('No account?') }} <a href="{{ url_for('auth.register') }}">{{ _('Create one') }}</a></p>
-        {% endif %}
-
-        <div style="text-align:center;margin-top:24px;">
+    <div class="landing-container">
+        <div class="landing-header">
+            <h1 class="landing-logo">Propongo</h1>
             <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
                 {% for code, name in LANGUAGES.items() %}
                 <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
                 {% endfor %}
             </select>
         </div>
+
+        <section class="landing-hero">
+            <h2>{{ _('Open source proposal generator for nonprofits') }}</h2>
+            <p class="landing-tagline">{{ _('Create, manage, and export professional conservation and grant proposals with a free, open-source tool.') }}</p>
+        </section>
+
+        <section class="landing-features">
+            <div class="landing-feature">
+                <div class="feature-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <h3>{{ _('Proposal Editor') }}</h3>
+                <p>{{ _('Write scopes, qualifications, and custom sections with Markdown support and reusable snippets.') }}</p>
+            </div>
+            <div class="landing-feature">
+                <div class="feature-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </div>
+                <h3>{{ _('Budget Tracking') }}</h3>
+                <p>{{ _('Build detailed budgets with task-linked items, multi-year timing, and Excel import/export.') }}</p>
+            </div>
+            <div class="landing-feature">
+                <div class="feature-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <h3>{{ _('Timeline & Gantt') }}</h3>
+                <p>{{ _('Visualize your project schedule with an interactive Gantt chart and export it as a PNG.') }}</p>
+            </div>
+            <div class="landing-feature">
+                <div class="feature-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </div>
+                <h3>{{ _('Export Anywhere') }}</h3>
+                <p>{{ _('Download proposals as PDF, HTML, or Markdown. Print-ready formatting with no vendor lock-in.') }}</p>
+            </div>
+        </section>
+
+        <section class="landing-signin">
+            {% if error %}
+            <div class="landing-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}">
+                <div class="form-group">
+                    <label for="username">{{ _('Username or email') }}</label>
+                    <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+                </div>
+                <div class="form-group" style="position:relative;">
+                    <label for="password">{{ _('Password') }}</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required style="padding-right:40px;">
+                    <button type="button" onclick="togglePassword('password', this)" style="position:absolute;right:8px;top:32px;background:none;border:none;cursor:pointer;padding:4px;" aria-label="{{ _('Show password') }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+                <p style="text-align:right;margin-top:-8px;margin-bottom:16px;"><a href="{{ url_for('auth.forgot_password') }}" style="font-size:13px;color:#64748b;">{{ _('Forgot password?') }}</a></p>
+                <button type="submit" class="btn btn-primary" style="width:100%;">{{ _('Sign in') }}</button>
+            </form>
+
+            {% if allow_registration %}
+            <p style="text-align:center;margin-top:16px;">{{ _('No account?') }} <a href="{{ url_for('auth.register') }}">{{ _('Create one') }}</a></p>
+            {% endif %}
+        </section>
+
+        <footer class="landing-footer">
+            <div class="landing-links">
+                <a href="https://3point.xyz/propongo" target="_blank" rel="noopener">{{ _('Documentation') }}</a>
+                <a href="https://github.com/VRConservation/propongo" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://pypi.org/project/propongo/" target="_blank" rel="noopener">PyPI</a>
+                <a href="https://ko-fi.com/propongo" target="_blank" rel="noopener">{{ _('Support') }}</a>
+            </div>
+            <p class="landing-version">{{ app_version }}</p>
+        </footer>
     </div>
     <script>
     function togglePassword(fieldId, btn) {
