@@ -1335,6 +1335,27 @@ textarea {
     margin-top: 2px;
 }
 
+.landing-byline {
+    margin-top: 12px;
+}
+
+.landing-3point-logo {
+    height: 28px;
+    width: auto;
+}
+
+.dark-logo {
+    display: none;
+}
+
+[data-theme="dark"] .light-logo {
+    display: none;
+}
+
+[data-theme="dark"] .dark-logo {
+    display: inline;
+}
+
 @media (max-width: 520px) {
     .landing-features {
         grid-template-columns: 1fr;

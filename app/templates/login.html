@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propongo - {{ _('Sign in') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+    (function() {
+        var saved = localStorage.getItem('propongo-theme');
+        if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+    </script>
 </head>
 <body>
     <div class="landing-container">
         <div class="landing-header">
             <div>
                 <h1 class="landing-logo">Propongo</h1>
-                <p class="landing-version">{{ app_version }}</p>
+                <p class="landing-version">v{{ app_version }}</p>
             </div>
             <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
                 {% for code, name in LANGUAGES.items() %}
@@ -89,6 +95,12 @@
                 <a href="https://pypi.org/project/propongo/" target="_blank" rel="noopener">PyPI</a>
                 <a href="https://ko-fi.com/propongo" target="_blank" rel="noopener">{{ _('Support') }}</a>
             </div>
+            <p class="landing-byline">
+                <a href="https://3point.xyz" target="_blank" rel="noopener">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="3point.xyz" class="landing-3point-logo light-logo">
+                    <img src="{{ url_for('static', filename='img/logo_dark.png') }}" alt="3point.xyz" class="landing-3point-logo dark-logo">
+                </a>
+            </p>
         </footer>
     </div>
     <script>
