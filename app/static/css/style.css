@@ -1556,12 +1556,15 @@ textarea {
 
 .lang-select {
     padding: 3px 6px;
-    font-size: 12px;
+    font-size: 11px;
     border: 1px solid var(--border);
     border-radius: 4px;
     background: var(--surface);
     color: var(--text);
     cursor: pointer;
+    width: auto;
+    max-width: fit-content;
+    margin-left: auto;
 }
 
 .lang-select:focus {
