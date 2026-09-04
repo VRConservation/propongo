@@ -9,7 +9,10 @@
 <body>
     <div class="landing-container">
         <div class="landing-header">
-            <h1 class="landing-logo">Propongo</h1>
+            <div>
+                <h1 class="landing-logo">Propongo</h1>
+                <p class="landing-version">{{ app_version }}</p>
+            </div>
             <select class="lang-select" onchange="window.location='/set-language/' + this.value" title="{{ _('Language') }}">
                 {% for code, name in LANGUAGES.items() %}
                 <option value="{{ code }}" {{ 'selected' if code == current_lang }}>{{ name }}</option>
@@ -86,7 +89,6 @@
                 <a href="https://pypi.org/project/propongo/" target="_blank" rel="noopener">PyPI</a>
                 <a href="https://ko-fi.com/propongo" target="_blank" rel="noopener">{{ _('Support') }}</a>
             </div>
-            <p class="landing-version">{{ app_version }}</p>
         </footer>
     </div>
     <script>

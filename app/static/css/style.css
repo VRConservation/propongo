@@ -1218,7 +1218,7 @@ textarea {
 .landing-container {
     max-width: 640px;
     margin: 0 auto;
-    padding: 32px 20px 48px;
+    padding: 20px 20px 32px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -1227,8 +1227,8 @@ textarea {
 .landing-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
 .landing-logo {
@@ -1238,14 +1238,14 @@ textarea {
 
 .landing-hero {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .landing-hero h2 {
     font-size: 26px;
     font-weight: 700;
     line-height: 1.3;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .landing-tagline {
@@ -1259,20 +1259,20 @@ textarea {
 .landing-features {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 40px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .landing-feature {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 20px;
+    padding: 14px;
 }
 
 .feature-icon {
     color: var(--primary);
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .landing-feature h3 {
@@ -1291,8 +1291,8 @@ textarea {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 40px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 .landing-error {
@@ -1308,7 +1308,7 @@ textarea {
 .landing-footer {
     margin-top: auto;
     text-align: center;
-    padding-top: 24px;
+    padding-top: 16px;
     border-top: 1px solid var(--border);
 }
 
@@ -1330,8 +1330,9 @@ textarea {
 }
 
 .landing-version {
-    color: var(--text-muted);
-    font-size: 12px;
+    color: var(--primary);
+    font-size: 11px;
+    margin-top: 2px;
 }
 
 @media (max-width: 520px) {
@@ -1554,8 +1555,8 @@ textarea {
 }
 
 .lang-select {
-    padding: 5px 8px;
-    font-size: 13px;
+    padding: 3px 6px;
+    font-size: 12px;
     border: 1px solid var(--border);
     border-radius: 4px;
     background: var(--surface);
