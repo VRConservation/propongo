@@ -17,6 +17,18 @@ _orig_snippets_dir = snippets.SNIPPETS_DIR
 _orig_results_dir = results.RESULTS_DIR
 _orig_env = None
 _test_dir = None
+_orig_send_reset_email = auth._send_reset_email
+
+# Reset emails the suite tried to send, as (to_email, username, reset_url).
+# Populated by the stub installed in setup_function so tests can assert on the
+# send path without ever touching a real SMTP server.
+_reset_emails_sent = []
+
+
+def _fake_send_reset_email(to_email, username, reset_url):
+    """Stand-in for auth._send_reset_email — records the call, sends nothing."""
+    _reset_emails_sent.append((to_email, username, reset_url))
+    return True
 
 
 def setup_function():
@@ -28,6 +40,13 @@ def setup_function():
     models.TEMPLATES_DIR = os.path.join(_test_dir, "templates")
     snippets.SNIPPETS_DIR = os.path.join(_test_dir, "snippets")
     results.RESULTS_DIR = os.path.join(_test_dir, "results")
+    # The repo's .env is loaded at import time and carries real SMTP creds, so
+    # without this the suite would authenticate against a live mailbox once per
+    # run (test_reset_password_flow walks the full /forgot-password route).
+    auth._send_reset_email = _fake_send_reset_email
+    _reset_emails_sent.clear()
+    for key in ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "SMTP_FROM"):
+        os.environ.pop(key, None)
 
 
 def teardown_function():
@@ -37,6 +56,7 @@ def teardown_function():
     models.TEMPLATES_DIR = _orig_templates_dir
     snippets.SNIPPETS_DIR = _orig_snippets_dir
     results.RESULTS_DIR = _orig_results_dir
+    auth._send_reset_email = _orig_send_reset_email
     os.environ.clear()
     os.environ.update(_orig_env)
     _orig_env = None
@@ -375,6 +395,9 @@ def test_reset_password_flow():
     resp = client.post("/forgot-password", data={"email": "bob@example.org"}, follow_redirects=True)
     assert resp.status_code == 200
     assert b"Check your inbox" in resp.data
+
+    # The reset email was attempted (and stubbed — never actually sent)
+    assert [addr for addr, _, _ in _reset_emails_sent] == ["bob@example.org"]
 
     # Extract token from user data
     user_data = auth._load_users().get("bob", {})
