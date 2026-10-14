@@ -1,6 +1,13 @@
 # Changelog
 
-## [Unreleased]\n\n## 1.6.11\n\n## 1.6.10\n\n## 1.6.9
+## [Unreleased]
+
+## 1.6.11
+
+## 1.6.10
+
+## 1.6.9
+
 Added <br>
 
 - Username or email accepted on the login page
