@@ -52,60 +52,7 @@
       "task_id": "55853cb0",
       "name": "1a. Initial meeting",
       "cost_per_unit": 200.0,
-      "units": 6.0
-    },
-    {
-      "id": "e58e9d02",
-      "task_id": "55853cb0",
-      "name": "1b. Data collection/cleaning",
-      "cost_per_unit": 200.0,
-      "units": 20.0
-    },
-    {
-      "id": "c5204584",
-      "task_id": "b2d6cb04",
-      "name": "2a. Forest data analysis & valuation",
-      "cost_per_unit": 300.0,
-      "units": 40.0
-    },
-    {
-      "id": "8de733b6",
-      "task_id": "b2d6cb04",
-      "name": "2b. Economic data analysis & valuation",
-      "cost_per_unit": 300.0,
-      "units": 40.0
-    },
-    {
-      "id": "23266e3d",
-      "task_id": "bf8a2495",
-      "name": "3a. Quarterly reports",
-      "cost_per_unit": 200.0,
-      "units": 16.0
-    },
-    {
-      "id": "2f7e5961",
-      "task_id": "bf8a2495",
-      "name": "3b. Presentations",
-      "cost_per_unit": 300.0,
-      "units": 6.0
-    },
-    {
-      "id": "f9a6036e",
-      "task_id": "bf8a2495",
-      "name": "3c. Draft report",
-      "cost_per_unit": 300.0,
-      "units": 60.0
-    },
-    {
-      "id": "5f88a6d7",
-      "task_id": "bf8a2495",
-      "name": "3d. Final report",
-      "cost_per_unit": 300.0,
-      "units": 60.0
-    }
-  ],
-  "budget_item_timings": {
-    "73b878f0": {
+      "units": 6.0,
       "start_month": 9,
       "start_year": 2026,
       "duration_months": 1,
@@ -113,7 +60,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "e58e9d02": {
+    {
+      "id": "e58e9d02",
+      "task_id": "55853cb0",
+      "name": "1b. Data collection/cleaning",
+      "cost_per_unit": 200.0,
+      "units": 20.0,
       "start_month": 10,
       "start_year": 2026,
       "duration_months": 2,
@@ -121,7 +73,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "c5204584": {
+    {
+      "id": "c5204584",
+      "task_id": "b2d6cb04",
+      "name": "2a. Forest data analysis & valuation",
+      "cost_per_unit": 300.0,
+      "units": 40.0,
       "start_month": 11,
       "start_year": 2026,
       "duration_months": 3,
@@ -129,7 +86,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "8de733b6": {
+    {
+      "id": "8de733b6",
+      "task_id": "b2d6cb04",
+      "name": "2b. Economic data analysis & valuation",
+      "cost_per_unit": 300.0,
+      "units": 40.0,
       "start_month": 12,
       "start_year": 2026,
       "duration_months": 3,
@@ -137,7 +99,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "23266e3d": {
+    {
+      "id": "23266e3d",
+      "task_id": "bf8a2495",
+      "name": "3a. Quarterly reports",
+      "cost_per_unit": 200.0,
+      "units": 16.0,
       "start_month": 9,
       "start_year": 2026,
       "duration_months": 1,
@@ -145,7 +112,12 @@
       "recurring": true,
       "recurring_interval": 3
     },
-    "2f7e5961": {
+    {
+      "id": "2f7e5961",
+      "task_id": "bf8a2495",
+      "name": "3b. Presentations",
+      "cost_per_unit": 300.0,
+      "units": 6.0,
       "start_month": 12,
       "start_year": 2026,
       "duration_months": 1,
@@ -153,7 +125,12 @@
       "recurring": true,
       "recurring_interval": 6
     },
-    "f9a6036e": {
+    {
+      "id": "f9a6036e",
+      "task_id": "bf8a2495",
+      "name": "3c. Draft report",
+      "cost_per_unit": 300.0,
+      "units": 60.0,
       "start_month": 4,
       "start_year": 2027,
       "duration_months": 1,
@@ -161,7 +138,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "5f88a6d7": {
+    {
+      "id": "5f88a6d7",
+      "task_id": "bf8a2495",
+      "name": "3d. Final report",
+      "cost_per_unit": 300.0,
+      "units": 60.0,
       "start_month": 7,
       "start_year": 2027,
       "duration_months": 1,
@@ -169,7 +151,7 @@
       "recurring": false,
       "recurring_interval": 3
     }
-  },
+  ],
   "start_date": "2026-09-01",
   "end_date": "2027-09-01",
   "indirect_percent": 15,
@@ -178,6 +160,8 @@
   "timeline_use_days": false,
   "timeline_show_budget": true,
   "custom_sections": [],
+  "map_config": {},
+  "judging": {},
   "is_template": false,
   "template_name": "",
   "template_category": "",

@@ -20,6 +20,7 @@ BudgetItem dict:
         'name': str,              # Item name
         'cost_per_unit': float,   # Unit cost
         'units': float,           # Number of units
+        # plus any of BUDGET_TIMING_FIELDS that are set
     }
 
 Custom Section dict:
@@ -69,6 +70,47 @@ MAPS_DIR = os.path.join(_DATA_ROOT, "maps")
 # Demo proposals bundled with the package, seeded into the admin account's
 # proposals dir on first use so the gallery is not empty on fresh deploys.
 _DEMO_PROPOSALS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "proposals")
+
+
+# Timing keys that live on a budget item dict itself. Proposals written before
+# normalization kept these in a parallel ``budget_item_timings`` dict keyed by
+# item id; ``Proposal.from_dict`` folds that legacy dict into the items on load,
+# and it is never written back out.
+BUDGET_TIMING_FIELDS = (
+    "start_month",
+    "start_year",
+    "duration_months",
+    "lead_entity",
+    "recurring",
+    "recurring_interval",
+    "actual_cost",
+)
+
+
+def item_is_scheduled(item: dict) -> bool:
+    """True when a budget item has both a start month and a start year.
+
+    Missing either one means *unscheduled* - not a zero-length schedule. This
+    is the same test ``build_budget_by_year()`` uses to fill its ``unscheduled``
+    bucket so its totals still reconcile.
+    """
+    return bool(item.get("start_month")) and bool(item.get("start_year"))
+
+
+def clear_item_timing(item: dict) -> None:
+    """Mark a budget item unscheduled by dropping its timing keys."""
+    for key in BUDGET_TIMING_FIELDS:
+        item.pop(key, None)
+
+
+def copy_budget_items(items: list) -> list:
+    """Shallow-copy a budget item list so each dict is independent.
+
+    ``list(items)`` alone would share the dicts, so editing the copy's timing
+    would mutate the original proposal - which matters for save-as and
+    new-from-template.
+    """
+    return [dict(item) for item in (items or [])]
 
 
 def ensure_dirs() -> None:
@@ -152,7 +194,6 @@ class Proposal:
     qualifications: str = ""
 
     budget_items: list = field(default_factory=list)
-    budget_item_timings: dict = field(default_factory=dict)
     start_date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     end_date: str = ""
     indirect_percent: float = 0.0
@@ -171,13 +212,58 @@ class Proposal:
     reports: list = field(default_factory=list)
 
     def to_dict(self) -> dict:
-        """Serialize the proposal to a dictionary."""
+        """Serialize the proposal to a dictionary.
+
+        Timing is stored on the budget items, so ``budget_item_timings`` is not
+        a field and is not written out.
+        """
         return asdict(self)
+
+    @property
+    def budget_item_timings(self) -> dict:
+        """Legacy ``{item_id: timing}`` view, derived from the budget items.
+
+        Kept so templates and callers that still expect the old parallel dict
+        keep working. Never persisted - ``to_dict()`` serializes fields only.
+        """
+        return {
+            item["id"]: {k: item[k] for k in BUDGET_TIMING_FIELDS if k in item}
+            for item in self.budget_items
+            if item.get("id") and any(k in item for k in BUDGET_TIMING_FIELDS)
+        }
+
+    @budget_item_timings.setter
+    def budget_item_timings(self, timings: dict) -> None:
+        """Fold a legacy ``{item_id: timing}`` dict into the items themselves.
+
+        Merges rather than replaces: keys absent from an entry leave that
+        item's existing timing untouched, so a partial payload (the timeline tab
+        posts only the items it rendered) cannot wipe ``actual_cost`` or the
+        scheduling of items it did not send. Unknown item ids are ignored.
+        """
+        by_id = {item.get("id"): item for item in self.budget_items}
+        for item_id, timing in (timings or {}).items():
+            item = by_id.get(item_id)
+            if item is None or not isinstance(timing, dict):
+                continue
+            for key in BUDGET_TIMING_FIELDS:
+                if key in timing:
+                    item[key] = timing[key]
 
     @classmethod
     def from_dict(cls, data: dict) -> "Proposal":
-        """Create a Proposal from a dictionary, ignoring unknown fields."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+        """Create a Proposal from a dictionary, ignoring unknown fields.
+
+        A legacy ``budget_item_timings`` entry is folded into the matching
+        budget items, so files written before normalization keep their
+        schedule and get the new shape on the next save.
+        """
+        data = dict(data)
+        legacy_timings = data.pop("budget_item_timings", None)
+        proposal = cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+        if legacy_timings:
+            proposal.budget_item_timings = legacy_timings
+        return proposal
 
     def save(self):
         """Save the proposal to disk as a JSON file."""

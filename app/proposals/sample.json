@@ -52,46 +52,7 @@
       "task_id": "b154b002",
       "name": "a. initial organization",
       "cost_per_unit": 100.0,
-      "units": 5.0
-    },
-    {
-      "id": "ef61a780",
-      "task_id": "b154b002",
-      "name": "b. field crews",
-      "cost_per_unit": 500.0,
-      "units": 40.0
-    },
-    {
-      "id": "63768ae8",
-      "task_id": "de013d6b",
-      "name": "a. data cleaning",
-      "cost_per_unit": 200.0,
-      "units": 20.0
-    },
-    {
-      "id": "f92fa28c",
-      "task_id": "de013d6b",
-      "name": "b. analysis",
-      "cost_per_unit": 200.0,
-      "units": 40.0
-    },
-    {
-      "id": "866fed65",
-      "task_id": "2433cd22",
-      "name": "a. final report",
-      "cost_per_unit": 300.0,
-      "units": 20.0
-    },
-    {
-      "id": "71b2f140",
-      "task_id": "2433cd22",
-      "name": "b. storymap",
-      "cost_per_unit": 200.0,
-      "units": 10.0
-    }
-  ],
-  "budget_item_timings": {
-    "6962a5a6": {
+      "units": 5.0,
       "start_month": 9,
       "start_year": 2026,
       "duration_months": 1,
@@ -99,7 +60,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "ef61a780": {
+    {
+      "id": "ef61a780",
+      "task_id": "b154b002",
+      "name": "b. field crews",
+      "cost_per_unit": 500.0,
+      "units": 40.0,
       "start_month": 10,
       "start_year": 2026,
       "duration_months": 3,
@@ -107,7 +73,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "63768ae8": {
+    {
+      "id": "63768ae8",
+      "task_id": "de013d6b",
+      "name": "a. data cleaning",
+      "cost_per_unit": 200.0,
+      "units": 20.0,
       "start_month": 12,
       "start_year": 2026,
       "duration_months": 2,
@@ -115,7 +86,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "f92fa28c": {
+    {
+      "id": "f92fa28c",
+      "task_id": "de013d6b",
+      "name": "b. analysis",
+      "cost_per_unit": 200.0,
+      "units": 40.0,
       "start_month": 1,
       "start_year": 2027,
       "duration_months": 3,
@@ -123,7 +99,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "866fed65": {
+    {
+      "id": "866fed65",
+      "task_id": "2433cd22",
+      "name": "a. final report",
+      "cost_per_unit": 300.0,
+      "units": 20.0,
       "start_month": 3,
       "start_year": 2027,
       "duration_months": 2,
@@ -131,7 +112,12 @@
       "recurring": false,
       "recurring_interval": 3
     },
-    "71b2f140": {
+    {
+      "id": "71b2f140",
+      "task_id": "2433cd22",
+      "name": "b. storymap",
+      "cost_per_unit": 200.0,
+      "units": 10.0,
       "start_month": 5,
       "start_year": 2027,
       "duration_months": 1,
@@ -139,7 +125,7 @@
       "recurring": false,
       "recurring_interval": 3
     }
-  },
+  ],
   "start_date": "2026-09-01",
   "end_date": "2027-05-01",
   "indirect_percent": 8,
@@ -148,6 +134,8 @@
   "timeline_use_days": false,
   "timeline_show_budget": true,
   "custom_sections": [],
+  "map_config": {},
+  "judging": {},
   "is_template": false,
   "template_name": "",
   "template_category": "",
