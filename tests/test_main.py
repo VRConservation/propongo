@@ -458,3 +458,183 @@ def test_snippets_endpoint_starts_empty():
         assert data["organization"] == []
         assert data["deliverables"] == []
         assert data["custom"] == []
+
+
+# --- budget item timing (stored on the item, migrated from budget_item_timings) ---
+
+
+def test_legacy_budget_item_timings_migrate_into_items():
+    p = Proposal(title="Legacy Shape")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item", "cost_per_unit": 10, "units": 2}]
+    p.save()
+
+    # Write the old parallel-dict shape straight to disk, bypassing the model.
+    path = os.path.join(models.PROPOSALS_DIR, f"{p.id}.json")
+    raw = json.load(open(path))
+    raw["budget_item_timings"] = {
+        "b1": {"start_month": 4, "start_year": 2027, "duration_months": 5, "lead_entity": "Acme"}
+    }
+    with open(path, "w") as f:
+        json.dump(raw, f)
+
+    loaded = Proposal.load(p.id)
+    item = loaded.budget_items[0]
+    assert item["start_month"] == 4
+    assert item["start_year"] == 2027
+    assert item["duration_months"] == 5
+    assert item["lead_entity"] == "Acme"
+    # The compatibility view still reports the same timing.
+    assert loaded.budget_item_timings["b1"]["start_month"] == 4
+
+    # ...but the legacy key is no longer written back out.
+    loaded.save()
+    assert "budget_item_timings" not in json.load(open(path))
+
+
+def test_budget_item_update_accepts_schedule_fields():
+    p = Proposal(title="Schedule Fields")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item", "cost_per_unit": 10, "units": 2}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/budget/{p.id}/b1",
+            json={
+                "start_month": 2,
+                "start_year": 2028,
+                "duration_months": 9,
+                "recurring": True,
+                "recurring_interval": 6,
+                "lead_entity": "Acme",
+            },
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+    item = Proposal.load(p.id).budget_items[0]
+    assert item["start_month"] == 2
+    assert item["duration_months"] == 9
+    assert item["recurring"] is True
+    assert item["recurring_interval"] == 6
+    assert item["lead_entity"] == "Acme"
+
+
+def test_clearing_timing_leaves_item_unscheduled():
+    from app.models import item_is_scheduled
+
+    p = Proposal(title="Clearing")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item", "cost_per_unit": 10, "units": 2}]
+    p.budget_item_timings = {"b1": {"start_month": 3, "start_year": 2027, "duration_months": 4}}
+    p.save()
+    assert item_is_scheduled(Proposal.load(p.id).budget_items[0])
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/budget/{p.id}/b1",
+            json={"start_month": "", "start_year": ""},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+    item = Proposal.load(p.id).budget_items[0]
+    assert item_is_scheduled(item) is False
+    assert "duration_months" not in item
+
+
+def test_timeline_save_preserves_unsent_timing_and_actual_cost():
+    """A timeline-tab save posts only the budget items it rendered.
+
+    It must not wipe the scheduling of items it left out, nor the tracker's
+    actual_cost figures.
+    """
+    p = Proposal(title="Partial Timeline Save")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}, {"id": "t2", "name": "Phase 2"}]
+    p.budget_items = [
+        {"id": "b1", "task_id": "t1", "name": "Shown", "cost_per_unit": 10, "units": 2},
+        {"id": "b2", "task_id": "t2", "name": "Not shown", "cost_per_unit": 20, "units": 3},
+    ]
+    p.budget_item_timings = {
+        "b1": {"start_month": 1, "start_year": 2027, "duration_months": 3},
+        "b2": {"start_month": 5, "start_year": 2027, "duration_months": 6},
+    }
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        # The tracker records an actual cost against b2.
+        resp = client.put(
+            f"/api/tracker/{p.id}/budget/b2",
+            json={"actual_cost": 55.0},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+        # The timeline tab then saves, sending a timing entry for b1 only.
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={
+                "tasks": p.tasks,
+                "budget_item_timings": {
+                    "b1": {
+                        "start_month": 1,
+                        "start_year": 2027,
+                        "duration_months": 3,
+                        "recurring": True,
+                        "recurring_interval": 4,
+                    }
+                },
+            },
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+    items = {i["id"]: i for i in Proposal.load(p.id).budget_items}
+    # b1 was updated, including the recurring fields.
+    assert items["b1"]["recurring"] is True
+    assert items["b1"]["recurring_interval"] == 4
+    # b2's schedule survived even though the payload omitted it...
+    assert items["b2"]["start_month"] == 5
+    assert items["b2"]["duration_months"] == 6
+    # ...as did the tracker's actual_cost.
+    assert items["b2"]["actual_cost"] == 55.0
+
+
+def test_save_as_does_not_share_budget_item_dicts():
+    p = Proposal(title="Original")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item", "cost_per_unit": 10, "units": 2}]
+    p.budget_item_timings = {"b1": {"start_month": 1, "start_year": 2027, "duration_months": 3}}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.post(
+            f"/api/proposal/{p.id}/save-as",
+            json={"title": "Copy"},
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        copy_id = json.loads(resp.data)["id"]
+
+    copy_item = Proposal.load(copy_id).budget_items[0]
+    assert copy_item["start_month"] == 1
+
+    # Rescheduling the copy must not reach back into the original.
+    app = create_app()
+    with app.test_client() as client:
+        client.put(
+            f"/api/budget/{copy_id}/b1",
+            json={"start_month": 7, "start_year": 2029, "duration_months": 2},
+            content_type="application/json",
+        )
+
+    assert Proposal.load(p.id).budget_items[0]["start_month"] == 1

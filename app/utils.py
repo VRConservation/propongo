@@ -79,18 +79,15 @@ def build_export_context(proposal) -> Dict[str, Any]:
         })
 
     budget_with_timing = []
-    timings = proposal.budget_item_timings or {}
     for item in proposal.budget_items:
-        item_id = item.get("id", "")
-        timing = timings.get(item_id, {})
         budget_with_timing.append({
             **item,
-            "start_month": timing.get("start_month"),
-            "start_year": timing.get("start_year"),
-            "duration_months": timing.get("duration_months", 1),
+            "start_month": item.get("start_month"),
+            "start_year": item.get("start_year"),
+            "duration_months": item.get("duration_months", 1),
             "task_id": item.get("task_id", ""),
-            "recurring": timing.get("recurring", False),
-            "recurring_interval": timing.get("recurring_interval", 3),
+            "recurring": item.get("recurring", False),
+            "recurring_interval": item.get("recurring_interval", 3),
         })
 
     from datetime import datetime as _dt
@@ -857,10 +854,9 @@ def build_budget_by_year(proposal) -> Dict[str, Any]:
     """Allocate budget items across calendar years based on their spend dates.
 
     Each item's cost is spread evenly over the months of its user-defined
-    spend window (``budget_item_timings``). Items with no dates set are
-    reported as unscheduled so totals still reconcile.
+    spend window. Items with no dates set are reported as unscheduled so
+    totals still reconcile.
     """
-    timings = getattr(proposal, "budget_item_timings", None) or {}
     by_year = {}
     unscheduled = []
 
@@ -868,10 +864,9 @@ def build_budget_by_year(proposal) -> Dict[str, Any]:
         total = float(item.get("cost_per_unit", 0) * item.get("units", 0))
         if total <= 0:
             continue
-        timing = timings.get(item.get("id", ""), {})
-        sm = timing.get("start_month")
-        sy = timing.get("start_year")
-        dur = timing.get("duration_months")
+        sm = item.get("start_month")
+        sy = item.get("start_year")
+        dur = item.get("duration_months")
         if not (sm and sy and dur):
             unscheduled.append({"name": item.get("name", ""), "amount": total})
             continue
@@ -905,14 +900,9 @@ def build_tracker_export_context(proposal) -> Dict[str, Any]:
     indirect_amount = proposal.total_budget * (indirect_percent / 100)
     total_with_indirect = proposal.total_budget + indirect_amount
 
-    timings = proposal.budget_item_timings or {}
     task_budgets = {}
     for task in proposal.tasks:
         items = [b for b in proposal.budget_items if b.get("task_id") == task["id"]]
-        for item in items:
-            t = timings.get(item.get("id", ""), {})
-            if t:
-                item["actual_cost"] = t.get("actual_cost", 0)
         subtotal = sum(i.get("cost_per_unit", 0) * i.get("units", 0) for i in items)
         actual_total = sum(i.get("actual_cost", 0) for i in items)
         task_budgets[task["id"]] = {

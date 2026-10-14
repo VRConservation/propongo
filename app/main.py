@@ -15,7 +15,12 @@ from markupsafe import Markup
 from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 import markdown
-from .models import Proposal, PROPOSALS_DIR
+from .models import (
+    Proposal,
+    PROPOSALS_DIR,
+    clear_item_timing,
+    copy_budget_items,
+)
 from .export import export_bp
 from .snippets import snippets_bp
 from .results import results_bp
@@ -82,6 +87,25 @@ def validate_numeric(value: Any, name: str, min_val: float = 0.0) -> float:
         return num
     except (ValueError, TypeError) as e:
         raise ValueError(f"Invalid {name}: {str(e)}")
+
+
+def _apply_item_schedule(data: dict, item: dict) -> None:
+    """Write the schedule fields shared by both budget-item write paths.
+
+    ``recurring``, ``recurring_interval`` and ``lead_entity`` are part of a
+    budget item's schedule and are read by ``build_export_context()`` and the
+    timeline/Gantt rendering, so the budget tab honours them too rather than
+    only the timeline tab. Keys absent from *data* leave the item untouched.
+    """
+    if "lead_entity" in data:
+        item["lead_entity"] = data["lead_entity"] or ""
+    if "recurring" in data:
+        item["recurring"] = bool(data["recurring"])
+        interval = data.get("recurring_interval", 3)
+        try:
+            item["recurring_interval"] = max(int(interval or 3), 1)
+        except (TypeError, ValueError):
+            item["recurring_interval"] = 3
 
 
 def create_app() -> Flask:
@@ -301,8 +325,7 @@ def create_app() -> Flask:
         new_proposal.scope = getattr(proposal, 'scope', '') or ''
         new_proposal.tasks = list(proposal.tasks)
         new_proposal.qualifications = proposal.qualifications
-        new_proposal.budget_items = list(proposal.budget_items)
-        new_proposal.budget_item_timings = dict(proposal.budget_item_timings) if proposal.budget_item_timings else {}
+        new_proposal.budget_items = copy_budget_items(proposal.budget_items)
         new_proposal.start_date = proposal.start_date
         new_proposal.indirect_percent = getattr(proposal, 'indirect_percent', 0) or 0
         new_proposal.show_budget_description = getattr(proposal, 'show_budget_description', False)
@@ -370,8 +393,7 @@ def create_app() -> Flask:
         tmpl.scope = getattr(proposal, 'scope', '') or ''
         tmpl.tasks = list(proposal.tasks)
         tmpl.qualifications = proposal.qualifications
-        tmpl.budget_items = list(proposal.budget_items)
-        tmpl.budget_item_timings = dict(proposal.budget_item_timings) if proposal.budget_item_timings else {}
+        tmpl.budget_items = copy_budget_items(proposal.budget_items)
         tmpl.indirect_percent = getattr(proposal, 'indirect_percent', 0) or 0
         tmpl.show_budget_description = getattr(proposal, 'show_budget_description', False)
         tmpl.budget_description = getattr(proposal, 'budget_description', '') or ''
@@ -400,8 +422,7 @@ def create_app() -> Flask:
         proposal.scope = getattr(tmpl, 'scope', '') or ''
         proposal.tasks = list(tmpl.tasks)
         proposal.qualifications = tmpl.qualifications
-        proposal.budget_items = list(tmpl.budget_items)
-        proposal.budget_item_timings = dict(tmpl.budget_item_timings) if tmpl.budget_item_timings else {}
+        proposal.budget_items = copy_budget_items(tmpl.budget_items)
         proposal.indirect_percent = getattr(tmpl, 'indirect_percent', 0) or 0
         proposal.show_budget_description = getattr(tmpl, 'show_budget_description', False)
         proposal.budget_description = getattr(tmpl, 'budget_description', '') or ''
@@ -561,19 +582,8 @@ def create_app() -> Flask:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
         task_budgets = {}
-        timings = proposal.budget_item_timings or {}
         for task in proposal.tasks:
             items = [b for b in proposal.budget_items if b.get("task_id") == task["id"]]
-            for item in items:
-                t = timings.get(item.get("id", ""), {})
-                if t:
-                    item["start_month"] = t.get("start_month")
-                    item["start_year"] = t.get("start_year")
-                    item["duration_months"] = t.get("duration_months", 1)
-                    if t.get("lead_entity"):
-                        item["lead_entity"] = t["lead_entity"]
-                    item["recurring"] = t.get("recurring", False)
-                    item["recurring_interval"] = t.get("recurring_interval", 3)
             if items:
                 task_budgets[task["id"]] = {
                     "task": task,
@@ -840,13 +850,10 @@ def create_app() -> Flask:
             return jsonify({**ERROR_MESSAGES['INVALID_NUMERIC'], 'details': str(e)}), 400
 
         if data.get("start_month") and data.get("start_year"):
-            timings = proposal.budget_item_timings or {}
-            timings[item["id"]] = {
-                "start_month": int(data["start_month"]),
-                "start_year": int(data["start_year"]),
-                "duration_months": max(int(data.get("duration_months", 1) or 1), 1),
-            }
-            proposal.budget_item_timings = timings
+            item["start_month"] = int(data["start_month"])
+            item["start_year"] = int(data["start_year"])
+            item["duration_months"] = max(int(data.get("duration_months", 1) or 1), 1)
+            _apply_item_schedule(data, item)
 
         proposal.budget_items.append(item)
         proposal.save()
@@ -861,8 +868,6 @@ def create_app() -> Flask:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
         proposal.budget_items = [b for b in proposal.budget_items if b.get("id") != item_id]
-        if proposal.budget_item_timings:
-            proposal.budget_item_timings.pop(item_id, None)
         proposal.save()
         return jsonify({"ok": True})
 
@@ -896,17 +901,21 @@ def create_app() -> Flask:
                     logger.warning(f"Invalid budget item data: {e}")
                     return jsonify({**ERROR_MESSAGES['INVALID_NUMERIC'], 'details': str(e)}), 400
 
-                timings = proposal.budget_item_timings or {}
+                timings_applied = False
                 sm, sy = data.get("start_month"), data.get("start_year")
                 if sm and sy:
-                    timings[item_id] = {
-                        "start_month": int(sm),
-                        "start_year": int(sy),
-                        "duration_months": max(int(data.get("duration_months", 1) or 1), 1),
-                    }
+                    item["start_month"] = int(sm)
+                    item["start_year"] = int(sy)
+                    item["duration_months"] = max(int(data.get("duration_months", 1) or 1), 1)
+                    timings_applied = True
                 elif sm == "" and sy == "":
-                    timings.pop(item_id, None)
-                proposal.budget_item_timings = timings
+                    # Clearing drops every timing key, so the item reads as
+                    # unscheduled rather than as a zero-length schedule.
+                    clear_item_timing(item)
+                    timings_applied = True
+
+                if timings_applied:
+                    _apply_item_schedule(data, item)
                 break
         else:
             return jsonify(ERROR_MESSAGES['BUDGET_ITEM_NOT_FOUND']), 404
@@ -1048,13 +1057,8 @@ def create_app() -> Flask:
         total_with_indirect = proposal.total_budget + indirect_amount
 
         task_budgets = {}
-        timings = proposal.budget_item_timings or {}
         for task in proposal.tasks:
             items = [b for b in proposal.budget_items if b.get("task_id") == task["id"]]
-            for item in items:
-                t = timings.get(item.get("id", ""), {})
-                if t:
-                    item["actual_cost"] = t.get("actual_cost", 0)
             subtotal = sum(i.get("cost_per_unit", 0) * i.get("units", 0) for i in items)
             actual_total = sum(i.get("actual_cost", 0) for i in items)
             task_budgets[task["id"]] = {
@@ -1120,12 +1124,11 @@ def create_app() -> Flask:
             return jsonify({"error": "Not found"}), 404
 
         data = request.get_json()
-        timings = proposal.budget_item_timings or {}
-        if item_id not in timings:
-            timings[item_id] = {}
+        target = next((b for b in proposal.budget_items if b.get("id") == item_id), None)
+        if target is None:
+            return jsonify({"error": "Not found"}), 404
         if "actual_cost" in data:
-            timings[item_id]["actual_cost"] = float(data["actual_cost"])
-        proposal.budget_item_timings = timings
+            target["actual_cost"] = float(data["actual_cost"])
         proposal.save()
         return jsonify({"ok": True})
 
