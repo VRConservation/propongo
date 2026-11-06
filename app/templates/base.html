@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Propongo{% endblock %}</title>
+    <title>{% block title %}
+        {% if proposal.title %}
+            {% set t = proposal.title[:10] %}
+            Propongo - {{ t }}{% if proposal.title|length > 10 %}…{% endif %}
+        {% else %}
+            Propongo
+        {% endif %}
+    {% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     {% block head %}{% endblock %}

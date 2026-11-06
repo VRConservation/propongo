@@ -41,6 +41,29 @@ from flask import Blueprint, request, jsonify, Response
 from . import models
 from .config import ERROR_MESSAGES
 
+
+def _pdf_to_text(file_storage) -> str:
+    """Extract text from an uploaded PDF file using pypdfium2."""
+    try:
+        import pypdfium2 as pdfium
+    except ImportError:
+        logger.warning("pypdfium2 not installed – cannot extract PDF text")
+        return ""
+    buf = file_storage.read()
+    try:
+        pdf = pdfium.PdfDocument(buf)
+    except Exception:
+        logger.warning("Could not open uploaded PDF")
+        return ""
+    parts = []
+    for page in pdf:
+        textpage = page.get_textpage()
+        parts.append(textpage.get_text_bounded())
+        textpage.close()
+        page.close()
+    pdf.close()
+    return "\n".join(parts)
+
 logger = logging.getLogger(__name__)
 
 rfp_bp = Blueprint("rfp", __name__)
@@ -223,25 +246,56 @@ def import_rfp(proposal_id: str) -> Tuple[Response, int] | Response:
     if not proposal:
         return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
 
-    data = request.get_json(silent=True)
-    if not isinstance(data, dict):
-        return jsonify({"error": "Invalid JSON body"}), 400
+    sections = []
 
-    if isinstance(data.get("sections"), list):
-        sections, errors = _validate_template(data)
-        if errors:
-            return jsonify({"error": "Invalid RFP data", "details": errors}), 400
+    # Paste-in RFP text: convert paragraphs into checklist sections.
+    if request.content_type and request.content_type.startswith("application/json"):
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid JSON body"}), 400
+        pasted = (data.get("text") or "").strip()
+        if pasted:
+            for para in [p.strip() for p in pasted.split("\n\n") if p.strip()]:
+                sections.append({
+                    "title": "RFP Imported Section",
+                    "requirements": [para],
+                })
+        elif isinstance(data.get("sections"), list):
+            data_sections, errors = _validate_template(data)
+            if errors:
+                return jsonify({"error": "Invalid RFP data", "details": errors}), 400
+            sections = data_sections
+        else:
+            template_id = (data.get("template_id") or "").strip()
+            template = load_template(template_id) if template_id else None
+            if not template:
+                return jsonify({"error": "RFP template not found"}), 404
+            data_sections, errors = _validate_template(template)
+            if errors:
+                return jsonify({"error": "Invalid RFP template", "details": errors}), 400
+            sections = data_sections
+            track = (data.get("track") or "").strip()
+            if track:
+                sections = [s for s in sections if (s.get("track") or "").strip() == track]
+
+    # PDF file upload: extract text and create one section per page.
+    elif "rfp-pdf-file" in request.files:
+        file = request.files["rfp-pdf-file"]
+        if file.filename == "":
+            return jsonify({"error": "No file selected"}), 400
+        if not file.filename.lower().endswith(".pdf"):
+            return jsonify({"error": "Only PDF files are supported"}), 400
+        text = _pdf_to_text(file)
+        if not text:
+            return jsonify({"error": "Could not extract text from PDF"}), 400
+        for page_text in [p.strip() for p in text.split("\f") if p.strip()]:
+            sections.append({
+                "title": "RFP Imported Section",
+                "requirements": [page_text],
+            })
+
     else:
-        template_id = (data.get("template_id") or "").strip()
-        template = load_template(template_id) if template_id else None
-        if not template:
-            return jsonify({"error": "RFP template not found"}), 404
-        sections, errors = _validate_template(template)
-        if errors:
-            return jsonify({"error": "Invalid RFP template", "details": errors}), 400
-        track = (data.get("track") or "").strip()
-        if track:
-            sections = [s for s in sections if (s.get("track") or "").strip() == track]
+        return jsonify({"error": "Provide RFP text, a .json sections file, or a .pdf file"}), 400
 
     result = apply_sections(proposal, sections)
     proposal.save()

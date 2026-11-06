@@ -14,12 +14,12 @@
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label for="applicant-contact">{{ _('Applicant Contact') }}</label>
-                <input type="text" id="applicant-contact" value="{{ proposal.applicant_contact }}"
-                       placeholder="{{ _('Enter applicant contact...') }}"
-                       hx-trigger="keyup changed delay:500ms, change"
-                       hx-put="/api/proposal/{{ proposal.id }}"
-                       hx-encoding="json"
-                       hx-vals='{"applicant_contact": "JS(document.getElementById(\'applicant-contact\').value)"}'>
+                <textarea id="applicant-contact" rows="3"
+                          placeholder="{{ _('Enter applicant contact...') }}"
+                          hx-trigger="keyup changed delay:500ms, change"
+                          hx-put="/api/proposal/{{ proposal.id }}"
+                          hx-encoding="json"
+                          hx-vals='{"applicant_contact": "JS(document.getElementById(\'applicant-contact\').value)"}'>{{ proposal.applicant_contact }}</textarea>
             </div>
         </div>
         <div class="form-group" style="flex:1;">

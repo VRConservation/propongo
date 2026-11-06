@@ -25,6 +25,15 @@
         </div>
     </div>
 
+    {% if proposal.cover_letter_include and proposal.cover_letter_content %}
+    <div class="form-group">
+        <h3 class="editable-heading">
+            <span class="section-title-text" data-section-key="cover_letter" data-default-title="{{ _('Cover Letter') }}" data-custom-title="">{{ _('Letter of Interest') if proposal.cover_letter_type == 'loi' else _('Cover Letter') }}</span>
+        </h3>
+        <div style="font-size:14px;line-height:1.7;">{{ proposal.cover_letter_content|md }}</div>
+    </div>
+    {% endif %}
+
     {% if proposal.project_summary %}
     <div class="form-group">
         <h3 class="editable-heading">
@@ -135,7 +144,7 @@
                 </tr>
             </tbody>
         </table>
-        {% if budget_by_year.years or budget_by_year.unscheduled %}
+        {% if proposal.show_budget_by_year and (budget_by_year.years or budget_by_year.unscheduled) %}
         <h3 class="editable-heading" style="margin-top:16px;">
             <span class="section-title-text" data-section-key="budget_by_year" data-default-title="{{ _('Budget by Year') }}" data-custom-title="{{ proposal.section_titles.get('budget_by_year', '') }}">{{ section_title(proposal, 'budget_by_year', _('Budget by Year')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget_by_year', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>

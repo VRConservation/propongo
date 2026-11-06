@@ -81,6 +81,22 @@ function formatCurrency(num) {
     return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+function toggleBudgetByYear(proposalId) {
+    const checked = document.getElementById('show-budget-by-year').checked;
+    const wrap = document.getElementById('budget-year-table-wrap');
+    if (wrap) {
+        wrap.style.display = checked ? '' : 'none';
+    }
+    const match = window.location.pathname.match(/\/editor\/([^/]+)/);
+    if (match && proposalId === match[1]) {
+        fetch('/api/proposal/' + proposalId, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ show_budget_by_year: checked })
+        });
+    }
+}
+
 function toggleBudgetDescription() {
     const checked = document.getElementById('show-budget-description').checked;
     document.getElementById('budget-description-wrapper').style.display = checked ? '' : 'none';

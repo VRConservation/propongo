@@ -776,8 +776,57 @@ async function loadRfpTemplates() {
 async function importRfp(proposalId) {
     const fileInput = document.getElementById('rfp-json-file');
     const file = fileInput.files[0];
-    let payload;
+    const pasteText = document.getElementById('rfp-paste-text').value.trim();
 
+    // Paste-in RFP text
+    if (pasteText) {
+        try {
+            const response = await fetch(`/api/proposal/${proposalId}/import-rfp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: pasteText })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                closeRfpImportModal();
+                const btn = document.querySelector('[data-tab="custom-sections"]');
+                if (btn) await switchTab(proposalId, 'custom-sections', btn);
+            } else {
+                alert(result.error || t('Failed to import RFP sections.'));
+            }
+            return;
+        } catch (error) {
+            alert(t('Error importing RFP sections: ') + error.message);
+            return;
+        }
+    }
+
+    // PDF file upload
+    if (file && file.name.toLowerCase().endsWith('.pdf')) {
+        const formData = new FormData();
+        formData.append('rfp-pdf-file', file);
+        try {
+            const response = await fetch(`/api/proposal/${proposalId}/import-rfp`, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok) {
+                closeRfpImportModal();
+                const btn = document.querySelector('[data-tab="custom-sections"]');
+                if (btn) await switchTab(proposalId, 'custom-sections', btn);
+            } else {
+                alert(result.error || t('Failed to import RFP sections.'));
+            }
+            return;
+        } catch (error) {
+            alert(t('Error importing RFP sections: ') + error.message);
+            return;
+        }
+    }
+
+    // JSON sections file or template
+    let payload;
     if (file) {
         try {
             payload = JSON.parse(await file.text());
@@ -822,6 +871,42 @@ async function importRfp(proposalId) {
     } catch (error) {
         alert(t('Error importing RFP sections: ') + error.message);
     }
+}
+
+function openCoverLetterModal(proposalId) {
+    const match = window.location.pathname.match(/\/editor\/([^/]+)/);
+    if (!match || match[1] !== proposalId) return;
+    fetch('/api/proposal/' + proposalId)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('cover-letter-type').value = data.cover_letter_type || 'cover_letter';
+            document.getElementById('cover-letter-include').checked = data.cover_letter_include === true;
+            document.getElementById('cover-letter-content').value = data.cover_letter_content || '';
+            document.getElementById('cover-letter-modal').classList.remove('hidden');
+        });
+}
+
+function closeCoverLetterModal() {
+    document.getElementById('cover-letter-modal').classList.add('hidden');
+}
+
+function saveCoverLetter(proposalId) {
+    const data = {
+        cover_letter_type: document.getElementById('cover-letter-type').value,
+        cover_letter_include: document.getElementById('cover-letter-include').checked,
+        cover_letter_content: document.getElementById('cover-letter-content').value,
+    };
+    fetch('/api/proposal/' + proposalId, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(r => r.json())
+      .then(() => {
+          closeCoverLetterModal();
+      }).catch(err => {
+          console.error(err);
+          alert(t('Failed to save cover letter.'));
+      });
 }
 
 window.addEventListener('beforeunload', function() {

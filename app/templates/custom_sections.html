@@ -5,6 +5,9 @@
             <button class="btn btn-secondary" onclick="openExcelImportModal('{{ proposal.id }}')">
                 📊 {{ _('Import Excel') }}
             </button>
+            <button class="btn btn-secondary" onclick="openCoverLetterModal('{{ proposal.id }}')">
+                📄 {{ _('Cover Letter / Letter of Interest') }}
+            </button>
             <button class="btn btn-secondary" onclick="openRfpImportModal('{{ proposal.id }}')">
                 📋 {{ _('Import RFP') }}
             </button>
@@ -108,9 +111,15 @@
             <div id="rfp-templates-list" style="margin-bottom: 16px;"></div>
             <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
             <div class="form-group">
-                <label for="rfp-json-file">{{ _('Or import your own RFP sections file (.json)') }}</label>
-                <input type="file" id="rfp-json-file" accept=".json" 
+                <label for="rfp-json-file">{{ _('Or import your own RFP sections file (.json or .pdf)') }}</label>
+                <input type="file" id="rfp-json-file" accept=".json,.pdf" 
                        style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
+            </div>
+            <div class="form-group" style="margin-top:16px;">
+                <label for="rfp-paste-text">{{ _('Or paste RFP text') }}</label>
+                <textarea id="rfp-paste-text" rows="6"
+                          placeholder="{{ _('Paste the relevant section of an RFP here...') }}"
+                          style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:monospace;"></textarea>
             </div>
             <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">
                 {{ _('RFP section files are produced from a funder\'s request for proposals. Each required section is added as a checklist you fill in with your project details.') }}
@@ -119,6 +128,42 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeRfpImportModal()">{{ _('Cancel') }}</button>
             <button class="btn btn-primary" onclick="importRfp('{{ proposal.id }}')">{{ _('Import') }}</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cover Letter / Letter of Interest Modal -->
+<div id="cover-letter-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>{{ _('Cover Letter / Letter of Interest') }}</h2>
+            <button class="btn-icon" onclick="closeCoverLetterModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>{{ _('Type') }}</label>
+                <select id="cover-letter-type" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;">
+                    <option value="cover_letter">{{ _('Cover Letter') }}</option>
+                    <option value="loi">{{ _('Letter of Interest') }}</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+                <label>{{ _('Include in preview and exports') }}</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-left:0;">
+                    <input type="checkbox" id="cover-letter-include">
+                    {{ _('Yes') }}
+                </label>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+                <label for="cover-letter-content">{{ _('Content (Markdown)') }}</label>
+                <textarea id="cover-letter-content" rows="8"
+                          placeholder="{{ _('Write your cover letter or letter of interest...') }}"
+                          style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font-family:monospace;font-size:13px;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCoverLetterModal()">{{ _('Cancel') }}</button>
+            <button class="btn btn-primary" onclick="saveCoverLetter('{{ proposal.id }}')">{{ _('Save') }}</button>
         </div>
     </div>
 </div>
