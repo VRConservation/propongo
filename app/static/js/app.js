@@ -133,11 +133,13 @@ function saveCurrentTabData(proposalId) {
     const qualsEl = document.getElementById('qualifications-text');
     const clientEl = document.getElementById('client-name');
     const subtitleEl = document.getElementById('proposal-subtitle');
+    const applicantContactEl = document.getElementById('applicant-contact');
     if (summaryEl) data.project_summary = summaryEl.value;
     if (scopeEl) data.scope = scopeEl.value;
     if (qualsEl) data.qualifications = qualsEl.value;
     if (clientEl) data.client_name = clientEl.value;
     if (subtitleEl) data.subtitle = subtitleEl.value;
+    if (applicantContactEl) data.applicant_contact = applicantContactEl.value;
 
     const indirectEl = document.getElementById('indirect-percent');
     if (indirectEl) data.indirect_percent = parseFloat(indirectEl.value) || 0;
@@ -901,12 +903,41 @@ function saveCoverLetter(proposalId) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
     }).then(r => r.json())
+      .then(() => upsertCoverLetterSection(proposalId, data.cover_letter_type, data.cover_letter_content))
       .then(() => {
           closeCoverLetterModal();
       }).catch(err => {
           console.error(err);
           alert(t('Failed to save cover letter.'));
       });
+}
+
+function upsertCoverLetterSection(proposalId, type, content) {
+    const title = type === 'loi' ? t('Letter of Interest') : t('Cover Letter');
+    return fetch('/api/proposal/' + proposalId)
+        .then(r => r.json())
+        .then(data => {
+            const sections = data.custom_sections || [];
+            const existing = sections.find(s => s.title === title);
+            const sectionData = {
+                title: title,
+                content: content,
+                order: sections.length,
+            };
+            if (existing) {
+                return fetch('/api/section/' + proposalId + '/' + existing.id, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title: sectionData.title, content: sectionData.content, order: existing.order })
+                });
+            } else {
+                return fetch('/api/section/' + proposalId, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(sectionData)
+                });
+            }
+        });
 }
 
 window.addEventListener('beforeunload', function() {
@@ -919,11 +950,13 @@ window.addEventListener('beforeunload', function() {
     const qualsEl = document.getElementById('qualifications-text');
     const clientEl = document.getElementById('client-name');
     const subtitleEl = document.getElementById('proposal-subtitle');
+    const applicantContactEl = document.getElementById('applicant-contact');
     if (summaryEl) data.project_summary = summaryEl.value;
     if (scopeEl) data.scope = scopeEl.value;
     if (qualsEl) data.qualifications = qualsEl.value;
     if (clientEl) data.client_name = clientEl.value;
     if (subtitleEl) data.subtitle = subtitleEl.value;
+    if (applicantContactEl) data.applicant_contact = applicantContactEl.value;
 
     const indirectEl = document.getElementById('indirect-percent');
     if (indirectEl) data.indirect_percent = parseFloat(indirectEl.value) || 0;

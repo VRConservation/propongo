@@ -6,7 +6,7 @@
                 📊 {{ _('Import Excel') }}
             </button>
             <button class="btn btn-secondary" onclick="openCoverLetterModal('{{ proposal.id }}')">
-                📄 {{ _('Cover Letter / Letter of Interest') }}
+                📄 {{ _('Cover Letter') }}
             </button>
             <button class="btn btn-secondary" onclick="openRfpImportModal('{{ proposal.id }}')">
                 📋 {{ _('Import RFP') }}
@@ -136,7 +136,7 @@
 <div id="cover-letter-modal" class="modal hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>{{ _('Cover Letter / Letter of Interest') }}</h2>
+            <h2>{{ _('Cover Letter') }}</h2>
             <button class="btn-icon" onclick="closeCoverLetterModal()">&times;</button>
         </div>
         <div class="modal-body">
