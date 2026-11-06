@@ -38,12 +38,13 @@ opens with. One of:
     {'mode': 'project_url', 'url': '<shared .geolibre.json URL>'}
 """
 
+import copy
 import json
 import logging
 import os
 import shutil
 import sys
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, fields
 from typing import Optional
 from datetime import datetime
 import uuid
@@ -85,6 +86,88 @@ BUDGET_TIMING_FIELDS = (
     "recurring_interval",
     "actual_cost",
 )
+
+# Currency symbols the proposal may use. No exchange rates are applied - this
+# only changes the symbol shown in the UI and every export.
+CURRENCIES = ("$", "£", "€")
+
+# Main section headings whose labels the user can rename. Values live in
+# ``Proposal.section_titles``; a missing key means "use the default heading".
+SECTION_TITLE_KEYS = (
+    "project_summary",
+    "scope",
+    "budget",
+    "budget_by_year",
+    "budget_description",
+    "qualifications",
+    "timeline",
+    "map",
+)
+
+COVER_LETTER_TYPES = ("cover_letter", "loi")
+
+# English defaults used by exports. Preview passes translated defaults instead,
+# so the visible label can still be localized while custom titles win.
+SECTION_TITLE_DEFAULTS = {
+    "project_summary": "Project Summary",
+    "scope": "Scope",
+    "budget": "Budget",
+    "budget_by_year": "Budget by Year",
+    "budget_description": "Budget Description",
+    "qualifications": "Qualifications",
+    "timeline": "Timeline",
+    "map": "Map",
+}
+
+# Fields that identify a proposal or template and must not be copied by
+# ``copy_proposal_fields()``. ``map_config`` is excluded because its static
+# image is stored under the proposal id, so a copy cannot share it.
+_NON_COPY_FIELDS = {
+    "id",
+    "title",
+    "created_at",
+    "updated_at",
+    "is_template",
+    "template_name",
+    "template_category",
+    "map_config",
+}
+
+
+def normalize_currency(value) -> str:
+    """Return a supported currency symbol, falling back to dollars."""
+    return value if value in CURRENCIES else "$"
+
+
+def resolve_section_titles(proposal, defaults: Optional[dict] = None) -> dict:
+    """Return every section heading, with user overrides applied.
+
+    ``defaults`` lets a caller supply translated labels; exports use the
+    English ``SECTION_TITLE_DEFAULTS``. Blank overrides are ignored so the
+    default comes back after clearing a title.
+    """
+    resolved = dict(SECTION_TITLE_DEFAULTS if defaults is None else defaults)
+    for key, value in (getattr(proposal, "section_titles", None) or {}).items():
+        if key in resolved and isinstance(value, str) and value.strip():
+            resolved[key] = value.strip()
+    return resolved
+
+
+def copy_proposal_fields(source: "Proposal", target: "Proposal") -> None:
+    """Copy the reusable content of ``source`` onto ``target``.
+
+    Lists and dicts are deep-copied so editing the copy (a saved-as proposal or
+    one created from a template) cannot mutate the original. Identity,
+    template metadata, and the map image are left alone - see
+    ``_NON_COPY_FIELDS``.
+    """
+    for f in fields(source):
+        if f.name in _NON_COPY_FIELDS:
+            continue
+        value = getattr(source, f.name)
+        if isinstance(value, (list, dict)):
+            value = copy.deepcopy(value)
+        setattr(target, f.name, value)
 
 
 def item_is_scheduled(item: dict) -> bool:
@@ -185,6 +268,7 @@ class Proposal:
     title: str = "Untitled Proposal"
     client_name: str = ""
     subtitle: str = ""
+    applicant_contact: str = ""
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -193,16 +277,27 @@ class Proposal:
     tasks: list = field(default_factory=list)
     qualifications: str = ""
 
+    # User-renamed section headings, keyed by SECTION_TITLE_KEYS. Empty means
+    # the template falls back to its translated default heading.
+    section_titles: dict = field(default_factory=dict)
+
     budget_items: list = field(default_factory=list)
     start_date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     end_date: str = ""
     indirect_percent: float = 0.0
     show_budget_description: bool = False
     budget_description: str = ""
+    currency: str = "$"
+    show_budget_by_year: bool = False
     timeline_use_days: bool = False
     timeline_show_budget: bool = False
     custom_sections: list = field(default_factory=list)
     map_config: dict = field(default_factory=dict)
+
+    # Optional cover letter / letter of interest prepended to the proposal.
+    cover_letter_include: bool = False
+    cover_letter_type: str = "cover_letter"
+    cover_letter_content: str = ""
 
     is_template: bool = False
     template_name: str = ""
@@ -210,6 +305,14 @@ class Proposal:
 
     milestones: list = field(default_factory=list)
     reports: list = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """Normalize values that come from disk or an API payload."""
+        self.currency = normalize_currency(self.currency)
+        if self.cover_letter_type not in COVER_LETTER_TYPES:
+            self.cover_letter_type = "cover_letter"
+        if not isinstance(self.section_titles, dict):
+            self.section_titles = {}
 
     def to_dict(self) -> dict:
         """Serialize the proposal to a dictionary.

@@ -1,8 +1,13 @@
 <div class="section">
-    <h2>{{ _('Qualifications') }}</h2>
+    <h2 class="editable-heading">
+        <span class="section-title-text" data-section-key="qualifications" data-default-title="{{ _('Qualifications') }}" data-custom-title="{{ proposal.section_titles.get('qualifications', '') }}">{{ section_title(proposal, 'qualifications', _('Qualifications')) }}</span>
+        <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'qualifications', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+    </h2>
 
     <div class="form-group">
-        <label for="qualifications-text" id="label-qualifications-text" data-word-count="qualifications-text" data-base-label="{{ _('Company Background & Qualifications') }}">{{ _('Company Background & Qualifications') }}</label>
+        <label for="qualifications-text" id="label-qualifications-text" class="editable-label" data-word-count="qualifications-text" data-base-label="{{ section_title(proposal, 'qualifications', _('Company Background & Qualifications')) }}">
+            <span class="section-title-text" data-section-key="qualifications" data-default-title="{{ _('Company Background & Qualifications') }}" data-custom-title="{{ proposal.section_titles.get('qualifications', '') }}">{{ section_title(proposal, 'qualifications', _('Company Background & Qualifications')) }}</span>
+        </label>
         <textarea id="qualifications-text" rows="10"
                   placeholder="{{ _('Describe your organization\'s background, relevant experience, team qualifications, and why you\'re the right choice for this project...') }}"
                   hx-trigger="keyup changed delay:1000ms, change"

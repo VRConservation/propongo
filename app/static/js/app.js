@@ -34,7 +34,68 @@ function updateWordCount(textareaId, labelId) {
     if (!el || !label) return;
     const base = label.dataset.baseLabel;
     const count = countWords(el.value);
-    label.textContent = base + (count > 0 ? ' (' + count + ')' : '');
+    const text = base + (count > 0 ? ' (' + count + ')' : '');
+    // Keep the rename button intact when the label has an inner title span.
+    const textEl = label.querySelector('.section-title-text');
+    if (textEl) {
+        textEl.textContent = text;
+    } else {
+        label.textContent = text;
+    }
+}
+
+let _sectionTitleContext = null;
+
+function openSectionTitleModal(proposalId, key, trigger) {
+    const span = trigger.parentElement.querySelector('.section-title-text');
+    _sectionTitleContext = { proposalId: proposalId, key: key };
+    const input = document.getElementById('section-title-input');
+    input.value = span ? (span.dataset.customTitle || '') : '';
+    document.getElementById('section-title-modal').classList.remove('hidden');
+    input.focus();
+    input.select();
+}
+
+function closeSectionTitleModal() {
+    document.getElementById('section-title-modal').classList.add('hidden');
+    _sectionTitleContext = null;
+}
+
+function applySectionTitle(key, customTitle) {
+    document.querySelectorAll('.section-title-text[data-section-key="' + key + '"]').forEach(span => {
+        span.dataset.customTitle = customTitle;
+        const title = customTitle || span.dataset.defaultTitle || '';
+        const label = span.closest('[data-word-count]');
+        if (label) {
+            label.dataset.baseLabel = title;
+            updateWordCount(label.dataset.wordCount, label.id);
+        } else {
+            span.textContent = title;
+        }
+    });
+}
+
+function saveSectionTitle() {
+    if (!_sectionTitleContext) return;
+    const proposalId = _sectionTitleContext.proposalId;
+    const key = _sectionTitleContext.key;
+    const value = document.getElementById('section-title-input').value.trim();
+
+    fetch('/api/proposal/' + proposalId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section_titles: { [key]: value } })
+    }).then(resp => {
+        if (!resp.ok) throw new Error('Unable to save section title');
+        return resp.json();
+    }).then(data => {
+        const saved = (data.section_titles || {})[key] || '';
+        applySectionTitle(key, saved);
+        closeSectionTitleModal();
+    }).catch(err => {
+        console.error(err);
+        alert(t('Unable to save section title'));
+    });
 }
 
 function initWordCounts() {

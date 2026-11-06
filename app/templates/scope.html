@@ -2,14 +2,25 @@
     <h2>{{ _('Scope of Work') }}</h2>
 
     <div style="display:flex;gap:16px;margin-bottom:16px;">
-        <div class="form-group" style="flex:1;">
-            <label for="client-name">{{ _('Funder') }}</label>
-            <input type="text" id="client-name" value="{{ proposal.client_name }}"
-                   placeholder="{{ _('Enter funder name...') }}"
-                   hx-trigger="keyup changed delay:500ms, change"
-                   hx-put="/api/proposal/{{ proposal.id }}"
-                   hx-encoding="json"
-                   hx-vals='{"client_name": "JS(document.getElementById(\'client-name\').value)"}'>
+        <div style="flex:1;">
+            <div class="form-group">
+                <label for="client-name">{{ _('Funder') }}</label>
+                <input type="text" id="client-name" value="{{ proposal.client_name }}"
+                       placeholder="{{ _('Enter funder name...') }}"
+                       hx-trigger="keyup changed delay:500ms, change"
+                       hx-put="/api/proposal/{{ proposal.id }}"
+                       hx-encoding="json"
+                       hx-vals='{"client_name": "JS(document.getElementById(\'client-name\').value)"}'>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="applicant-contact">{{ _('Applicant Contact') }}</label>
+                <input type="text" id="applicant-contact" value="{{ proposal.applicant_contact }}"
+                       placeholder="{{ _('Enter applicant contact...') }}"
+                       hx-trigger="keyup changed delay:500ms, change"
+                       hx-put="/api/proposal/{{ proposal.id }}"
+                       hx-encoding="json"
+                       hx-vals='{"applicant_contact": "JS(document.getElementById(\'applicant-contact\').value)"}'>
+            </div>
         </div>
         <div class="form-group" style="flex:1;">
             <label for="proposal-subtitle">{{ _('Program') }}</label>
@@ -23,7 +34,10 @@
     </div>
 
     <div class="form-group">
-        <label for="project-summary" id="label-project-summary" data-word-count="project-summary" data-base-label="{{ _('Project Summary') }}">{{ _('Project Summary') }}</label>
+        <label for="project-summary" id="label-project-summary" class="editable-label" data-word-count="project-summary" data-base-label="{{ section_title(proposal, 'project_summary', _('Project Summary')) }}">
+            <span class="section-title-text" data-section-key="project_summary" data-default-title="{{ _('Project Summary') }}" data-custom-title="{{ proposal.section_titles.get('project_summary', '') }}">{{ section_title(proposal, 'project_summary', _('Project Summary')) }}</span>
+            <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'project_summary', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+        </label>
         <textarea id="project-summary" rows="5"
                   placeholder="{{ _('Describe the project overview, goals, and approach...') }}"
                   hx-trigger="keyup changed delay:1000ms, change"
@@ -33,7 +47,10 @@
     </div>
 
     <div class="form-group">
-        <label for="project-scope" id="label-project-scope" data-word-count="project-scope" data-base-label="{{ _('Scope') }}">{{ _('Scope') }}</label>
+        <label for="project-scope" id="label-project-scope" class="editable-label" data-word-count="project-scope" data-base-label="{{ section_title(proposal, 'scope', _('Scope')) }}">
+            <span class="section-title-text" data-section-key="scope" data-default-title="{{ _('Scope') }}" data-custom-title="{{ proposal.section_titles.get('scope', '') }}">{{ section_title(proposal, 'scope', _('Scope')) }}</span>
+            <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'scope', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+        </label>
         <textarea id="project-scope" rows="5"
                   placeholder="{{ _('Describe the scope of work, deliverables, and boundaries...') }}"
                   hx-trigger="keyup changed delay:1000ms, change"

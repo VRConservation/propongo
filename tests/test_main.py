@@ -638,3 +638,282 @@ def test_save_as_does_not_share_budget_item_dicts():
         )
 
     assert Proposal.load(p.id).budget_items[0]["start_month"] == 1
+
+
+# --- new proposal fields: applicant contact, section titles, currency, cover letter ---
+
+
+def test_new_fields_roundtrip_and_legacy_defaults():
+    p = Proposal(
+        title="New Fields",
+        applicant_contact="jane@example.org",
+        section_titles={"project_summary": "Executive Summary"},
+        currency="€",
+        show_budget_by_year=True,
+        cover_letter_include=True,
+        cover_letter_type="loi",
+        cover_letter_content="Dear funder,",
+    )
+
+    restored = Proposal.from_dict(p.to_dict())
+    assert restored.applicant_contact == "jane@example.org"
+    assert restored.section_titles == {"project_summary": "Executive Summary"}
+    assert restored.currency == "€"
+    assert restored.show_budget_by_year is True
+    assert restored.cover_letter_include is True
+    assert restored.cover_letter_type == "loi"
+    assert restored.cover_letter_content == "Dear funder,"
+
+    # Files written before these fields existed load with safe defaults.
+    legacy = Proposal.from_dict({"title": "Legacy"})
+    assert legacy.applicant_contact == ""
+    assert legacy.section_titles == {}
+    assert legacy.currency == "$"
+    assert legacy.show_budget_by_year is False
+    assert legacy.cover_letter_include is False
+    assert legacy.cover_letter_type == "cover_letter"
+    assert legacy.cover_letter_content == ""
+
+
+def test_api_put_persists_new_fields():
+    p = Proposal(title="Persist New Fields")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={
+                "applicant_contact": "contact@example.org",
+                "currency": "£",
+                "show_budget_by_year": True,
+                "cover_letter_include": True,
+                "cover_letter_type": "loi",
+                "cover_letter_content": "To whom it may concern,",
+            },
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["applicant_contact"] == "contact@example.org"
+        assert data["currency"] == "£"
+
+    loaded = Proposal.load(p.id)
+    assert loaded.applicant_contact == "contact@example.org"
+    assert loaded.currency == "£"
+    assert loaded.show_budget_by_year is True
+    assert loaded.cover_letter_include is True
+    assert loaded.cover_letter_type == "loi"
+    assert loaded.cover_letter_content == "To whom it may concern,"
+
+
+def test_api_put_normalizes_invalid_currency():
+    p = Proposal(title="Bad Currency")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"currency": "¥"},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["currency"] == "$"
+
+    assert Proposal.load(p.id).currency == "$"
+
+
+def test_api_put_merges_and_clears_section_titles():
+    p = Proposal(title="Titles")
+    p.section_titles = {"project_summary": "Summary", "scope": "Our Scope"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        # Updating one heading leaves the others alone.
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"section_titles": {"project_summary": "Executive Summary"}},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["section_titles"] == {
+            "project_summary": "Executive Summary",
+            "scope": "Our Scope",
+        }
+
+        # Unknown keys are ignored.
+        client.put(
+            f"/api/proposal/{p.id}",
+            json={"section_titles": {"not_a_section": "Nope"}},
+            content_type="application/json",
+        )
+        assert "not_a_section" not in Proposal.load(p.id).section_titles
+
+        # An empty value clears the override and restores the default heading.
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"section_titles": {"project_summary": ""}},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["section_titles"] == {"scope": "Our Scope"}
+
+
+def test_save_as_copies_new_fields_without_sharing_nested_data():
+    p = Proposal(title="Original Fields")
+    p.applicant_contact = "orig@example.org"
+    p.section_titles = {"project_summary": "Summary"}
+    p.currency = "€"
+    p.show_budget_by_year = True
+    p.cover_letter_include = True
+    p.cover_letter_type = "loi"
+    p.cover_letter_content = "Hello"
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.custom_sections = [{"id": "s1", "title": "Extra", "content": "", "order": 1}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.post(
+            f"/api/proposal/{p.id}/save-as",
+            json={"title": "Copy Fields"},
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        copy_id = resp.get_json()["id"]
+
+    copied = Proposal.load(copy_id)
+    assert copied.applicant_contact == "orig@example.org"
+    assert copied.section_titles == {"project_summary": "Summary"}
+    assert copied.currency == "€"
+    assert copied.show_budget_by_year is True
+    assert copied.cover_letter_include is True
+    assert copied.cover_letter_type == "loi"
+    assert copied.cover_letter_content == "Hello"
+
+    # Nested data is independent: editing the copy cannot mutate the original.
+    copied.section_titles["project_summary"] = "Changed"
+    copied.tasks[0]["name"] = "Changed"
+    copied.custom_sections[0]["title"] = "Changed"
+    copied.save()
+
+    original = Proposal.load(p.id)
+    assert original.section_titles == {"project_summary": "Summary"}
+    assert original.tasks[0]["name"] == "Phase 1"
+    assert original.custom_sections[0]["title"] == "Extra"
+
+
+def test_template_roundtrip_copies_new_fields():
+    p = Proposal(title="Template Source")
+    p.applicant_contact = "tmpl@example.org"
+    p.section_titles = {"qualifications": "Why Us"}
+    p.currency = "£"
+    p.show_budget_by_year = True
+    p.cover_letter_include = True
+    p.cover_letter_type = "cover_letter"
+    p.cover_letter_content = "Dear selection committee,"
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.post(
+            f"/api/proposal/{p.id}/save-as-template",
+            json={"template_name": "Field Template", "template_category": "Survey"},
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        template_id = resp.get_json()["id"]
+
+        resp = client.get(f"/templates/new-from/{template_id}")
+        assert resp.status_code == 302
+        new_id = resp.headers["Location"].rstrip("/").split("/")[-1]
+
+    created = Proposal.load(new_id)
+    assert created.applicant_contact == "tmpl@example.org"
+    assert created.section_titles == {"qualifications": "Why Us"}
+    assert created.currency == "£"
+    assert created.show_budget_by_year is True
+    assert created.cover_letter_include is True
+    assert created.cover_letter_type == "cover_letter"
+    assert created.cover_letter_content == "Dear selection committee,"
+
+
+# --- applicant contact and editable section titles ---
+
+
+def test_scope_tab_shows_applicant_contact_and_rename_controls():
+    p = Proposal(title="Scope UI")
+    p.client_name = "Funder Co"
+    p.subtitle = "Conservation Program"
+    p.applicant_contact = "jane@example.org"
+    p.section_titles = {"project_summary": "Executive Summary"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/scope/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+
+    assert "Applicant Contact" in html
+    assert "jane@example.org" in html
+    assert "Executive Summary" in html
+    assert "openSectionTitleModal" in html
+    # The word-count wiring survives the editable title markup.
+    assert 'data-word-count="project-summary"' in html
+    assert 'id="label-project-summary"' in html
+
+
+def test_preview_shows_applicant_contact_and_custom_titles():
+    p = Proposal(title="Preview UI")
+    p.applicant_contact = "jane@example.org"
+    p.project_summary = "Summary body."
+    p.section_titles = {
+        "project_summary": "Executive Summary",
+        "budget": "Financial Plan",
+    }
+    p.budget_items = [{"name": "Item", "cost_per_unit": 10, "units": 2}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/preview/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+
+    assert "Applicant Contact" in html
+    assert "jane@example.org" in html
+    assert "Executive Summary" in html
+    assert "Financial Plan" in html
+    assert "openSectionTitleModal" in html
+
+
+def test_clearing_custom_title_restores_preview_default():
+    p = Proposal(title="Clear Title")
+    p.project_summary = "Summary body."
+    p.section_titles = {"project_summary": "Executive Summary"}
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"section_titles": {"project_summary": ""}},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+        preview = client.get(f"/preview/{p.id}").data.decode()
+
+    assert "Executive Summary" not in preview
+    assert "Project Summary" in preview

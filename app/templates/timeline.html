@@ -1,5 +1,8 @@
 <div class="section">
-    <h2>{{ _('Timeline') }}</h2>
+    <h2 class="editable-heading">
+        <span class="section-title-text" data-section-key="timeline" data-default-title="{{ _('Timeline') }}" data-custom-title="{{ proposal.section_titles.get('timeline', '') }}">{{ section_title(proposal, 'timeline', _('Timeline')) }}</span>
+        <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'timeline', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+    </h2>
 
     <div class="form-group">
         <label>{{ _('Project Start') }}</label>

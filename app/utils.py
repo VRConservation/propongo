@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional
 from urllib.parse import urlencode
 
 from .config import Config
+from .models import resolve_section_titles
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +248,7 @@ def build_export_context(proposal) -> Dict[str, Any]:
         "all_rows": all_rows,
         "budget_by_year": build_budget_by_year(proposal),
         "map_ctx": build_map_export_context(proposal),
+        "section_titles": resolve_section_titles(proposal),
     }
 
 

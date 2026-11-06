@@ -18,8 +18,11 @@ import markdown
 from .models import (
     Proposal,
     PROPOSALS_DIR,
+    COVER_LETTER_TYPES,
+    SECTION_TITLE_KEYS,
     clear_item_timing,
-    copy_budget_items,
+    copy_proposal_fields,
+    normalize_currency,
 )
 from .export import export_bp
 from .snippets import snippets_bp
@@ -205,6 +208,23 @@ def create_app() -> Flask:
     app.jinja_env.filters["md"] = lambda text: Markup(markdown_to_html(text))
     app.jinja_env.filters["currency"] = lambda value: f"{value:,.0f}"
 
+    def format_money(value, symbol: str = "$") -> str:
+        """Format an amount with the proposal's currency symbol and commas."""
+        try:
+            number = float(value or 0)
+        except (TypeError, ValueError):
+            number = 0
+        return f"{symbol}{number:,.0f}"
+
+    app.jinja_env.filters["money"] = format_money
+
+    def section_title(proposal, key: str, default: str) -> str:
+        """Resolve an editable section heading for templates."""
+        custom = (getattr(proposal, "section_titles", None) or {}).get(key)
+        return custom if isinstance(custom, str) and custom.strip() else default
+
+    app.jinja_env.globals["section_title"] = section_title
+
     @app.route("/")
     def index():
         """List all proposals on the homepage."""
@@ -279,9 +299,30 @@ def create_app() -> Flask:
                     merged.append(merged_task)
                 proposal.tasks = merged
 
+            # Section headings are edited one at a time, so merge the payload
+            # into what is already stored. An empty value clears the override
+            # and restores the default heading.
+            if "section_titles" in data:
+                incoming_titles = data.pop("section_titles")
+                if isinstance(incoming_titles, dict):
+                    merged_titles = dict(proposal.section_titles or {})
+                    for key, value in incoming_titles.items():
+                        if key not in SECTION_TITLE_KEYS:
+                            continue
+                        label = value.strip() if isinstance(value, str) else ""
+                        if label:
+                            merged_titles[key] = label
+                        else:
+                            merged_titles.pop(key, None)
+                    proposal.section_titles = merged_titles
+
             skip_fields = {"id", "title", "created_at"}
             for key, value in data.items():
                 if key in skip_fields:
+                    continue
+                if key == "currency":
+                    value = normalize_currency(value)
+                elif key == "cover_letter_type" and value not in COVER_LETTER_TYPES:
                     continue
                 if hasattr(proposal, key):
                     setattr(proposal, key, value)
@@ -319,23 +360,7 @@ def create_app() -> Flask:
             counter += 1
 
         new_proposal = Proposal(id=new_id, title=title)
-        new_proposal.client_name = proposal.client_name
-        new_proposal.subtitle = getattr(proposal, 'subtitle', '') or ''
-        new_proposal.project_summary = proposal.project_summary
-        new_proposal.scope = getattr(proposal, 'scope', '') or ''
-        new_proposal.tasks = list(proposal.tasks)
-        new_proposal.qualifications = proposal.qualifications
-        new_proposal.budget_items = copy_budget_items(proposal.budget_items)
-        new_proposal.start_date = proposal.start_date
-        new_proposal.indirect_percent = getattr(proposal, 'indirect_percent', 0) or 0
-        new_proposal.show_budget_description = getattr(proposal, 'show_budget_description', False)
-        new_proposal.budget_description = getattr(proposal, 'budget_description', '') or ''
-        new_proposal.custom_sections = list(proposal.custom_sections) if proposal.custom_sections else []
-        new_proposal.timeline_use_days = proposal.timeline_use_days
-        new_proposal.timeline_show_budget = proposal.timeline_show_budget
-        new_proposal.end_date = getattr(proposal, 'end_date', '') or ''
-        new_proposal.milestones = list(proposal.milestones) if proposal.milestones else []
-        new_proposal.reports = list(proposal.reports) if proposal.reports else []
+        copy_proposal_fields(proposal, new_proposal)
         new_proposal.save()
 
         return jsonify({"id": new_id}), 201
@@ -387,19 +412,7 @@ def create_app() -> Flask:
             counter += 1
 
         tmpl = Proposal(id=new_id, title=proposal.title)
-        tmpl.client_name = proposal.client_name
-        tmpl.subtitle = getattr(proposal, 'subtitle', '') or ''
-        tmpl.project_summary = proposal.project_summary
-        tmpl.scope = getattr(proposal, 'scope', '') or ''
-        tmpl.tasks = list(proposal.tasks)
-        tmpl.qualifications = proposal.qualifications
-        tmpl.budget_items = copy_budget_items(proposal.budget_items)
-        tmpl.indirect_percent = getattr(proposal, 'indirect_percent', 0) or 0
-        tmpl.show_budget_description = getattr(proposal, 'show_budget_description', False)
-        tmpl.budget_description = getattr(proposal, 'budget_description', '') or ''
-        tmpl.custom_sections = list(proposal.custom_sections) if proposal.custom_sections else []
-        tmpl.timeline_use_days = proposal.timeline_use_days
-        tmpl.timeline_show_budget = proposal.timeline_show_budget
+        copy_proposal_fields(proposal, tmpl)
         tmpl.is_template = True
         tmpl.template_name = template_name
         tmpl.template_category = template_category
@@ -416,19 +429,7 @@ def create_app() -> Flask:
 
         new_id = uuid.uuid4().hex[:8]
         proposal = Proposal(id=new_id, title=tmpl.title)
-        proposal.client_name = tmpl.client_name
-        proposal.subtitle = getattr(tmpl, 'subtitle', '') or ''
-        proposal.project_summary = tmpl.project_summary
-        proposal.scope = getattr(tmpl, 'scope', '') or ''
-        proposal.tasks = list(tmpl.tasks)
-        proposal.qualifications = tmpl.qualifications
-        proposal.budget_items = copy_budget_items(tmpl.budget_items)
-        proposal.indirect_percent = getattr(tmpl, 'indirect_percent', 0) or 0
-        proposal.show_budget_description = getattr(tmpl, 'show_budget_description', False)
-        proposal.budget_description = getattr(tmpl, 'budget_description', '') or ''
-        proposal.custom_sections = list(tmpl.custom_sections) if tmpl.custom_sections else []
-        proposal.timeline_use_days = tmpl.timeline_use_days
-        proposal.timeline_show_budget = tmpl.timeline_show_budget
+        copy_proposal_fields(tmpl, proposal)
         proposal.save()
 
         return redirect(url_for("editor", proposal_id=proposal.id))

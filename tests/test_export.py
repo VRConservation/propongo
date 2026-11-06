@@ -111,6 +111,50 @@ def test_export_markdown():
         assert "share.geolibre.app/vinny-raster/sample-11" in body
 
 
+def test_export_uses_custom_section_titles_and_applicant_contact():
+    p = Proposal(title="Custom Titles Export")
+    p.applicant_contact = "jane@example.org"
+    p.project_summary = "Summary body."
+    p.scope = "Scope body."
+    p.qualifications = "Qualifications body."
+    p.section_titles = {
+        "project_summary": "Executive Summary",
+        "scope": "Work Plan",
+        "qualifications": "Why Us",
+        "timeline": "Our Timeline",
+    }
+    p.tasks = [
+        {"id": "t1", "name": "Phase 1", "start_month": 1, "start_year": 2026, "duration_months": 3},
+    ]
+    p.budget_items = [{"id": "b1", "task_id": "t1", "name": "Item A", "cost_per_unit": 100, "units": 2}]
+    p.budget_item_timings = {
+        "b1": {"start_month": 1, "start_year": 2026, "duration_months": 3},
+    }
+    p.start_date = "2026-01-01"
+    p.end_date = "2026-03-31"
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        html = client.get(f"/export/html/{p.id}").data.decode()
+        markdown = client.get(f"/export/markdown/{p.id}").data.decode()
+
+    assert "Applicant Contact: jane@example.org" in html
+    assert "Executive Summary" in html
+    assert "Work Plan" in html
+    assert "Why Us" in html
+    assert "Our Timeline" in html
+
+    assert "jane@example.org" in markdown
+    assert "Executive Summary" in markdown
+    assert "Work Plan" in markdown
+    assert "Why Us" in markdown
+    assert "Our Timeline" in markdown
+    # The ASCII timeline table is inserted under the custom heading.
+    assert "| Task |" in markdown
+
+
 def test_export_markdown_share_link_extension_stripped():
     p = Proposal(title="Share Link Test")
     p.map_config = {

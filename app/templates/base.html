@@ -232,10 +232,33 @@
         </div>
     </div>
 
+    <div id="section-title-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>{{ _('Rename Section') }}</h2>
+                <button class="btn-icon" onclick="closeSectionTitleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="section-title-input">{{ _('Section Title') }}</label>
+                    <input type="text" id="section-title-input"
+                           placeholder="{{ _('Enter a section title...') }}"
+                           onkeydown="if(event.key==='Enter'){event.preventDefault();saveSectionTitle();}">
+                    <p class="form-hint">{{ _('Leave blank to restore the default title.') }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSectionTitleModal()">{{ _('Cancel') }}</button>
+                <button class="btn btn-primary" onclick="saveSectionTitle()">{{ _('Save') }}</button>
+            </div>
+        </div>
+    </div>
+
     {% include "_new_proposal_modal.html" %}
 
     <script>
         window.I18N = {{ js_translations|tojson }};
+        window.PROPOSAL_CURRENCY = {{ proposal.currency|tojson }};
         function t(key) { return window.I18N[key] || key; }
     </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

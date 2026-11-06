@@ -1,14 +1,35 @@
 <div class="section">
-    <h2>{{ _('Budget') }}</h2>
+    <h2 class="editable-heading">
+        <span class="section-title-text" data-section-key="budget" data-default-title="{{ _('Budget') }}" data-custom-title="{{ proposal.section_titles.get('budget', '') }}">{{ section_title(proposal, 'budget', _('Budget')) }}</span>
+        <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+    </h2>
     {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+
+    <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <label for="budget-currency" style="margin-bottom:0;">{{ _('Currency') }}</label>
+        <select id="budget-currency" style="width:auto;" onchange="updateCurrency('{{ proposal.id }}', this.value)">
+            {% for symbol in ['$', '£', '€'] %}
+            <option value="{{ symbol }}" {% if proposal.currency == symbol %}selected{% endif %}>{{ symbol }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
     <div class="budget-summary-bar">
         <span>{{ _('Total Budget:') }}</span>
-        <span class="budget-total" id="budget-total">${{ total_budget|currency }}</span>
+        <span class="budget-total" id="budget-total">{{ total_budget|money(proposal.currency) }}</span>
     </div>
 
     <div class="form-group budget-by-year">
-        <label>{{ _('Budget by Year') }}</label>
+        <label class="editable-heading editable-label">
+            <span class="section-title-text" data-section-key="budget_by_year" data-default-title="{{ _('Budget by Year') }}" data-custom-title="{{ proposal.section_titles.get('budget_by_year', '') }}">{{ section_title(proposal, 'budget_by_year', _('Budget by Year')) }}</span>
+            <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget_by_year', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;font-size:13px;margin:8px 0;">
+            <input type="checkbox" id="show-budget-by-year"
+                   {% if proposal.show_budget_by_year %}checked{% endif %}
+                   onchange="toggleBudgetByYear('{{ proposal.id }}')">
+            {{ _('Include Budget by Year in preview and exports') }}
+        </label>
         <div id="budget-year-table-wrap" {% if not budget_by_year.years and not budget_by_year.unscheduled %}class="hidden"{% endif %}>
             <table class="budget-year-table">
                 <thead>
@@ -22,14 +43,14 @@
                     {% for row in budget_by_year.years %}
                     <tr data-year="{{ row.year }}">
                         <td>{{ row.year }}</td>
-                        <td class="num">${{ row.amount|currency }}</td>
+                        <td class="num">{{ row.amount|money(proposal.currency) }}</td>
                         <td class="num">{% if total_budget > 0 %}{{ (row.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
                     </tr>
                     {% endfor %}
                     {% for u in budget_by_year.unscheduled %}
                     <tr class="year-row-unscheduled" data-unscheduled>
                         <td>{{ _('Not scheduled') }}</td>
-                        <td class="num">${{ u.amount|currency }}</td>
+                        <td class="num">{{ u.amount|money(proposal.currency) }}</td>
                         <td class="num">{% if total_budget > 0 %}{{ (u.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
                     </tr>
                     {% endfor %}
@@ -91,9 +112,9 @@
                 <div class="budget-task-header">
                     <span class="budget-task-name">{{ task.name }}</span>
                     {% if task.id in task_budgets %}
-                    <span class="budget-task-subtotal" data-task-id="{{ task.id }}">${{ task_budgets[task.id].subtotal|currency }}</span>
+                    <span class="budget-task-subtotal" data-task-id="{{ task.id }}">{{ task_budgets[task.id].subtotal|money(proposal.currency) }}</span>
                     {% else %}
-                    <span class="budget-task-subtotal" data-task-id="{{ task.id }}">$0</span>
+                    <span class="budget-task-subtotal" data-task-id="{{ task.id }}">{{ 0|money(proposal.currency) }}</span>
                     {% endif %}
                 </div>
                 {% if task.id in task_budgets %}
@@ -111,8 +132,8 @@
                         <span class="budget-item-name">{{ item.name }}</span>
                     </div>
                     <div class="budget-item-numbers">
-                        <span>{{ item.cost_per_unit|currency }}/unit &times; {{ item.units|currency }} {{ _('units') }}</span>
-                        <span class="budget-item-total">{{ (item.cost_per_unit * item.units)|currency }}</span>
+                        <span>{{ item.cost_per_unit|money(proposal.currency) }}/unit &times; {{ item.units|currency }} {{ _('units') }}</span>
+                        <span class="budget-item-total">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</span>
                     </div>
                     <div class="budget-item-timing" data-timing-line>
                         {% if item_timing.get('start_month') and item_timing.get('start_year') %}
@@ -146,13 +167,13 @@
                    onchange="updateIndirect('{{ proposal.id }}')"
                    onkeyup="updateIndirect('{{ proposal.id }}')">
             <span class="indirect-label" id="indirect-label">{{ _('Indirect') }} ({{ indirect_percent|round|int }}%)</span>
-            <span class="indirect-amount" id="indirect-amount">${{ indirect_amount|currency }}</span>
+            <span class="indirect-amount" id="indirect-amount">{{ indirect_amount|money(proposal.currency) }}</span>
         </div>
     </div>
 
     <div class="budget-summary-bar budget-total-with-indirect">
         <span>{{ _('Total Budget:') }}</span>
-        <span class="budget-total budget-total-final" id="budget-total-with-indirect">${{ total_with_indirect|currency }}</span>
+        <span class="budget-total budget-total-final" id="budget-total-with-indirect">{{ total_with_indirect|money(proposal.currency) }}</span>
     </div>
 
     <div class="form-group" style="margin-top:16px;">
@@ -163,6 +184,10 @@
             {{ _('Include budget description') }}
         </label>
         <div id="budget-description-wrapper" style="margin-top:8px;{% if not proposal.show_budget_description %}display:none;{% endif %}">
+            <div class="editable-heading budget-description-heading">
+                <span class="section-title-text" data-section-key="budget_description" data-default-title="{{ _('Budget Description') }}" data-custom-title="{{ proposal.section_titles.get('budget_description', '') }}">{{ section_title(proposal, 'budget_description', _('Budget Description')) }}</span>
+                <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget_description', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+            </div>
             <textarea id="budget-description" rows="4"
                       placeholder="{{ _('Add notes or descriptions for the budget...') }}"
                       hx-trigger="keyup changed delay:1000ms, change"

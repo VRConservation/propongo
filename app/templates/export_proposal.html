@@ -191,19 +191,22 @@
         {% if proposal.subtitle %}
         <div class="client">Program: {{ proposal.subtitle }}</div>
         {% endif %}
+        {% if proposal.applicant_contact %}
+        <div class="client">Applicant Contact: {{ proposal.applicant_contact }}</div>
+        {% endif %}
         <div class="date">{{ proposal.updated_at[:10] if proposal.updated_at else "" }}</div>
     </div>
 
     {% if proposal.project_summary %}
     <div class="section-block">
-        <h2>Project Summary</h2>
+        <h2>{{ section_titles.project_summary }}</h2>
         {{ proposal.project_summary|md }}
     </div>
     {% endif %}
 
     {% if map_ctx %}
     <div class="section-block">
-        <h2>Map</h2>
+        <h2>{{ section_titles.map }}</h2>
         {% if map_static_data_uri %}
         <img src="{{ map_static_data_uri }}" alt="Project map" style="max-width:100%;display:block;" />
         {% elif map_ctx.local_image_url %}
@@ -231,14 +234,14 @@
 
     {% if proposal.scope %}
     <div class="section-block">
-        <h2>Scope</h2>
+        <h2>{{ section_titles.scope }}</h2>
         {{ proposal.scope|md }}
     </div>
     {% endif %}
 
     {% if budget_items %}
     <div class="section-block">
-        <h2>Budget</h2>
+        <h2>{{ section_titles.budget }}</h2>
         <table style="font-size:8pt;border-collapse:collapse;">
             <thead>
                 <tr>
@@ -288,7 +291,7 @@
             </tbody>
         </table>
         {% if budget_by_year.years or budget_by_year.unscheduled %}
-        <h3 style="margin-top:12px;margin-bottom:4px;font-size:11pt;">Budget by Year</h3>
+        <h3 style="margin-top:12px;margin-bottom:4px;font-size:11pt;">{{ section_titles.budget_by_year }}</h3>
         <table style="width:100%;border-collapse:collapse;font-size:9pt;">
             <thead>
                 <tr>
@@ -320,7 +323,7 @@
 
     {% if proposal.qualifications %}
     <div class="section-block">
-        <h2>Qualifications</h2>
+        <h2>{{ section_titles.qualifications }}</h2>
         {{ proposal.qualifications|md }}
     </div>
     {% endif %}
@@ -336,7 +339,7 @@
 
     {% if tasks %}
     <div class="section-block timeline-section">
-        <h2>Timeline</h2>
+        <h2>{{ section_titles.timeline }}</h2>
         {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
         {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
         {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
