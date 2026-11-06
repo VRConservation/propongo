@@ -1,5 +1,7 @@
 # AGENTS.md
 
+Always ask before doing any commits, bump2version, major changes
+
 Flask + HTMX proposal generator for conservation projects. Data stored as JSON on disk. Docs site at 3point.xyz/propongo. Requires Python >= 3.10.
 
 ## Commands
