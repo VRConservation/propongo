@@ -206,6 +206,7 @@ def create_app() -> Flask:
         return resp
 
     app.jinja_env.filters["md"] = lambda text: Markup(markdown_to_html(text))
+    app.jinja_env.filters["nl2br"] = lambda text: Markup("<br>".join(str(text).split("\n"))) if text else ""
     app.jinja_env.filters["currency"] = lambda value: f"{value:,.0f}"
 
     def format_money(value, symbol: str = "$") -> str:

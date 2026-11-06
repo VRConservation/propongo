@@ -626,9 +626,28 @@ async function updateSection(proposalId, sectionId) {
 async function deleteSection(proposalId, sectionId) {
     if (!confirm(t('Delete this section?'))) return;
     
+    // Check if this is a cover letter section so we can clear the model fields too
+    const card = document.querySelector(`[data-section-id="${sectionId}"]`);
+    let isCoverLetter = false;
+    if (card) {
+        const titleInput = card.querySelector('.section-title-input');
+        const title = titleInput ? titleInput.value.trim() : '';
+        if (title === t('Cover Letter') || title === t('Letter of Interest')) {
+            isCoverLetter = true;
+        }
+    }
+    
     const response = await fetch(`/api/section/${proposalId}/${sectionId}`, {
         method: 'DELETE'
     });
+    
+    if (response.ok && isCoverLetter) {
+        await fetch(`/api/proposal/${proposalId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ cover_letter_include: false, cover_letter_content: '' })
+        });
+    }
     
     if (response.ok) {
         const btn = document.querySelector('[data-tab="custom-sections"]');
