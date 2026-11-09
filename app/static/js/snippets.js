@@ -6,8 +6,13 @@ let currentSnippets = {};
 const CATEGORY_LABELS = { organization: 'Organization', deliverables: 'Deliverables', custom: 'Custom' };
 
 function categoryLabel(category) {
-    const known = Object.keys(CATEGORY_LABELS).find(k => k === String(category).toLowerCase());
+    const key = normalizeCategory(category);
+    const known = Object.keys(CATEGORY_LABELS).find(k => k === key);
     return known ? t(CATEGORY_LABELS[known]) : category;
+}
+
+function normalizeCategory(category) {
+    return String(category || 'custom').trim().replace(/\s+/g, ' ').toLowerCase() || 'custom';
 }
 
 function sortCategories(categories) {
@@ -33,24 +38,31 @@ function loadSnippets() {
 
             currentSnippets = {};
             const groups = {};
+            const categoryNames = {};
             ['organization', 'deliverables', 'custom'].forEach(source => {
                 (data[source] || []).forEach(s => {
                     s.source = source;
                     currentSnippets[s.id] = s;
-                    const cat = s.category || 'custom';
-                    (groups[cat] = groups[cat] || []).push(s);
+                    const key = normalizeCategory(s.category);
+                    if (!groups[key]) {
+                        groups[key] = [];
+                        categoryNames[key] = String(s.category || 'custom').trim().replace(/\s+/g, ' ') || 'custom';
+                    }
+                    groups[key].push(s);
                 });
             });
 
+            const categoryKeys = sortCategories(Object.keys(groups));
+
             let html = '<datalist id="snippet-category-options">';
-            sortCategories(Object.keys(groups)).forEach(cat => {
-                html += `<option value="${escapeHTML(cat)}">`;
+            categoryKeys.forEach(key => {
+                html += `<option value="${escapeHTML(categoryNames[key])}">`;
             });
             html += '</datalist>';
 
-            sortCategories(Object.keys(groups)).forEach(cat => {
-                html += '<div class="snippet-category"><h4>' + escapeHTML(categoryLabel(cat)) + '</h4>';
-                groups[cat].forEach(s => {
+            categoryKeys.forEach(key => {
+                html += '<div class="snippet-category"><h4>' + escapeHTML(categoryLabel(categoryNames[key])) + '</h4>';
+                groups[key].forEach(s => {
                     html += snippetHTML(s);
                 });
                 html += '</div>';
