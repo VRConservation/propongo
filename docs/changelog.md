@@ -45,15 +45,7 @@ Changed <br>
 
 - SMTP settings (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM) now load from a `.env` file or the `Config` class, and failures to send reset emails are surfaced instead of silently ignored
 
-## 1.6.8
 
-## 1.6.7
-
-## 1.6.6
-
-## 1.6.5
-
-## 1.6.4
 
 ## 1.6.3
 Added <br>
