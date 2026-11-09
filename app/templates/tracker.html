@@ -84,7 +84,7 @@
                 <div class="dash-label">{{ _('Total Tasks') }}</div>
             </div>
             <div class="dash-card">
-                <div class="dash-value">${{ total_with_indirect|currency }}</div>
+                <div class="dash-value">{{ total_with_indirect|money(proposal.currency) }}</div>
                 <div class="dash-label">{{ _('Total Budget') }}</div>
             </div>
             <div class="dash-card">
@@ -146,24 +146,24 @@
                     {% if task.id in task_budgets %}
                     <tr class="subtotal-row">
                         <td colspan="2">{{ task.name }}</td>
-                        <td class="num">${{ task_budgets[task.id].subtotal|currency }}</td>
-                        <td class="num">${{ task_budgets[task.id].actual_total|currency }}</td>
+                        <td class="num">{{ task_budgets[task.id].subtotal|money(proposal.currency) }}</td>
+                        <td class="num">{{ task_budgets[task.id].actual_total|money(proposal.currency) }}</td>
                         <td class="num {% if task_budgets[task.id].actual_total > task_budgets[task.id].subtotal %}variance-negative{% else %}variance-positive{% endif %}">
-                            ${{ (task_budgets[task.id].actual_total - task_budgets[task.id].subtotal)|currency }}
+                            {{ (task_budgets[task.id].actual_total - task_budgets[task.id].subtotal)|money(proposal.currency) }}
                         </td>
                     </tr>
                     {% for item in task_budgets[task.id]["items"] %}
                     <tr>
                         <td></td>
                         <td>{{ item.name }}</td>
-                        <td class="num">${{ (item.cost_per_unit * item.units)|currency }}</td>
+                        <td class="num">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</td>
                         <td class="num">
                             <input type="number" class="tracker-input" min="0" step="1"
                                    value="{{ item.get('actual_cost', 0)|int }}"
                                    onchange="updateBudgetActual('{{ proposal.id }}', '{{ item.id }}', this.value)">
                         </td>
                         <td class="num {% if item.get('actual_cost', 0) > (item.cost_per_unit * item.units) %}variance-negative{% else %}variance-positive{% endif %}">
-                            ${{ (item.get('actual_cost', 0) - item.cost_per_unit * item.units)|currency }}
+                            {{ (item.get('actual_cost', 0) - item.cost_per_unit * item.units)|money(proposal.currency) }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -171,9 +171,9 @@
                 {% endfor %}
                 <tr class="subtotal-row" style="border-top:2px solid var(--border);">
                     <td colspan="2"><strong>{{ _('Total') }}</strong></td>
-                    <td class="num"><strong>${{ total_with_indirect|currency }}</strong></td>
+                    <td class="num"><strong>{{ total_with_indirect|money(proposal.currency) }}</strong></td>
                     <td class="num"><strong>
-                        ${{ (task_budgets.values()|map(attribute='actual_total')|sum + indirect_amount)|currency }}
+                        {{ (task_budgets.values()|map(attribute='actual_total')|sum + indirect_amount)|money(proposal.currency) }}
                     </strong></td>
                     <td class="num"><strong></strong></td>
                 </tr>

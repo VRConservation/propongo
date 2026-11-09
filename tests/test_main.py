@@ -649,6 +649,7 @@ def test_new_fields_roundtrip_and_legacy_defaults():
         applicant_contact="jane@example.org",
         section_titles={"project_summary": "Executive Summary"},
         currency="€",
+        show_budget_subtotal=False,
         show_budget_by_year=True,
         cover_letter_include=True,
         cover_letter_type="loi",
@@ -659,6 +660,7 @@ def test_new_fields_roundtrip_and_legacy_defaults():
     assert restored.applicant_contact == "jane@example.org"
     assert restored.section_titles == {"project_summary": "Executive Summary"}
     assert restored.currency == "€"
+    assert restored.show_budget_subtotal is False
     assert restored.show_budget_by_year is True
     assert restored.cover_letter_include is True
     assert restored.cover_letter_type == "loi"
@@ -669,6 +671,7 @@ def test_new_fields_roundtrip_and_legacy_defaults():
     assert legacy.applicant_contact == ""
     assert legacy.section_titles == {}
     assert legacy.currency == "$"
+    assert legacy.show_budget_subtotal is True
     assert legacy.show_budget_by_year is False
     assert legacy.cover_letter_include is False
     assert legacy.cover_letter_type == "cover_letter"
@@ -687,6 +690,7 @@ def test_api_put_persists_new_fields():
             json={
                 "applicant_contact": "contact@example.org",
                 "currency": "£",
+                "show_budget_subtotal": False,
                 "show_budget_by_year": True,
                 "cover_letter_include": True,
                 "cover_letter_type": "loi",
@@ -702,6 +706,7 @@ def test_api_put_persists_new_fields():
     loaded = Proposal.load(p.id)
     assert loaded.applicant_contact == "contact@example.org"
     assert loaded.currency == "£"
+    assert loaded.show_budget_subtotal is False
     assert loaded.show_budget_by_year is True
     assert loaded.cover_letter_include is True
     assert loaded.cover_letter_type == "loi"
@@ -724,6 +729,63 @@ def test_api_put_normalizes_invalid_currency():
         assert resp.get_json()["currency"] == "$"
 
     assert Proposal.load(p.id).currency == "$"
+
+
+def test_currency_and_subtotal_persist_across_budget_reloads():
+    import re
+
+    p = Proposal(title="Currency Persistence")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [
+        {"id": "b1", "task_id": "t1", "name": "Item", "cost_per_unit": 1000, "units": 1},
+    ]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        # The subtotal is included by default.
+        default_budget_html = client.get(f"/budget/{p.id}").data.decode()
+        assert re.search(r'id="show-budget-subtotal"\s*checked', default_budget_html)
+
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"currency": "£", "show_budget_subtotal": False},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["currency"] == "£"
+        assert resp.get_json()["show_budget_subtotal"] is False
+
+        # The selection survives a reload, as if the proposal was reopened.
+        loaded = Proposal.load(p.id)
+        assert loaded.currency == "£"
+        assert loaded.show_budget_subtotal is False
+
+        # Re-rendering the budget tab (what happens when switching sections)
+        # shows the saved currency and keeps the checkbox unchecked.
+        budget_html = client.get(f"/budget/{p.id}").data.decode()
+        assert "£1,000" in budget_html
+        assert re.search(r'id="show-budget-subtotal"\s*checked', budget_html) is None
+
+        preview_html = client.get(f"/preview/{p.id}").data.decode()
+        assert "£1,000" in preview_html
+        assert "Subtotal" not in preview_html
+
+        export_html = client.get(f"/export/html/{p.id}").data.decode()
+        assert "£1,000" in export_html
+        assert "Subtotal" not in export_html
+
+        # Turning the subtotal back on restores the row in preview and exports.
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"show_budget_subtotal": True},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+        assert "Subtotal" in client.get(f"/preview/{p.id}").data.decode()
+        assert "Subtotal" in client.get(f"/export/html/{p.id}").data.decode()
 
 
 def test_api_put_merges_and_clears_section_titles():
@@ -895,6 +957,10 @@ def test_preview_shows_applicant_contact_and_custom_titles():
     assert "Executive Summary" in html
     assert "Financial Plan" in html
     assert "openSectionTitleModal" in html
+    # Section titles are top-level headings; contact metadata is smaller.
+    assert '<h1 class="editable-heading preview-section-title">' in html
+    assert '<h4 class="preview-meta-label">Applicant Contact</h4>' in html
+    assert '<div class="preview-text"' in html
 
 
 def test_clearing_custom_title_restores_preview_default():

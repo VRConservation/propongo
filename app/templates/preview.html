@@ -11,45 +11,50 @@
     <div style="display:flex;gap:24px;margin-bottom:16px;">
         <div style="flex:1;">
             <div class="form-group">
-                <h3>{{ _('Funder') }}</h3>
+                <h4 class="preview-meta-label">{{ _('Funder') }}</h4>
                 <p style="font-size:15px;">{{ proposal.client_name or "—" }}</p>
             </div>
             <div class="form-group" style="margin-bottom:0;">
+<<<<<<< Updated upstream
                 <h3>{{ _('Applicant Contact') }}</h3>
                 <p style="font-size:15px;">{{ proposal.applicant_contact|nl2br if proposal.applicant_contact else "—" }}</p>
+=======
+                <h4 class="preview-meta-label">{{ _('Applicant Contact') }}</h4>
+                <p style="font-size:15px;">{{ proposal.applicant_contact or "—" }}</p>
+>>>>>>> Stashed changes
             </div>
         </div>
         <div class="form-group" style="flex:1;">
-            <h3>{{ _('Program') }}</h3>
+            <h4 class="preview-meta-label">{{ _('Program') }}</h4>
             <p style="font-size:15px;">{{ proposal.subtitle or "—" }}</p>
         </div>
     </div>
 
     {% if proposal.cover_letter_include and proposal.cover_letter_content %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="cover_letter" data-default-title="{{ _('Cover Letter') }}" data-custom-title="">{{ _('Letter of Interest') if proposal.cover_letter_type == 'loi' else _('Cover Letter') }}</span>
-        </h3>
-        <div style="font-size:14px;line-height:1.7;">{{ proposal.cover_letter_content|md }}</div>
+        </h1>
+        <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ proposal.cover_letter_content|md }}</div>
     </div>
     {% endif %}
 
     {% if proposal.project_summary %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="project_summary" data-default-title="{{ _('Project Summary') }}" data-custom-title="{{ proposal.section_titles.get('project_summary', '') }}">{{ section_title(proposal, 'project_summary', _('Project Summary')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'project_summary', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
-        <div style="font-size:14px;line-height:1.7;">{{ proposal.project_summary|md }}</div>
+        </h1>
+        <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ proposal.project_summary|md }}</div>
     </div>
     {% endif %}
 
     {% if map_ctx %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="map" data-default-title="{{ _('Project Map') }}" data-custom-title="{{ proposal.section_titles.get('map', '') }}">{{ section_title(proposal, 'map', _('Project Map')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'map', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
+        </h1>
         {% if map_ctx.local_image_url %}
         <img src="{{ map_ctx.local_image_url }}" alt="{{ _('Project map') }}" style="max-width:100%;border-radius:4px;">
         {% elif map_ctx.image_url %}
@@ -82,20 +87,20 @@
 
     {% if proposal.scope %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="scope" data-default-title="{{ _('Scope') }}" data-custom-title="{{ proposal.section_titles.get('scope', '') }}">{{ section_title(proposal, 'scope', _('Scope')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'scope', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
-        <div style="font-size:14px;line-height:1.7;">{{ proposal.scope|md }}</div>
+        </h1>
+        <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ proposal.scope|md }}</div>
     </div>
     {% endif %}
 
     {% if budget_items %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="budget" data-default-title="{{ _('Budget') }}" data-custom-title="{{ proposal.section_titles.get('budget', '') }}">{{ section_title(proposal, 'budget', _('Budget')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
+        </h1>
         <table class="preview-budget-table">
             <thead>
                 <tr>
@@ -115,40 +120,42 @@
                 {% endfor %}
                 <tr>
                     <td colspan="3" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ task.name }}</td>
-                    <td class="num-col" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ ns.total|currency }}</td>
+                    <td class="num-col" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ ns.total|money(proposal.currency) }}</td>
                 </tr>
                 {% for item in budget_items %}
                     {% if item.task_id|string == task.id|string %}
                 <tr>
                     <td style="padding-left:24px;">{{ item.name }}</td>
-                    <td class="num-col">{{ item.cost_per_unit|currency }}</td>
+                    <td class="num-col">{{ item.cost_per_unit|money(proposal.currency) }}</td>
                     <td class="num-col">{{ item.units|currency }}</td>
-                    <td class="num-col">{{ (item.cost_per_unit * item.units)|currency }}</td>
+                    <td class="num-col">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</td>
                 </tr>
                     {% endif %}
                 {% endfor %}
                 {% endfor %}
+                {% if proposal.show_budget_subtotal %}
                 <tr>
                     <td colspan="3" style="font-weight:600;border-top:2px solid var(--border);">{{ _('Subtotal') }}</td>
-                    <td class="num-col" style="font-weight:600;border-top:2px solid var(--border);">{{ total_budget|currency }}</td>
+                    <td class="num-col" style="font-weight:600;border-top:2px solid var(--border);">{{ total_budget|money(proposal.currency) }}</td>
                 </tr>
+                {% endif %}
                 {% if indirect_percent is defined and indirect_percent > 0 %}
                 <tr>
                     <td colspan="3">{{ _('Indirect') }} ({{ "%.0f"|format(indirect_percent) }}%)</td>
-                    <td class="num-col">{{ indirect_amount|currency }}</td>
+                    <td class="num-col">{{ indirect_amount|money(proposal.currency) }}</td>
                 </tr>
                 {% endif %}
                 <tr>
                     <td colspan="3"><strong>{{ _('Total') }}</strong></td>
-                    <td class="num-col"><strong>${{ total_with_indirect|currency }}</strong></td>
+                    <td class="num-col"><strong>{{ total_with_indirect|money(proposal.currency) }}</strong></td>
                 </tr>
             </tbody>
         </table>
         {% if proposal.show_budget_by_year and (budget_by_year.years or budget_by_year.unscheduled) %}
-        <h3 class="editable-heading" style="margin-top:16px;">
+        <h2 class="editable-heading preview-subsection-title" style="margin-top:16px;">
             <span class="section-title-text" data-section-key="budget_by_year" data-default-title="{{ _('Budget by Year') }}" data-custom-title="{{ proposal.section_titles.get('budget_by_year', '') }}">{{ section_title(proposal, 'budget_by_year', _('Budget by Year')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget_by_year', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
+        </h2>
         <table class="preview-budget-table">
             <thead>
                 <tr>
@@ -161,14 +168,14 @@
                 {% for row in budget_by_year.years %}
                 <tr>
                     <td>{{ row.year }}</td>
-                    <td class="num-col">${{ row.amount|currency }}</td>
+                    <td class="num-col">{{ row.amount|money(proposal.currency) }}</td>
                     <td class="num-col">{% if total_budget > 0 %}{{ (row.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
                 </tr>
                 {% endfor %}
                 {% for u in budget_by_year.unscheduled %}
                 <tr>
                     <td style="font-style:italic;color:var(--text-muted);">{{ _('Not scheduled') }}</td>
-                    <td class="num-col">${{ u.amount|currency }}</td>
+                    <td class="num-col">{{ u.amount|money(proposal.currency) }}</td>
                     <td class="num-col">{% if total_budget > 0 %}{{ (u.amount / total_budget * 100)|round(1) }}%{% endif %}</td>
                 </tr>
                 {% endfor %}
@@ -180,29 +187,29 @@
 
     {% if proposal.show_budget_description and proposal.budget_description %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="budget_description" data-default-title="{{ _('Budget Description') }}" data-custom-title="{{ proposal.section_titles.get('budget_description', '') }}">{{ section_title(proposal, 'budget_description', _('Budget Description')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget_description', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
-        <div style="font-size:14px;line-height:1.7;">{{ proposal.budget_description|md }}</div>
+        </h1>
+        <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ proposal.budget_description|md }}</div>
     </div>
     {% endif %}
 
     {% if proposal.qualifications %}
     <div class="form-group">
-        <h3 class="editable-heading">
+        <h1 class="editable-heading preview-section-title">
             <span class="section-title-text" data-section-key="qualifications" data-default-title="{{ _('Qualifications') }}" data-custom-title="{{ proposal.section_titles.get('qualifications', '') }}">{{ section_title(proposal, 'qualifications', _('Qualifications')) }}</span>
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'qualifications', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-        </h3>
-        <div style="font-size:14px;line-height:1.7;">{{ proposal.qualifications|md }}</div>
+        </h1>
+        <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ proposal.qualifications|md }}</div>
     </div>
     {% endif %}
 
     {% if proposal.custom_sections %}
         {% for section in proposal.custom_sections | sort(attribute='order') %}
     <div class="form-group">
-        <h3>{{ section.title }}</h3>
-        <div style="font-size:14px;line-height:1.7;">{{ section.content | md }}</div>
+        <h1 class="preview-section-title">{{ section.title }}</h1>
+        <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ section.content | md }}</div>
     </div>
         {% endfor %}
     {% endif %}
@@ -210,10 +217,10 @@
     {% if tasks %}
     <div class="form-group">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <h3 class="editable-heading" style="margin:0">
+            <h1 class="editable-heading preview-section-title" style="margin:0">
                 <span class="section-title-text" data-section-key="timeline" data-default-title="{{ _('Timeline') }}" data-custom-title="{{ proposal.section_titles.get('timeline', '') }}">{{ section_title(proposal, 'timeline', _('Timeline')) }}</span>
                 <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'timeline', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-            </h3>
+            </h1>
             <button class="btn btn-secondary btn-sm" onclick="exportTimelinePng('{{ proposal.id }}')">{{ _('Export PNG') }}</button>
         </div>
         {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}

@@ -59,11 +59,11 @@ function refreshBudgetByYear() {
     Object.keys(byYear).sort((a, b) => a - b).forEach(y => {
         const amount = byYear[y];
         const pct = total > 0 ? (amount / total * 100).toFixed(1) : '';
-        html += `<tr data-year="${y}"><td>${y}</td><td class="num">$${formatCurrency(amount)}</td><td class="num">${pct}%</td></tr>`;
+        html += `<tr data-year="${y}"><td>${y}</td><td class="num">${formatMoney(amount)}</td><td class="num">${pct}%</td></tr>`;
     });
     if (unscheduled > 0) {
         const pct = total > 0 ? (unscheduled / total * 100).toFixed(1) : '';
-        html += `<tr class="year-row-unscheduled" data-unscheduled><td>${t('Not scheduled')}</td><td class="num">$${formatCurrency(unscheduled)}</td><td class="num">${pct}%</td></tr>`;
+        html += `<tr class="year-row-unscheduled" data-unscheduled><td>${t('Not scheduled')}</td><td class="num">${formatMoney(unscheduled)}</td><td class="num">${pct}%</td></tr>`;
     }
 
     body.innerHTML = html;
@@ -79,6 +79,71 @@ function refreshBudgetByYear() {
 
 function formatCurrency(num) {
     return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function currentCurrency() {
+    return window.PROPOSAL_CURRENCY || '$';
+}
+
+function formatMoney(num) {
+    return currentCurrency() + formatCurrency(num);
+}
+
+function updateCurrency(proposalId, symbol) {
+    const previous = currentCurrency();
+    window.PROPOSAL_CURRENCY = symbol;
+    updateBudgetCurrencyDisplays();
+
+    fetch('/api/proposal/' + proposalId, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ currency: symbol })
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('Unable to save currency');
+        return r.json();
+    })
+    .then(data => {
+        window.PROPOSAL_CURRENCY = data.currency || symbol;
+        updateBudgetCurrencyDisplays();
+    })
+    .catch(err => {
+        console.error(err);
+        window.PROPOSAL_CURRENCY = previous;
+        const select = document.getElementById('budget-currency');
+        if (select) select.value = previous;
+        updateBudgetCurrencyDisplays();
+        alert(t('Failed to save.'));
+    });
+}
+
+function updateBudgetCurrencyDisplays() {
+    document.querySelectorAll('.budget-item-card').forEach(card => {
+        const cost = parseFloat(card.dataset.cost) || 0;
+        const units = parseFloat(card.dataset.units) || 0;
+        const numbers = card.querySelector('.budget-item-numbers');
+        if (!numbers) return;
+        const spans = numbers.querySelectorAll('span');
+        if (spans[0]) {
+            spans[0].innerHTML = `${formatMoney(cost)}/unit &times; ${units} ${t('units')}`;
+        }
+        const totalEl = numbers.querySelector('.budget-item-total');
+        if (totalEl) totalEl.textContent = formatMoney(cost * units);
+    });
+    updateBudgetTotal();
+    refreshBudgetByYear();
+}
+
+function toggleBudgetSubtotal(proposalId) {
+    const checked = document.getElementById('show-budget-subtotal').checked;
+    const match = window.location.pathname.match(/\/editor\/([^/]+)/);
+    if (match && proposalId === match[1]) {
+        fetch('/api/proposal/' + proposalId, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ show_budget_subtotal: checked })
+        });
+    }
 }
 
 function toggleBudgetByYear(proposalId) {
@@ -171,8 +236,8 @@ function addBudgetItem(proposalId) {
                 <span class="budget-item-name">${item.name}</span>
             </div>
             <div class="budget-item-numbers">
-                <span>${formatCurrency(item.cost_per_unit)}/unit &times; ${item.units} ${t('units')}</span>
-                <span class="budget-item-total">${formatCurrency(item.cost_per_unit * item.units)}</span>
+                <span>${formatMoney(item.cost_per_unit)}/unit &times; ${item.units} ${t('units')}</span>
+                <span class="budget-item-total">${formatMoney(item.cost_per_unit * item.units)}</span>
             </div>
             <div class="budget-item-timing" data-timing-line>${budgetTimingLineHTML(card)}</div>
             <div class="budget-item-actions">
@@ -191,7 +256,7 @@ function addBudgetItem(proposalId) {
             group.innerHTML = `
                 <div class="budget-task-header">
                     <span class="budget-task-name">${taskName}</span>
-                    <span class="budget-task-subtotal" data-task-id="${taskId}">$0</span>
+                    <span class="budget-task-subtotal" data-task-id="${taskId}">${formatMoney(0)}</span>
                 </div>
             `;
             list.appendChild(group);
@@ -323,9 +388,9 @@ function saveBudgetItem(proposalId, btn) {
 
         info.querySelector('.budget-item-name').textContent = data.name;
         numbers.querySelector('span:first-child').innerHTML =
-            `${formatCurrency(data.cost_per_unit)}/unit &times; ${data.units} ${t('units')}`;
+            `${formatMoney(data.cost_per_unit)}/unit &times; ${data.units} ${t('units')}`;
         numbers.querySelector('.budget-item-total').textContent =
-            `${formatCurrency(data.cost_per_unit * data.units)}`;
+            `${formatMoney(data.cost_per_unit * data.units)}`;
         timingLine.innerHTML = budgetTimingLineHTML(card);
 
         form.remove();
@@ -355,7 +420,7 @@ function moveCardToGroup(card, newTaskId, taskName) {
         group.innerHTML = `
             <div class="budget-task-header">
                 <span class="budget-task-name">${taskName}</span>
-                <span class="budget-task-subtotal" data-task-id="${newTaskId}">$0</span>
+                <span class="budget-task-subtotal" data-task-id="${newTaskId}">${formatMoney(0)}</span>
             </div>
         `;
         list.appendChild(group);
@@ -390,20 +455,21 @@ function checkEmptyGroups() {
 function updateBudgetTotal() {
     document.querySelectorAll('.budget-task-group').forEach(group => {
         let subtotal = 0;
-        group.querySelectorAll('.budget-item-total').forEach(el => {
-            subtotal += parseFloat(el.textContent.replace(/[$,]/g, '')) || 0;
+        group.querySelectorAll('.budget-item-card').forEach(card => {
+            subtotal += (parseFloat(card.dataset.cost) || 0) * (parseFloat(card.dataset.units) || 0);
         });
         const subtotalEl = group.querySelector('.budget-task-subtotal');
         if (subtotalEl) {
-            subtotalEl.textContent = '$' + formatCurrency(subtotal);
+            subtotalEl.textContent = formatMoney(subtotal);
         }
     });
 
     let total = 0;
-    document.querySelectorAll('.budget-item-total').forEach(el => {
-        total += parseFloat(el.textContent.replace(/[$,]/g, '')) || 0;
+    document.querySelectorAll('.budget-item-card').forEach(card => {
+        total += (parseFloat(card.dataset.cost) || 0) * (parseFloat(card.dataset.units) || 0);
     });
-    document.getElementById('budget-total').textContent = '$' + formatCurrency(total);
+    const totalEl = document.getElementById('budget-total');
+    if (totalEl) totalEl.textContent = formatMoney(total);
 
     const indirectInput = document.getElementById('indirect-percent');
     const percent = indirectInput ? (parseFloat(indirectInput.value) || 0) : 0;
@@ -412,7 +478,7 @@ function updateBudgetTotal() {
 
     const indirectAmountEl = document.getElementById('indirect-amount');
     if (indirectAmountEl) {
-        indirectAmountEl.textContent = '$' + formatCurrency(indirectAmount);
+        indirectAmountEl.textContent = formatMoney(indirectAmount);
     }
 
     const indirectLabel = document.getElementById('indirect-label');
@@ -422,7 +488,7 @@ function updateBudgetTotal() {
 
     const totalWithIndirectEl = document.getElementById('budget-total-with-indirect');
     if (totalWithIndirectEl) {
-        totalWithIndirectEl.textContent = '$' + formatCurrency(totalWithIndirect);
+        totalWithIndirectEl.textContent = formatMoney(totalWithIndirect);
     }
 }
 

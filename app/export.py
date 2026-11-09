@@ -256,8 +256,8 @@ def export_markdown(proposal_id: str) -> Tuple[Response, int] | Response:
     if timeline_table:
         timeline_heading = ctx["section_titles"]["timeline"]
         md_content = md_content.replace(
-            f"## {timeline_heading}\n",
-            f"## {timeline_heading}\n\n{timeline_table}\n",
+            f"# {timeline_heading}\n",
+            f"# {timeline_heading}\n\n{timeline_table}\n",
         )
 
     return Response(

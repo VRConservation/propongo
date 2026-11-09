@@ -288,6 +288,7 @@ class Proposal:
     show_budget_description: bool = False
     budget_description: str = ""
     currency: str = "$"
+    show_budget_subtotal: bool = True
     show_budget_by_year: bool = False
     timeline_use_days: bool = False
     timeline_show_budget: bool = False

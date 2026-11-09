@@ -155,7 +155,7 @@
             <div class="dash-label">Total Tasks</div>
         </div>
         <div class="dash-item">
-            <div class="dash-value">${{ total_with_indirect|currency }}</div>
+            <div class="dash-value">{{ total_with_indirect|money(proposal.currency) }}</div>
             <div class="dash-label">Budget</div>
         </div>
         <div class="dash-item">
@@ -201,25 +201,25 @@
                 {% if task.id in task_budgets %}
                 <tr class="subtotal">
                     <td colspan="2">{{ task.name }}</td>
-                    <td class="num">${{ task_budgets[task.id].subtotal|currency }}</td>
-                    <td class="num">${{ task_budgets[task.id].actual_total|currency }}</td>
-                    <td class="num">${{ (task_budgets[task.id].actual_total - task_budgets[task.id].subtotal)|currency }}</td>
+                    <td class="num">{{ task_budgets[task.id].subtotal|money(proposal.currency) }}</td>
+                    <td class="num">{{ task_budgets[task.id].actual_total|money(proposal.currency) }}</td>
+                    <td class="num">{{ (task_budgets[task.id].actual_total - task_budgets[task.id].subtotal)|money(proposal.currency) }}</td>
                 </tr>
                 {% for item in task_budgets[task.id]["items"] %}
                 <tr>
                     <td></td>
                     <td>{{ item.name }}</td>
-                    <td class="num">${{ (item.cost_per_unit * item.units)|currency }}</td>
-                    <td class="num">${{ item.get('actual_cost', 0)|currency }}</td>
-                    <td class="num">${{ (item.get('actual_cost', 0) - item.cost_per_unit * item.units)|currency }}</td>
+                    <td class="num">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</td>
+                    <td class="num">{{ item.get('actual_cost', 0)|money(proposal.currency) }}</td>
+                    <td class="num">{{ (item.get('actual_cost', 0) - item.cost_per_unit * item.units)|money(proposal.currency) }}</td>
                 </tr>
                 {% endfor %}
                 {% endif %}
             {% endfor %}
             <tr class="total">
                 <td colspan="2">Total</td>
-                <td class="num">${{ total_with_indirect|currency }}</td>
-                <td class="num">${{ (total_actual + indirect_amount)|currency }}</td>
+                <td class="num">{{ total_with_indirect|money(proposal.currency) }}</td>
+                <td class="num">{{ (total_actual + indirect_amount)|money(proposal.currency) }}</td>
                 <td class="num"></td>
             </tr>
         </tbody>

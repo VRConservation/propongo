@@ -149,6 +149,12 @@ function saveCurrentTabData(proposalId) {
     if (showBudgetDescEl) data.show_budget_description = showBudgetDescEl.checked;
     if (budgetDescEl) data.budget_description = budgetDescEl.value;
 
+    const showBudgetSubtotalEl = document.getElementById('show-budget-subtotal');
+    if (showBudgetSubtotalEl) data.show_budget_subtotal = showBudgetSubtotalEl.checked;
+
+    const currencyEl = document.getElementById('budget-currency');
+    if (currencyEl) data.currency = currencyEl.value;
+
     const taskList = document.getElementById('task-list');
     if (taskList) {
         const cards = taskList.querySelectorAll('.task-card');
@@ -984,6 +990,12 @@ window.addEventListener('beforeunload', function() {
     const showBudgetDescEl = document.getElementById('show-budget-description');
     if (showBudgetDescEl) data.show_budget_description = showBudgetDescEl.checked;
     if (budgetDescEl) data.budget_description = budgetDescEl.value;
+
+    const showBudgetSubtotalEl = document.getElementById('show-budget-subtotal');
+    if (showBudgetSubtotalEl) data.show_budget_subtotal = showBudgetSubtotalEl.checked;
+
+    const currencyEl = document.getElementById('budget-currency');
+    if (currencyEl) data.currency = currencyEl.value;
 
     const timelineInputs = document.getElementById('timeline-inputs');
     if (document.getElementById('start-month')) {

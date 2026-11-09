@@ -178,6 +178,12 @@
 
     <div class="form-group" style="margin-top:16px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="show-budget-subtotal"
+                   {% if proposal.show_budget_subtotal %}checked{% endif %}
+                   onchange="toggleBudgetSubtotal('{{ proposal.id }}')">
+            {{ _('Include subtotal') }}
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:8px;">
             <input type="checkbox" id="show-budget-description"
                    {% if proposal.show_budget_description %}checked{% endif %}
                    onchange="toggleBudgetDescription()">
