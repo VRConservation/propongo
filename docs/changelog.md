@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+Added <br>
+
+- Budget unit changes ($'s, £s, and Euros)
+- Tick box to remove sub-total for budgets that don't have indirect
+
+Changed <br>
+
+- Cover page for preview and exports
+
+Fixed <br>
+
+- Snippets repetition
+- Cover letter addition/removal and applicants box
+- Headings for sections vs. markdown within boxes
+
 ## 1.7.0
 
 Added <br>
