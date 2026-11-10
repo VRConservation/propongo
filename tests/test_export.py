@@ -111,6 +111,35 @@ def test_export_markdown():
         assert "share.geolibre.app/vinny-raster/sample-11" in body
 
 
+def test_export_pdf_summary_not_repeated():
+    """PDF shows the project summary on the cover page only.
+
+    The HTML export keeps the summary as a body section (the TOC links to it),
+    so assert on both renderings of the shared template.
+    """
+    from flask import render_template
+    from app.utils import build_export_context
+
+    p = Proposal(title="PDF Summary Once", project_summary="Unique summary body.")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_request_context():
+        ctx = build_export_context(p)
+        ctx["for_pdf"] = True
+        ctx["map_static_data_uri"] = None
+        pdf_html = render_template("export_proposal.html", **ctx)
+
+    assert pdf_html.count("Unique summary body.") == 1
+    assert 'id="sec-summary"' not in pdf_html
+
+    with app.test_client() as client:
+        html_export = client.get(f"/export/html/{p.id}").data.decode()
+    assert html_export.count("Unique summary body.") == 1
+    assert 'id="sec-summary"' in html_export
+
+
 def test_export_uses_custom_section_titles_and_applicant_contact():
     p = Proposal(title="Custom Titles Export")
     p.applicant_contact = "jane@example.org"

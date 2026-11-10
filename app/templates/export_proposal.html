@@ -414,7 +414,9 @@
     </div>
     {% endif %}
 
-    {% if proposal.project_summary %}
+    {# PDF: the summary already appears on the cover page; only the HTML and
+       Markdown exports include it again here (the HTML TOC links to it). #}
+    {% if proposal.project_summary and not for_pdf %}
     <div class="section-block">
         <h1 class="section-heading" id="sec-summary">{{ section_titles.project_summary }}</h1>
         <div class="md-content">{{ proposal.project_summary|md }}</div>
