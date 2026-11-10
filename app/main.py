@@ -128,7 +128,10 @@ def create_app() -> Flask:
         SESSION_COOKIE_SECURE=os.environ.get("PROPONGO_SESSION_COOKIE_SECURE", "false").lower() in ("true", "1", "yes"),
     )
     
-    logger.info(f"Starting Propongo v{__version__}")
+    # The debug reloader re-executes run.py in a child process; only the
+    # serving process announces the startup (avoids duplicate log lines).
+    if _is_serving_process():
+        logger.info(f"Starting Propongo v{__version__}")
 
     ensure_admin_user()
     init_login_manager(app)
@@ -1251,14 +1254,31 @@ def create_app() -> Flask:
     return app
 
 
+def _is_serving_process() -> bool:
+    """True in the process that actually serves requests.
+
+    With the debug reloader on, ``run.py`` is re-executed in a child process
+    (``WERKZEUG_RUN_MAIN=true``) and only that child serves — the parent just
+    supervises it and would otherwise print every startup message twice.
+    Without the reloader the current process serves.
+    """
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        return True
+    return not Config.DEBUG
+
+
 def run_server() -> None:
     """Run the development server."""
     import logging as _logging
     _logging.getLogger("werkzeug").setLevel(_logging.WARNING)
     app = create_app()
-    print("\n ✨✨✨ 🔌 Server started ✨✨✨")
-    print(f"  👉  http://localhost:{Config.PORT}  👈\n")
-    app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT)
+    if _is_serving_process():
+        print("\n ✨✨✨ 🔌 Server started ✨✨✨")
+        print(f"  👉  http://localhost:{Config.PORT}  👈\n")
+    # ``load_dotenv=False``: app.config already loads .env itself, so skip
+    # Flask's dotenv loader (which prints a yellow "install python-dotenv"
+    # tip whenever a .env file exists and the package is not installed).
+    app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT, load_dotenv=False)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@
                 <p style="font-size:15px;">{{ proposal.client_name or "—" }}</p>
             </div>
             <div class="form-group" style="margin-bottom:0;">
-                <h4 class="preview-meta-label">{{ _('Applicant Contact') }}</h4>
+                <h4 class="preview-meta-label">{{ _('Applicant') }}</h4>
                 <p style="font-size:15px;">{{ proposal.applicant_contact|nl2br if proposal.applicant_contact else "—" }}</p>
             </div>
         </div>
@@ -87,6 +87,77 @@
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'scope', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
         </h1>
         <div class="preview-text" style="font-size:14px;line-height:1.7;">{{ proposal.scope|md }}</div>
+    </div>
+    {% endif %}
+
+    {% if tasks %}
+    <div class="form-group">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <h1 class="editable-heading preview-section-title" style="margin:0">
+                <span class="section-title-text" data-section-key="timeline" data-default-title="{{ _('Timeline') }}" data-custom-title="{{ proposal.section_titles.get('timeline', '') }}">{{ section_title(proposal, 'timeline', _('Timeline')) }}</span>
+                <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'timeline', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+            </h1>
+            <button class="btn btn-secondary btn-sm" onclick="exportTimelinePng('{{ proposal.id }}')">{{ _('Export PNG') }}</button>
+        </div>
+        {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
+        {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
+        {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
+
+        {% if proposal.end_date and proposal.end_date|length >= 7 %}
+            {% set proj_end_month = proposal.end_date[5:7]|int %}
+            {% set proj_end_year = proposal.end_date[:4]|int %}
+            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
+        {% else %}
+            {% set max_end = 0 %}
+            {% for r in all_rows %}
+                {% for bar in r.bars %}
+                {% set row_end = bar.offset + bar.duration %}
+                {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
+                {% endfor %}
+            {% endfor %}
+            {% set total_project_months = [max_end, 1]|max %}
+        {% endif %}
+
+        <div class="preview-timeline-chart">
+            {% set years_in_proj = ((proj_start_month - 1 + total_project_months - 1) // 12) + 1 %}
+            <div class="preview-timeline-row">
+                <div class="preview-timeline-label"></div>
+                <div class="preview-timeline-cells">
+                    {% for y in range(years_in_proj) %}
+                    {% set abs_y = proj_start_year + y %}
+                    {% set year_start_m = [(abs_y - proj_start_year) * 12 - (proj_start_month - 1), 0]|max %}
+                    {% set year_end_m = [(y + 1) * 12 - (proj_start_month - 1), total_project_months]|min %}
+                    {% set year_span = year_end_m - year_start_m %}
+                    {% if year_span > 0 %}
+                    <div class="preview-timeline-year-cell" style="flex:{{ year_span }}">{{ abs_y }}</div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="preview-timeline-row">
+                <div class="preview-timeline-label"></div>
+                <div class="preview-timeline-cells">
+                    {% for m_offset in range(total_project_months) %}
+                    {% set abs_m = proj_start_month + m_offset - 1 %}
+                    {% set abs_m_1based = (abs_m % 12) + 1 %}
+                    {% set is_year_start = (abs_m_1based == 1) %}
+                    <div class="preview-timeline-month-cell{% if is_year_start and m_offset > 0 %} preview-timeline-month-cell-year-start{% endif %}">{{ month_names[abs_m_1based - 1] }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% for r in all_rows %}
+            <div class="preview-timeline-row{% if r.is_indent %} preview-timeline-row-indent{% endif %}">
+                <div class="preview-timeline-label">{{ r.name }}</div>
+                <div class="preview-timeline-cells preview-timeline-data-cells">
+                    {% for bar in r.bars %}
+                    {% set left_pct = (bar.offset / total_project_months * 100)|round(1) if total_project_months > 0 else 0 %}
+                    {% set width_pct = (bar.duration / total_project_months * 100)|round(1) if total_project_months > 0 else 100 %}
+                    <div class="preview-timeline-bar{% if r.is_indent %} preview-timeline-bar-indent{% endif %}" style="position:absolute;left:{{ left_pct }}%;width:{{ width_pct }}%"></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 
@@ -209,76 +280,6 @@
         {% endfor %}
     {% endif %}
 
-    {% if tasks %}
-    <div class="form-group">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <h1 class="editable-heading preview-section-title" style="margin:0">
-                <span class="section-title-text" data-section-key="timeline" data-default-title="{{ _('Timeline') }}" data-custom-title="{{ proposal.section_titles.get('timeline', '') }}">{{ section_title(proposal, 'timeline', _('Timeline')) }}</span>
-                <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'timeline', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
-            </h1>
-            <button class="btn btn-secondary btn-sm" onclick="exportTimelinePng('{{ proposal.id }}')">{{ _('Export PNG') }}</button>
-        </div>
-        {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
-        {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
-        {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
-
-        {% if proposal.end_date and proposal.end_date|length >= 7 %}
-            {% set proj_end_month = proposal.end_date[5:7]|int %}
-            {% set proj_end_year = proposal.end_date[:4]|int %}
-            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
-        {% else %}
-            {% set max_end = 0 %}
-            {% for r in all_rows %}
-                {% for bar in r.bars %}
-                {% set row_end = bar.offset + bar.duration %}
-                {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
-                {% endfor %}
-            {% endfor %}
-            {% set total_project_months = [max_end, 1]|max %}
-        {% endif %}
-
-        <div class="preview-timeline-chart">
-            {% set years_in_proj = ((proj_start_month - 1 + total_project_months - 1) // 12) + 1 %}
-            <div class="preview-timeline-row">
-                <div class="preview-timeline-label"></div>
-                <div class="preview-timeline-cells">
-                    {% for y in range(years_in_proj) %}
-                    {% set abs_y = proj_start_year + y %}
-                    {% set year_start_m = [(abs_y - proj_start_year) * 12 - (proj_start_month - 1), 0]|max %}
-                    {% set year_end_m = [(y + 1) * 12 - (proj_start_month - 1), total_project_months]|min %}
-                    {% set year_span = year_end_m - year_start_m %}
-                    {% if year_span > 0 %}
-                    <div class="preview-timeline-year-cell" style="flex:{{ year_span }}">{{ abs_y }}</div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="preview-timeline-row">
-                <div class="preview-timeline-label"></div>
-                <div class="preview-timeline-cells">
-                    {% for m_offset in range(total_project_months) %}
-                    {% set abs_m = proj_start_month + m_offset - 1 %}
-                    {% set abs_m_1based = (abs_m % 12) + 1 %}
-                    {% set is_year_start = (abs_m_1based == 1) %}
-                    <div class="preview-timeline-month-cell{% if is_year_start and m_offset > 0 %} preview-timeline-month-cell-year-start{% endif %}">{{ month_names[abs_m_1based - 1] }}</div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% for r in all_rows %}
-            <div class="preview-timeline-row{% if r.is_indent %} preview-timeline-row-indent{% endif %}">
-                <div class="preview-timeline-label">{{ r.name }}</div>
-                <div class="preview-timeline-cells preview-timeline-data-cells">
-                    {% for bar in r.bars %}
-                    {% set left_pct = (bar.offset / total_project_months * 100)|round(1) if total_project_months > 0 else 0 %}
-                    {% set width_pct = (bar.duration / total_project_months * 100)|round(1) if total_project_months > 0 else 100 %}
-                    <div class="preview-timeline-bar{% if r.is_indent %} preview-timeline-bar-indent{% endif %}" style="position:absolute;left:{{ left_pct }}%;width:{{ width_pct }}%"></div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
     <div class="footer-generated-print" style="margin-top:30px;padding-top:10px;border-top:1px solid #ddd;font-size:7pt;color:#999;text-align:center;">
         Proposal generated by propongo.org
     </div>

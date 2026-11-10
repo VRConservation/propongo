@@ -247,6 +247,9 @@ def export_markdown(proposal_id: str) -> Tuple[Response, int] | Response:
 
     ctx = build_export_context(proposal)
     ctx["map_static_data_uri"] = None
+    # The hyperlinked table of contents is only useful in the HTML/PDF
+    # documents; skip it in the plain-text Markdown conversion.
+    ctx["for_markdown"] = True
 
     html_content = render_template("export_proposal.html", **ctx)
     html_content = _strip_timeline_chart(html_content)

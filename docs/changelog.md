@@ -6,10 +6,17 @@ Added <br>
 
 - Budget unit changes ($'s, £s, and Euros)
 - Tick box to remove sub-total for budgets that don't have indirect
+- PDF export cover page: centered dark-blue title with funder, program, applicant, and date, followed by the proposal on a new page
+- Hyperlinked table of contents on the first page of the HTML export, linking to each section
 
 Changed <br>
 
 - Cover page for preview and exports
+- Timeline moved to follow Scope in the editor tabs, preview, and exports
+- PDF export inserts a page break after the timeline (Budget starts on a new page) and after the budget
+- HTML export header styled like the preview: title, Funder and Applicant, Program, then the date above the summary
+- "Applicant Contact" renamed to "Applicant" throughout the app
+- Dev server (`python run.py`) prints its startup banner once instead of twice, and the yellow "install python-dotenv" .env tip no longer appears
 
 Fixed <br>
 

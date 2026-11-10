@@ -140,7 +140,8 @@ def test_export_uses_custom_section_titles_and_applicant_contact():
         html = client.get(f"/export/html/{p.id}").data.decode()
         markdown = client.get(f"/export/markdown/{p.id}").data.decode()
 
-    assert "Applicant Contact: jane@example.org" in html
+    assert "Applicant" in html
+    assert "jane@example.org" in html
     assert "Executive Summary" in html
     assert "Work Plan" in html
     assert "Why Us" in html

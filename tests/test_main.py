@@ -925,7 +925,7 @@ def test_scope_tab_shows_applicant_contact_and_rename_controls():
         assert resp.status_code == 200
         html = resp.data.decode()
 
-    assert "Applicant Contact" in html
+    assert "Applicant" in html
     assert "jane@example.org" in html
     assert "Executive Summary" in html
     assert "openSectionTitleModal" in html
@@ -952,14 +952,14 @@ def test_preview_shows_applicant_contact_and_custom_titles():
         assert resp.status_code == 200
         html = resp.data.decode()
 
-    assert "Applicant Contact" in html
+    assert "Applicant" in html
     assert "jane@example.org" in html
     assert "Executive Summary" in html
     assert "Financial Plan" in html
     assert "openSectionTitleModal" in html
     # Section titles are top-level headings; contact metadata is smaller.
     assert '<h1 class="editable-heading preview-section-title">' in html
-    assert '<h4 class="preview-meta-label">Applicant Contact</h4>' in html
+    assert '<h4 class="preview-meta-label">Applicant</h4>' in html
     assert '<div class="preview-text"' in html
 
 

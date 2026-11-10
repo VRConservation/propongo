@@ -42,8 +42,12 @@
         }
         .timeline-section {
             page-break-before: always;
+            page-break-after: always;
             max-width: none;
             padding: 20px 20px;
+        }
+        .budget-section {
+            page-break-after: always;
         }
         .timeline-chart-bar-track {
             height: 16px;
@@ -59,14 +63,79 @@
             color: #1e3a5f;
             margin-bottom: 8px;
         }
-        .doc-header .client {
-            font-size: 12pt;
-            color: #666;
-        }
         .doc-header .date {
             font-size: 10pt;
             color: #999;
             margin-top: 4px;
+        }
+        .doc-header .client {
+            font-size: 12pt;
+            color: #666;
+        }
+        .doc-header-meta {
+            display: flex;
+            gap: 32px;
+            margin: 8px 0 4px;
+            text-align: left;
+        }
+        .doc-header-meta .meta-col {
+            flex: 1;
+        }
+        .doc-header-meta .meta-label {
+            font-size: 11pt;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1px;
+        }
+        .doc-header-meta .meta-value {
+            font-size: 11pt;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .cover-page {
+            page-break-after: always;
+            text-align: center;
+            padding-top: 3cm;
+        }
+        .cover-page .cover-title {
+            font-size: 28pt;
+            color: #1e3a5f;
+            margin-bottom: 16pt;
+        }
+        .cover-page .cover-line {
+            font-size: 12pt;
+            color: #666;
+            margin: 4pt 0;
+        }
+        .cover-page .date {
+            font-size: 10pt;
+            color: #999;
+            margin-top: 12pt;
+        }
+        .toc {
+            margin: 24px 0 8px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 14px 20px;
+            background: #f8fafc;
+        }
+        .toc-heading {
+            font-size: 12pt;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 8px;
+        }
+        .toc-list {
+            margin: 0 0 0 20px;
+            padding: 0;
+        }
+        .toc-list li {
+            margin-bottom: 4px;
+        }
+        .toc-list a {
+            color: #2563eb;
+            text-decoration: none;
         }
         h1.section-heading {
             font-size: 14pt;
@@ -223,6 +292,21 @@
     </style>
 </head>
 <body>
+    {% if for_pdf %}
+    <div class="cover-page">
+        <h1 class="cover-title">{{ proposal.title or "Proposal" }}</h1>
+        {% if proposal.client_name %}
+        <div class="cover-line">Funder: {{ proposal.client_name }}</div>
+        {% endif %}
+        {% if proposal.subtitle %}
+        <div class="cover-line">Program: {{ proposal.subtitle }}</div>
+        {% endif %}
+        {% if proposal.applicant_contact %}
+        <div class="cover-line">Applicant: {{ proposal.applicant_contact|nl2br }}</div>
+        {% endif %}
+        <div class="date">{{ proposal.updated_at[:10] if proposal.updated_at else "" }}</div>
+    </div>
+    {% elif for_markdown %}
     <div class="doc-header">
         <h1>{{ proposal.title or "Proposal" }}</h1>
         {% if proposal.client_name %}
@@ -232,28 +316,78 @@
         <div class="client">Program: {{ proposal.subtitle }}</div>
         {% endif %}
         {% if proposal.applicant_contact %}
-        <div class="client">Applicant Contact: {{ proposal.applicant_contact|nl2br }}</div>
+        <div class="client">Applicant: {{ proposal.applicant_contact|nl2br }}</div>
         {% endif %}
         <div class="date">{{ proposal.updated_at[:10] if proposal.updated_at else "" }}</div>
     </div>
+    {% else %}
+    <div class="doc-header">
+        <h1>{{ proposal.title or "Proposal" }}</h1>
+        <div class="doc-header-meta">
+            <div class="meta-col">
+                <div class="meta-label">Funder</div>
+                <div class="meta-value">{{ proposal.client_name or "—" }}</div>
+                <div class="meta-label">Applicant</div>
+                <div class="meta-value">{{ proposal.applicant_contact|nl2br if proposal.applicant_contact else "—" }}</div>
+            </div>
+            <div class="meta-col">
+                <div class="meta-label">Program</div>
+                <div class="meta-value">{{ proposal.subtitle or "—" }}</div>
+            </div>
+        </div>
+        <div class="date">{{ proposal.updated_at[:10] if proposal.updated_at else "" }}</div>
+        <div class="toc">
+            <div class="toc-heading">Contents</div>
+            <ol class="toc-list">
+                {% if proposal.cover_letter_include and proposal.cover_letter_content %}
+                <li><a href="#sec-cover-letter">{{ _('Letter of Interest') if proposal.cover_letter_type == 'loi' else _('Cover Letter') }}</a></li>
+                {% endif %}
+                {% if proposal.project_summary %}
+                <li><a href="#sec-summary">{{ section_titles.project_summary }}</a></li>
+                {% endif %}
+                {% if map_ctx %}
+                <li><a href="#sec-map">{{ section_titles.map }}</a></li>
+                {% endif %}
+                {% if proposal.scope %}
+                <li><a href="#sec-scope">{{ section_titles.scope }}</a></li>
+                {% endif %}
+
+                {% if tasks %}
+                <li><a href="#sec-timeline">{{ section_titles.timeline }}</a></li>
+                {% endif %}
+                {% if budget_items %}
+                <li><a href="#sec-budget">{{ section_titles.budget }}</a></li>
+                {% endif %}
+                {% if proposal.qualifications %}
+                <li><a href="#sec-qualifications">{{ section_titles.qualifications }}</a></li>
+                {% endif %}
+                {% if proposal.custom_sections %}
+                    {% for section in proposal.custom_sections | sort(attribute='order') %}
+                <li><a href="#sec-{{ section.id }}">{{ section.title }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </ol>
+        </div>
+    </div>
+    {% endif %}
 
     {% if proposal.cover_letter_include and proposal.cover_letter_content %}
     <div class="section-block">
-        <h1 class="section-heading">{{ _('Letter of Interest') if proposal.cover_letter_type == 'loi' else _('Cover Letter') }}</h1>
+        <h1 class="section-heading" id="sec-cover-letter">{{ _('Letter of Interest') if proposal.cover_letter_type == 'loi' else _('Cover Letter') }}</h1>
         <div class="md-content">{{ proposal.cover_letter_content|md }}</div>
     </div>
     {% endif %}
 
     {% if proposal.project_summary %}
     <div class="section-block">
-        <h1 class="section-heading">{{ section_titles.project_summary }}</h1>
+        <h1 class="section-heading" id="sec-summary">{{ section_titles.project_summary }}</h1>
         <div class="md-content">{{ proposal.project_summary|md }}</div>
     </div>
     {% endif %}
 
     {% if map_ctx %}
     <div class="section-block">
-        <h1 class="section-heading">{{ section_titles.map }}</h1>
+        <h1 class="section-heading" id="sec-map">{{ section_titles.map }}</h1>
         {% if map_static_data_uri %}
         <img src="{{ map_static_data_uri }}" alt="Project map" style="max-width:100%;display:block;" />
         {% elif map_ctx.local_image_url %}
@@ -281,14 +415,81 @@
 
     {% if proposal.scope %}
     <div class="section-block">
-        <h1 class="section-heading">{{ section_titles.scope }}</h1>
+        <h1 class="section-heading" id="sec-scope">{{ section_titles.scope }}</h1>
         <div class="md-content">{{ proposal.scope|md }}</div>
     </div>
     {% endif %}
 
+    {% if tasks %}
+    <div class="section-block timeline-section">
+        <h1 class="section-heading" id="sec-timeline">{{ section_titles.timeline }}</h1>
+        {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
+        {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
+        {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
+        {% set quarter_names = ['Q1','Q2','Q3','Q4'] %}
+
+        {% if proposal.end_date and proposal.end_date|length >= 7 %}
+            {% set proj_end_month = proposal.end_date[5:7]|int %}
+            {% set proj_end_year = proposal.end_date[:4]|int %}
+            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
+        {% else %}
+            {% set max_end = 0 %}
+            {% for r in all_rows %}
+                {% for bar in r.bars %}
+                {% set row_end = bar.offset + bar.duration %}
+                {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
+                {% endfor %}
+            {% endfor %}
+            {% set total_project_months = [max_end, 1]|max %}
+        {% endif %}
+
+        <div class="timeline-chart">
+            {% set years_in_proj = ((proj_start_month - 1 + total_project_months - 1) // 12) + 1 %}
+            <div class="timeline-chart-row">
+                <div class="timeline-chart-label"></div>
+                <div class="timeline-chart-cells">
+                    {% for y in range(years_in_proj) %}
+                    {% set abs_y = proj_start_year + y %}
+                    {% set year_start_m = [(abs_y - proj_start_year) * 12 - (proj_start_month - 1), 0]|max %}
+                    {% set year_end_m = [(y + 1) * 12 - (proj_start_month - 1), total_project_months]|min %}
+                    {% set year_span = year_end_m - year_start_m %}
+                    {% if year_span > 0 %}
+                    <div class="timeline-chart-year-cell" style="flex:{{ year_span }}">{{ abs_y }}</div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="timeline-chart-row">
+                <div class="timeline-chart-label"></div>
+                <div class="timeline-chart-cells">
+                    {% for m_offset in range(total_project_months) %}
+                    {% set abs_m = proj_start_month + m_offset - 1 %}
+                    {% set abs_m_1based = (abs_m % 12) + 1 %}
+                    {% set is_year_start = (abs_m_1based == 1) %}
+                    <div class="timeline-chart-month-cell{% if is_year_start and m_offset > 0 %} timeline-chart-month-cell-year-start{% endif %}">{{ month_names[abs_m_1based - 1] }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% for r in all_rows %}
+            <div class="timeline-chart-row">
+                <div class="timeline-chart-label"{% if r.is_indent %} style="padding-left:16px"{% endif %}>{{ r.name }}</div>
+                <div class="timeline-chart-cells timeline-chart-data-cells">
+                    {% for bar in r.bars %}
+                    {% set left_pct = (bar.offset / total_project_months * 100)|round(1) if total_project_months > 0 else 0 %}
+                    {% set width_pct = (bar.duration / total_project_months * 100)|round(1) if total_project_months > 0 else 100 %}
+                    <div class="timeline-chart-bar{% if r.is_indent %} timeline-chart-bar-indent{% endif %}" style="position:absolute;left:{{ left_pct }}%;width:{{ width_pct }}%"></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
     {% if budget_items %}
-    <div class="section-block">
-        <h1 class="section-heading">{{ section_titles.budget }}</h1>
+    <div class="section-block budget-section">
+        <h1 class="section-heading" id="sec-budget">{{ section_titles.budget }}</h1>
         <table style="font-size:8pt;border-collapse:collapse;">
             <thead>
                 <tr>
@@ -372,7 +573,7 @@
 
     {% if proposal.qualifications %}
     <div class="section-block">
-        <h1 class="section-heading">{{ section_titles.qualifications }}</h1>
+        <h1 class="section-heading" id="sec-qualifications">{{ section_titles.qualifications }}</h1>
         <div class="md-content">{{ proposal.qualifications|md }}</div>
     </div>
     {% endif %}
@@ -380,76 +581,10 @@
     {% if proposal.custom_sections %}
         {% for section in proposal.custom_sections | sort(attribute='order') %}
     <div class="section-block">
-        <h1 class="section-heading">{{ section.title }}</h1>
+        <h1 class="section-heading" id="sec-{{ section.id }}">{{ section.title }}</h1>
         <div class="md-content">{{ section.content | md }}</div>
     </div>
         {% endfor %}
-    {% endif %}
-
-    {% if tasks %}
-    <div class="section-block timeline-section">
-        <h1 class="section-heading">{{ section_titles.timeline }}</h1>
-        {% set proj_start_month = proposal.start_date[5:7]|int if proposal.start_date and proposal.start_date|length >= 7 else 1 %}
-        {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
-        {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
-        {% set quarter_names = ['Q1','Q2','Q3','Q4'] %}
-
-        {% if proposal.end_date and proposal.end_date|length >= 7 %}
-            {% set proj_end_month = proposal.end_date[5:7]|int %}
-            {% set proj_end_year = proposal.end_date[:4]|int %}
-            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
-        {% else %}
-            {% set max_end = 0 %}
-            {% for r in all_rows %}
-                {% for bar in r.bars %}
-                {% set row_end = bar.offset + bar.duration %}
-                {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
-                {% endfor %}
-            {% endfor %}
-            {% set total_project_months = [max_end, 1]|max %}
-        {% endif %}
-
-        <div class="timeline-chart">
-            {% set years_in_proj = ((proj_start_month - 1 + total_project_months - 1) // 12) + 1 %}
-            <div class="timeline-chart-row">
-                <div class="timeline-chart-label"></div>
-                <div class="timeline-chart-cells">
-                    {% for y in range(years_in_proj) %}
-                    {% set abs_y = proj_start_year + y %}
-                    {% set year_start_m = [(abs_y - proj_start_year) * 12 - (proj_start_month - 1), 0]|max %}
-                    {% set year_end_m = [(y + 1) * 12 - (proj_start_month - 1), total_project_months]|min %}
-                    {% set year_span = year_end_m - year_start_m %}
-                    {% if year_span > 0 %}
-                    <div class="timeline-chart-year-cell" style="flex:{{ year_span }}">{{ abs_y }}</div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="timeline-chart-row">
-                <div class="timeline-chart-label"></div>
-                <div class="timeline-chart-cells">
-                    {% for m_offset in range(total_project_months) %}
-                    {% set abs_m = proj_start_month + m_offset - 1 %}
-                    {% set abs_m_1based = (abs_m % 12) + 1 %}
-                    {% set is_year_start = (abs_m_1based == 1) %}
-                    <div class="timeline-chart-month-cell{% if is_year_start and m_offset > 0 %} timeline-chart-month-cell-year-start{% endif %}">{{ month_names[abs_m_1based - 1] }}</div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% for r in all_rows %}
-            <div class="timeline-chart-row">
-                <div class="timeline-chart-label"{% if r.is_indent %} style="padding-left:16px"{% endif %}>{{ r.name }}</div>
-                <div class="timeline-chart-cells timeline-chart-data-cells">
-                    {% for bar in r.bars %}
-                    {% set left_pct = (bar.offset / total_project_months * 100)|round(1) if total_project_months > 0 else 0 %}
-                    {% set width_pct = (bar.duration / total_project_months * 100)|round(1) if total_project_months > 0 else 100 %}
-                    <div class="timeline-chart-bar{% if r.is_indent %} timeline-chart-bar-indent{% endif %}" style="position:absolute;left:{{ left_pct }}%;width:{{ width_pct }}%"></div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
     {% endif %}
 
     {% if not for_pdf %}

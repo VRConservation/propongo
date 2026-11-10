@@ -107,12 +107,12 @@
             <nav class="tab-nav">
                 <button class="tab-btn active" data-tab="scope"
                         onclick="switchTab('{{ proposal.id }}', 'scope', this)">{{ _('Scope') }}</button>
+                <button class="tab-btn" data-tab="timeline"
+                        onclick="switchTab('{{ proposal.id }}', 'timeline', this)">{{ _('Timeline') }}</button>
                 <button class="tab-btn" data-tab="budget"
                         onclick="switchTab('{{ proposal.id }}', 'budget', this)">{{ _('Budget') }}</button>
                 <button class="tab-btn" data-tab="qualifications"
                         onclick="switchTab('{{ proposal.id }}', 'qualifications', this)">{{ _('Qualifications') }}</button>
-                <button class="tab-btn" data-tab="timeline"
-                        onclick="switchTab('{{ proposal.id }}', 'timeline', this)">{{ _('Timeline') }}</button>
                 <button class="tab-btn" data-tab="custom-sections"
                         onclick="switchTab('{{ proposal.id }}', 'custom-sections', this)">{{ _('Custom') }}</button>
                 <button class="tab-btn" data-tab="map"
