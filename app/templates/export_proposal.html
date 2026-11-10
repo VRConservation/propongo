@@ -94,23 +94,40 @@
         }
         .cover-page {
             page-break-after: always;
-            text-align: center;
-            padding-top: 3cm;
+            /* body carries 40px padding-top; pull the title flush to the top
+               page margin like the sample cover */
+            margin-top: -40px;
         }
         .cover-page .cover-title {
             font-size: 28pt;
             color: #1e3a5f;
-            margin-bottom: 16pt;
+            margin-bottom: 24pt;
+            text-align: center;
         }
-        .cover-page .cover-line {
+        .cover-meta {
+            display: flex;
+            gap: 32px;
+            text-align: left;
+            margin: 0 0 12pt 0;
+        }
+        .cover-meta .meta-col-left {
+            flex: 1.2;
+        }
+        .cover-meta .meta-col-right {
+            flex: 1;
+        }
+        .cover-meta .meta-label {
+            font-size: 12pt;
+            font-weight: 600;
+            color: #333;
+            margin: 10pt 0 1pt 0;
+        }
+        .cover-meta .meta-col .meta-label:first-child {
+            margin-top: 0;
+        }
+        .cover-meta .meta-value {
             font-size: 12pt;
             color: #666;
-            margin: 4pt 0;
-        }
-        .cover-page .date {
-            font-size: 10pt;
-            color: #999;
-            margin-top: 12pt;
         }
         .toc {
             margin: 24px 0 8px;
@@ -295,16 +312,35 @@
     {% if for_pdf %}
     <div class="cover-page">
         <h1 class="cover-title">{{ proposal.title or "Proposal" }}</h1>
-        {% if proposal.client_name %}
-        <div class="cover-line">Funder: {{ proposal.client_name }}</div>
+        <div class="cover-meta">
+            <div class="meta-col meta-col-left">
+                {% if proposal.client_name %}
+                <div class="meta-label">{{ _('Funder') }}</div>
+                <div class="meta-value">{{ proposal.client_name }}</div>
+                {% endif %}
+                {% if proposal.applicant_contact %}
+                <div class="meta-label">{{ _('Applicant') }}</div>
+                <div class="meta-value">{{ proposal.applicant_contact|nl2br }}</div>
+                {% endif %}
+            </div>
+            <div class="meta-col meta-col-right">
+                {% if proposal.subtitle %}
+                <div class="meta-label">{{ _('Program') }}</div>
+                <div class="meta-value">{{ proposal.subtitle }}</div>
+                {% endif %}
+                {% if proposal.updated_at and proposal.updated_at|length >= 10 %}
+                <div class="meta-label">{{ _('Date') }}</div>
+                {% set cover_date = proposal.updated_at[:10] %}
+                {% set cover_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                                       'August', 'September', 'October', 'November', 'December'] %}
+                <div class="meta-value">{{ cover_date[8:10]|int }} {{ cover_months[(cover_date[5:7]|int) - 1] }}, {{ cover_date[:4] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% if proposal.project_summary %}
+        <h1 class="section-heading">{{ section_titles.project_summary }}</h1>
+        <div class="md-content">{{ proposal.project_summary|md }}</div>
         {% endif %}
-        {% if proposal.subtitle %}
-        <div class="cover-line">Program: {{ proposal.subtitle }}</div>
-        {% endif %}
-        {% if proposal.applicant_contact %}
-        <div class="cover-line">Applicant: {{ proposal.applicant_contact|nl2br }}</div>
-        {% endif %}
-        <div class="date">{{ proposal.updated_at[:10] if proposal.updated_at else "" }}</div>
     </div>
     {% elif for_markdown %}
     <div class="doc-header">

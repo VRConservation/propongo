@@ -6,7 +6,7 @@ Added <br>
 
 - Budget unit changes ($'s, £s, and Euros)
 - Tick box to remove sub-total for budgets that don't have indirect
-- PDF export cover page: centered dark-blue title with funder, program, applicant, and date, followed by the proposal on a new page
+- PDF export cover page: centered dark-blue title at the top, Funder and Applicant on the left with Program and the date on the right, then the project summary below the cover header, followed by the proposal on a new page
 - Hyperlinked table of contents on the first page of the HTML export, linking to each section
 
 Changed <br>
