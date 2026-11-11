@@ -126,7 +126,7 @@
             flex: 1;
         }
         .cover-meta .meta-label {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: 600;
             color: #333;
             margin: 10pt 0 1pt 0;
@@ -135,7 +135,7 @@
             margin-top: 0;
         }
         .cover-meta .meta-value {
-            font-size: 12pt;
+            font-size: 10pt;
             color: #666;
         }
         .toc {
@@ -320,6 +320,12 @@
     </style>
 </head>
 <body>
+    {% set cover_date = proposal.updated_at[:10] if proposal.updated_at and proposal.updated_at|length >= 10 else "" %}
+    {% set cover_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                           'August', 'September', 'October', 'November', 'December'] %}
+    {% if cover_date %}
+    {% set cover_date_display = cover_date[8:10]|int ~ " " ~ cover_months[(cover_date[5:7]|int) - 1] ~ ", " ~ cover_date[:4] %}
+    {% endif %}
     {% if for_pdf %}
     <div class="cover-page">
         <h1 class="cover-title">{{ proposal.title or "Proposal" }}</h1>
@@ -341,10 +347,7 @@
                 {% endif %}
                 {% if proposal.updated_at and proposal.updated_at|length >= 10 %}
                 <div class="meta-label">{{ _('Date') }}</div>
-                {% set cover_date = proposal.updated_at[:10] %}
-                {% set cover_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-                                       'August', 'September', 'October', 'November', 'December'] %}
-                <div class="meta-value">{{ cover_date[8:10]|int }} {{ cover_months[(cover_date[5:7]|int) - 1] }}, {{ cover_date[:4] }}</div>
+                <div class="meta-value">{{ cover_date_display }}</div>
                 {% endif %}
             </div>
         </div>
@@ -380,9 +383,12 @@
             <div class="meta-col">
                 <div class="meta-label">Program</div>
                 <div class="meta-value">{{ proposal.subtitle or "—" }}</div>
+                {% if cover_date %}
+                <div class="meta-label">{{ _('Date') }}</div>
+                <div class="meta-value">{{ cover_date_display }}</div>
+                {% endif %}
             </div>
         </div>
-        <div class="date">{{ proposal.updated_at[:10] if proposal.updated_at else "" }}</div>
         <div class="toc">
             <div class="toc-heading">Contents</div>
             <ol class="toc-list">
