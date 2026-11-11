@@ -18,8 +18,9 @@ BudgetItem dict:
         'id': str,                # UUID
         'task_id': str,           # Associated task UUID
         'name': str,              # Item name
-        'cost_per_unit': float,   # Unit cost
+        'cost_per_unit': float,   # Cost per unit
         'units': float,           # Number of units
+        'unit_label': str,        # Unit type: hours, days, lump, or custom
         # plus any of BUDGET_TIMING_FIELDS that are set
     }
 
@@ -91,6 +92,10 @@ BUDGET_TIMING_FIELDS = (
 # only changes the symbol shown in the UI and every export.
 CURRENCIES = ("$", "£", "€")
 
+# Unit types offered by the budget's Units dropdown. Users can add their own,
+# stored per proposal in ``Proposal.budget_unit_options``.
+BUDGET_UNIT_DEFAULTS = ("hours", "days", "lump")
+
 # Main section headings whose labels the user can rename. Values live in
 # ``Proposal.section_titles``; a missing key means "use the default heading".
 SECTION_TITLE_KEYS = (
@@ -137,6 +142,22 @@ _NON_COPY_FIELDS = {
 def normalize_currency(value) -> str:
     """Return a supported currency symbol, falling back to dollars."""
     return value if value in CURRENCIES else "$"
+
+
+def budget_unit_choices(proposal) -> list:
+    """Return the unit types available in the budget Units dropdown.
+
+    The built-in defaults come first, followed by any custom units the user
+    saved on the proposal. Duplicates and blank values are ignored.
+    """
+    choices = list(BUDGET_UNIT_DEFAULTS)
+    for option in getattr(proposal, "budget_unit_options", None) or []:
+        if not isinstance(option, str):
+            continue
+        label = option.strip()
+        if label and label not in choices:
+            choices.append(label)
+    return choices
 
 
 def resolve_section_titles(proposal, defaults: Optional[dict] = None) -> dict:
@@ -282,6 +303,9 @@ class Proposal:
     section_titles: dict = field(default_factory=dict)
 
     budget_items: list = field(default_factory=list)
+    # Custom unit types added to the budget's Units dropdown, in addition to
+    # BUDGET_UNIT_DEFAULTS. Stored per proposal so they survive reloads.
+    budget_unit_options: list = field(default_factory=list)
     start_date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     end_date: str = ""
     indirect_percent: float = 0.0

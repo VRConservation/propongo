@@ -16,6 +16,78 @@ function budgetYearOptions(selected) {
     return html;
 }
 
+function budgetUnitChoices() {
+    const choices = ['hours', 'days', 'lump'];
+    const stored = Array.isArray(window.PROPOSAL_UNIT_OPTIONS) ? window.PROPOSAL_UNIT_OPTIONS : [];
+    stored.forEach(unit => {
+        const label = typeof unit === 'string' ? unit.trim() : '';
+        if (label && !choices.includes(label)) choices.push(label);
+    });
+    return choices;
+}
+
+function budgetUnitOptions(selected) {
+    let html = '';
+    budgetUnitChoices().forEach(unit => {
+        html += `<option value="${escapeHtml(unit)}" ${unit === selected ? 'selected' : ''}>${escapeHtml(t(unit))}</option>`;
+    });
+    html += `<option value="__custom__">${escapeHtml(t('+ Add custom unit...'))}</option>`;
+    return html;
+}
+
+function unitLabelText(label) {
+    return label ? t(label) : t('units');
+}
+
+function budgetItemInfoHTML(name, unitLabel) {
+    const unit = unitLabel ? `<span class="budget-item-unit">${escapeHtml(unitLabel)}</span>` : '';
+    return `<span class="budget-item-name">${escapeHtml(name)}</span>${unit}`;
+}
+
+function budgetItemNumbersHTML(cost, units, unitLabel) {
+    return `${formatMoney(cost)}/unit &times; ${units} ${escapeHtml(unitLabelText(unitLabel))}`;
+}
+
+async function handleBudgetUnitChange(select, proposalId) {
+    if (select.value !== '__custom__') {
+        select.dataset.previous = select.value;
+        return;
+    }
+
+    const entered = (prompt(t('Enter a custom unit (e.g. reports):')) || '').trim();
+    const previous = select.dataset.previous || budgetUnitChoices()[0];
+    if (!entered) {
+        select.value = previous;
+        return;
+    }
+
+    const choices = budgetUnitChoices();
+    if (!choices.includes(entered)) {
+        choices.push(entered);
+        const customOptions = choices.filter(unit => !['hours', 'days', 'lump'].includes(unit));
+        try {
+            const resp = await fetch('/api/proposal/' + proposalId, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ budget_unit_options: customOptions })
+            });
+            if (!resp.ok) throw new Error('Unable to save unit');
+            window.PROPOSAL_UNIT_OPTIONS = choices;
+        } catch (err) {
+            console.error(err);
+            alert(t('Failed to save.'));
+            select.value = previous;
+            return;
+        }
+    }
+
+    document.querySelectorAll('.budget-unit-select').forEach(sel => {
+        const current = sel === select ? entered : sel.value;
+        sel.innerHTML = budgetUnitOptions(current);
+        sel.dataset.previous = current;
+    });
+}
+
 function budgetTimingLineHTML(card) {
     const sm = card.dataset.startMonth;
     const sy = card.dataset.startYear;
@@ -125,7 +197,7 @@ function updateBudgetCurrencyDisplays() {
         if (!numbers) return;
         const spans = numbers.querySelectorAll('span');
         if (spans[0]) {
-            spans[0].innerHTML = `${formatMoney(cost)}/unit &times; ${units} ${t('units')}`;
+            spans[0].innerHTML = budgetItemNumbersHTML(cost, units, card.dataset.unitLabel || '');
         }
         const totalEl = numbers.querySelector('.budget-item-total');
         if (totalEl) totalEl.textContent = formatMoney(cost * units);
@@ -190,6 +262,7 @@ function addBudgetItem(proposalId) {
     const name = document.getElementById('budget-item-name').value.trim();
     const costPerUnit = parseFloat(document.getElementById('budget-cost').value) || 0;
     const units = parseFloat(document.getElementById('budget-units').value) || 1;
+    const unitLabel = document.getElementById('budget-unit-label').value;
     const startMonth = document.getElementById('budget-start-month').value;
     const startYear = document.getElementById('budget-start-year').value;
     const duration = parseInt(document.getElementById('budget-duration').value) || 1;
@@ -207,6 +280,7 @@ function addBudgetItem(proposalId) {
             name: name,
             cost_per_unit: costPerUnit,
             units: units,
+            unit_label: unitLabel === '__custom__' ? '' : unitLabel,
             start_month: startMonth || null,
             start_year: startYear || null,
             duration_months: duration,
@@ -228,15 +302,16 @@ function addBudgetItem(proposalId) {
         card.dataset.name = item.name;
         card.dataset.cost = item.cost_per_unit;
         card.dataset.units = item.units;
+        card.dataset.unitLabel = item.unit_label || '';
         card.dataset.startMonth = startMonth || '';
         card.dataset.startYear = startYear || '';
         card.dataset.duration = duration;
         card.innerHTML = `
             <div class="budget-item-info">
-                <span class="budget-item-name">${item.name}</span>
+                ${budgetItemInfoHTML(item.name, item.unit_label || '')}
             </div>
             <div class="budget-item-numbers">
-                <span>${formatMoney(item.cost_per_unit)}/unit &times; ${item.units} ${t('units')}</span>
+                <span>${budgetItemNumbersHTML(item.cost_per_unit, item.units, item.unit_label || '')}</span>
                 <span class="budget-item-total">${formatMoney(item.cost_per_unit * item.units)}</span>
             </div>
             <div class="budget-item-timing" data-timing-line>${budgetTimingLineHTML(card)}</div>
@@ -290,6 +365,7 @@ function editBudgetItem(proposalId, btn) {
     const name = card.dataset.name;
     const cost = card.dataset.cost;
     const units = card.dataset.units;
+    const unitLabel = card.dataset.unitLabel || '';
     const startMonth = card.dataset.startMonth ? parseInt(card.dataset.startMonth) : '';
     const startYear = card.dataset.startYear ? parseInt(card.dataset.startYear) : '';
     const duration = card.dataset.duration ? parseInt(card.dataset.duration) : 1;
@@ -318,8 +394,11 @@ function editBudgetItem(proposalId, btn) {
         <div class="budget-edit-row">
             <select class="edit-task-id">${taskOptions}</select>
             <input type="text" class="edit-name" value="${escapeHtml(name)}" placeholder="${t('Item name')}">
+            <select class="edit-unit-label budget-unit-select"
+                    onfocus="this.dataset.previous=this.value"
+                    onchange="handleBudgetUnitChange(this, '${proposalId}')">${budgetUnitOptions(unitLabel)}</select>
+            <input type="number" class="edit-units" value="${units}" min="0" step="1" placeholder="${t('Number')}">
             <input type="number" class="edit-cost" value="${cost}" min="0" step="0.01" placeholder="${t('Cost/unit')}">
-            <input type="number" class="edit-units" value="${units}" min="0" step="1" placeholder="${t('Units')}">
         </div>
         <div class="budget-edit-row budget-timing-fields">
             <select class="edit-start-month">${budgetMonthOptions(startMonth)}</select>
@@ -346,6 +425,8 @@ function saveBudgetItem(proposalId, btn) {
         name: form.querySelector('.edit-name').value.trim(),
         cost_per_unit: parseFloat(form.querySelector('.edit-cost').value) || 0,
         units: parseFloat(form.querySelector('.edit-units').value) || 1,
+        unit_label: form.querySelector('.edit-unit-label').value === '__custom__'
+            ? '' : form.querySelector('.edit-unit-label').value,
         start_month: startMonth,
         start_year: startYear,
         duration_months: parseInt(form.querySelector('.edit-duration').value) || 1,
@@ -377,6 +458,7 @@ function saveBudgetItem(proposalId, btn) {
         card.dataset.name = data.name;
         card.dataset.cost = data.cost_per_unit;
         card.dataset.units = data.units;
+        card.dataset.unitLabel = data.unit_label;
         card.dataset.startMonth = startMonth || '';
         card.dataset.startYear = startYear || '';
         card.dataset.duration = data.duration_months;
@@ -386,9 +468,9 @@ function saveBudgetItem(proposalId, btn) {
         const timingLine = card.querySelector('.budget-item-timing');
         const actions = card.querySelector('.budget-item-actions');
 
-        info.querySelector('.budget-item-name').textContent = data.name;
+        info.innerHTML = budgetItemInfoHTML(data.name, data.unit_label);
         numbers.querySelector('span:first-child').innerHTML =
-            `${formatMoney(data.cost_per_unit)}/unit &times; ${data.units} ${t('units')}`;
+            budgetItemNumbersHTML(data.cost_per_unit, data.units, data.unit_label);
         numbers.querySelector('.budget-item-total').textContent =
             `${formatMoney(data.cost_per_unit * data.units)}`;
         timingLine.innerHTML = budgetTimingLineHTML(card);

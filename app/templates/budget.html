@@ -78,8 +78,16 @@
                 {% endfor %}
             </select>
             <input type="text" id="budget-item-name" placeholder="{{ _('Item name') }}" class="flex-grow">
+            <select id="budget-unit-label" class="budget-unit-select"
+                    onfocus="this.dataset.previous=this.value"
+                    onchange="handleBudgetUnitChange(this, '{{ proposal.id }}')">
+                {% for unit in budget_unit_choices(proposal) %}
+                <option value="{{ unit }}" {% if loop.first %}selected{% endif %}>{{ _(unit) }}</option>
+                {% endfor %}
+                <option value="__custom__">{{ _('+ Add custom unit...') }}</option>
+            </select>
+            <input type="number" id="budget-units" placeholder="{{ _('Number') }}" min="0" step="1" value="1">
             <input type="number" id="budget-cost" placeholder="{{ _('Cost/unit') }}" min="0" step="0.01">
-            <input type="number" id="budget-units" placeholder="{{ _('Units') }}" min="0" step="1" value="1">
             <button class="btn btn-primary" onclick="addBudgetItem('{{ proposal.id }}')">{{ _('Add') }}</button>
         </div>
         <div class="budget-add-form budget-timing-row">
@@ -125,14 +133,16 @@
                      data-name="{{ item.name }}"
                      data-cost="{{ item.cost_per_unit }}"
                      data-units="{{ item.units }}"
+                     data-unit-label="{{ item.get('unit_label', '') }}"
                      data-start-month="{{ item_timing.get('start_month', '') }}"
                      data-start-year="{{ item_timing.get('start_year', '') }}"
                      data-duration="{{ item_timing.get('duration_months', '') }}">
                     <div class="budget-item-info">
                         <span class="budget-item-name">{{ item.name }}</span>
+                        <span class="budget-item-unit">{{ item.get('unit_label', '') }}</span>
                     </div>
                     <div class="budget-item-numbers">
-                        <span>{{ item.cost_per_unit|money(proposal.currency) }}/unit &times; {{ item.units|currency }} {{ _('units') }}</span>
+                        <span>{{ item.cost_per_unit|money(proposal.currency) }}/unit &times; {{ item.units|currency }} {{ _(item.get('unit_label') or 'units') }}</span>
                         <span class="budget-item-total">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</span>
                     </div>
                     <div class="budget-item-timing" data-timing-line>

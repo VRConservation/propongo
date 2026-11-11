@@ -170,10 +170,11 @@
         <table class="preview-budget-table">
             <thead>
                 <tr>
-                    <th>{{ _('Item') }}</th>
+                    <th>{{ _('Task/Item') }}</th>
+                    <th>{{ _('Units') }}</th>
+                    <th class="num-col">{{ _('Number') }}</th>
                     <th class="num-col">{{ _('Cost/Unit') }}</th>
-                    <th class="num-col">{{ _('Units') }}</th>
-                    <th class="num-col">{{ _('Total') }}</th>
+                    <th class="num-col">{{ _('Total') }} ({{ proposal.currency }})</th>
                 </tr>
             </thead>
             <tbody>
@@ -185,35 +186,36 @@
                     {% endif %}
                 {% endfor %}
                 <tr>
-                    <td colspan="3" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ task.name }}</td>
-                    <td class="num-col" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ ns.total|money(proposal.currency) }}</td>
+                    <td colspan="4" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ task.name }}</td>
+                    <td class="num-col" style="background:var(--bg-secondary);font-weight:600;padding:8px 12px;">{{ ns.total|currency }}</td>
                 </tr>
                 {% for item in budget_items %}
                     {% if item.task_id|string == task.id|string %}
                 <tr>
                     <td style="padding-left:24px;">{{ item.name }}</td>
-                    <td class="num-col">{{ item.cost_per_unit|money(proposal.currency) }}</td>
+                    <td>{{ item.get('unit_label', '') }}</td>
                     <td class="num-col">{{ item.units|currency }}</td>
-                    <td class="num-col">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</td>
+                    <td class="num-col">{{ item.cost_per_unit|currency }}</td>
+                    <td class="num-col">{{ (item.cost_per_unit * item.units)|currency }}</td>
                 </tr>
                     {% endif %}
                 {% endfor %}
                 {% endfor %}
                 {% if proposal.show_budget_subtotal %}
                 <tr>
-                    <td colspan="3" style="font-weight:600;border-top:2px solid var(--border);">{{ _('Subtotal') }}</td>
-                    <td class="num-col" style="font-weight:600;border-top:2px solid var(--border);">{{ total_budget|money(proposal.currency) }}</td>
+                    <td colspan="4" style="font-weight:600;border-top:2px solid var(--border);">{{ _('Subtotal') }}</td>
+                    <td class="num-col" style="font-weight:600;border-top:2px solid var(--border);">{{ total_budget|currency }}</td>
                 </tr>
                 {% endif %}
                 {% if indirect_percent is defined and indirect_percent > 0 %}
                 <tr>
-                    <td colspan="3">{{ _('Indirect') }} ({{ "%.0f"|format(indirect_percent) }}%)</td>
-                    <td class="num-col">{{ indirect_amount|money(proposal.currency) }}</td>
+                    <td colspan="4">{{ _('Indirect') }} ({{ "%.0f"|format(indirect_percent) }}%)</td>
+                    <td class="num-col">{{ indirect_amount|currency }}</td>
                 </tr>
                 {% endif %}
                 <tr>
-                    <td colspan="3"><strong>{{ _('Total') }}</strong></td>
-                    <td class="num-col"><strong>{{ total_with_indirect|money(proposal.currency) }}</strong></td>
+                    <td colspan="4"><strong>{{ _('Total') }}</strong></td>
+                    <td class="num-col"><strong>{{ total_with_indirect|currency }}</strong></td>
                 </tr>
             </tbody>
         </table>

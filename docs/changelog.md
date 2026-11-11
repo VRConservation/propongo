@@ -5,6 +5,7 @@
 Added <br>
 
 - Budget unit changes ($'s, £s, and Euros)
+- Budget "Units" column with a dropdown for hours, days, lump, and custom unit types; custom units are saved on the proposal for reuse
 - Tick box to remove sub-total for budgets that don't have indirect
 - PDF export cover page: centered dark-blue title at the top, Funder and Applicant on the left with Program and the date on the right, then the project summary below the cover header, followed by the proposal on a new page
 - Hyperlinked table of contents on the first page of the HTML export, linking to each section
@@ -13,7 +14,9 @@ Changed <br>
 
 - Cover page for preview and exports
 - Timeline moved to follow Scope in the editor tabs, preview, and exports
-- PDF export inserts a page break after the timeline (Budget starts on a new page) and after the budget
+- PDF export inserts a page break after the budget; the timeline no longer forces page breaks before or after itself
+- Budget columns are now Task/Item, Units, Number, Cost/Unit, and Total; the old numeric "Units" column is now "Number"
+- Budget Cost/Unit and Total cells no longer repeat the currency symbol — the Total header shows it instead (e.g. "Total ($)", "Total (£)", "Total (€)")
 - HTML export header styled like the preview: title, Funder and Applicant, Program, then the date above the summary
 - "Applicant Contact" renamed to "Applicant" throughout the app
 - Dev server (`python run.py`) prints its startup banner once instead of twice, and the yellow "install python-dotenv" .env tip no longer appears

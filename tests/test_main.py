@@ -173,6 +173,94 @@ def test_api_add_budget_item():
         assert data["units"] == 4
 
 
+def test_api_add_budget_item_persists_unit_label():
+    p = Proposal(title="Budget Unit Test")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.post(
+            f"/api/budget/{p.id}",
+            json={
+                "task_id": "t1",
+                "name": "Field work",
+                "cost_per_unit": 50,
+                "units": 12,
+                "unit_label": "days",
+            },
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        item_id = json.loads(resp.data)["id"]
+
+        item = Proposal.load(p.id).budget_items[0]
+        assert item["unit_label"] == "days"
+
+        resp = client.put(
+            f"/api/budget/{p.id}/{item_id}",
+            json={"unit_label": "hours"},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert Proposal.load(p.id).budget_items[0]["unit_label"] == "hours"
+
+
+def test_budget_custom_unit_options_persist():
+    p = Proposal(title="Custom Units")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"budget_unit_options": ["reports", "hours"]},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["budget_unit_options"] == ["reports", "hours"]
+
+        assert Proposal.load(p.id).budget_unit_options == ["reports", "hours"]
+        budget_html = client.get(f"/budget/{p.id}").data.decode()
+        assert 'value="reports"' in budget_html
+
+
+def test_preview_budget_uses_new_columns_and_total_currency_header():
+    p = Proposal(title="Budget Columns", currency="€")
+    p.tasks = [{"id": "t1", "name": "Phase 1"}]
+    p.budget_items = [
+        {
+            "id": "b1",
+            "task_id": "t1",
+            "name": "Field work",
+            "cost_per_unit": 50,
+            "units": 12,
+            "unit_label": "days",
+        },
+    ]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        preview_html = client.get(f"/preview/{p.id}").data.decode()
+        assert "Task/Item" in preview_html
+        assert ">Number<" in preview_html
+        assert "Total (€)" in preview_html
+        assert "<td>days</td>" in preview_html
+        assert "€50" not in preview_html
+        assert "€600" not in preview_html
+
+        export_html = client.get(f"/export/html/{p.id}").data.decode()
+        assert "Task/Item" in export_html
+        assert "Total (€)" in export_html
+        assert ">days<" in export_html
+        assert "€50" not in export_html
+        assert "€600" not in export_html
+
+
 def test_api_add_budget_item_with_timing():
     p = Proposal(title="Budget Timing Test")
     p.save()
@@ -769,11 +857,15 @@ def test_currency_and_subtotal_persist_across_budget_reloads():
         assert re.search(r'id="show-budget-subtotal"\s*checked', budget_html) is None
 
         preview_html = client.get(f"/preview/{p.id}").data.decode()
-        assert "£1,000" in preview_html
+        assert "Total (£)" in preview_html
+        assert "1,000" in preview_html
+        assert "£1,000" not in preview_html
         assert "Subtotal" not in preview_html
 
         export_html = client.get(f"/export/html/{p.id}").data.decode()
-        assert "£1,000" in export_html
+        assert "Total (£)" in export_html
+        assert "1,000" in export_html
+        assert "£1,000" not in export_html
         assert "Subtotal" not in export_html
 
         # Turning the subtotal back on restores the row in preview and exports.

@@ -20,6 +20,7 @@ from .models import (
     PROPOSALS_DIR,
     COVER_LETTER_TYPES,
     SECTION_TITLE_KEYS,
+    budget_unit_choices,
     clear_item_timing,
     copy_proposal_fields,
     normalize_currency,
@@ -228,6 +229,7 @@ def create_app() -> Flask:
         return custom if isinstance(custom, str) and custom.strip() else default
 
     app.jinja_env.globals["section_title"] = section_title
+    app.jinja_env.globals["budget_unit_choices"] = budget_unit_choices
 
     @app.route("/")
     def index():
@@ -849,6 +851,7 @@ def create_app() -> Flask:
                 "name": data.get("name", ""),
                 "cost_per_unit": validate_numeric(data.get("cost_per_unit", 0), "cost_per_unit", min_val=0.0),
                 "units": validate_numeric(data.get("units", 1), "units", min_val=0.0),
+                "unit_label": str(data.get("unit_label") or "").strip(),
             }
         except ValueError as e:
             logger.warning(f"Invalid budget item data: {e}")
@@ -902,6 +905,8 @@ def create_app() -> Flask:
                         "units",
                         min_val=0.0
                     )
+                    if "unit_label" in data:
+                        item["unit_label"] = str(data.get("unit_label") or "").strip()
                 except ValueError as e:
                     logger.warning(f"Invalid budget item data: {e}")
                     return jsonify({**ERROR_MESSAGES['INVALID_NUMERIC'], 'details': str(e)}), 400
@@ -962,13 +967,23 @@ def create_app() -> Flask:
                 return jsonify({"error": "File has no data rows"}), 400
 
             header = [str(c).strip().lower() if c else "" for c in rows[0]]
-            if not all(h in header for h in ["task", "item", "cost/unit", "units"]):
-                return jsonify({"error": "Required columns: Task, Item, Cost/Unit, Units"}), 400
+            if not all(h in header for h in ["task", "item", "cost/unit"]):
+                return jsonify({"error": "Required columns: Task, Item, Cost/Unit, Number"}), 400
 
             task_idx = header.index("task")
             item_idx = header.index("item")
             cost_idx = header.index("cost/unit")
-            units_idx = header.index("units")
+            # New sheets use "Units" for the unit label and "Number" for the
+            # quantity. Older sheets used "Units" for the quantity only, so
+            # fall back to that when no "Number" column exists.
+            if "number" in header:
+                number_idx = header.index("number")
+                unit_idx = header.index("units") if "units" in header else None
+            elif "units" in header:
+                number_idx = header.index("units")
+                unit_idx = None
+            else:
+                return jsonify({"error": "Required columns: Task, Item, Cost/Unit, Number"}), 400
 
             existing_tasks = {t["name"].strip().lower(): t for t in proposal.tasks}
             created_tasks = 0
@@ -997,10 +1012,14 @@ def create_app() -> Flask:
 
                 try:
                     cost = float(row[cost_idx]) if row[cost_idx] else 0
-                    units = float(row[units_idx]) if row[units_idx] else 1
+                    units = float(row[number_idx]) if row[number_idx] else 1
                 except (ValueError, TypeError):
                     cost = 0
                     units = 1
+
+                unit_label = ""
+                if unit_idx is not None and row[unit_idx]:
+                    unit_label = str(row[unit_idx]).strip()
 
                 budget_item = {
                     "id": uuid.uuid4().hex[:8],
@@ -1008,6 +1027,7 @@ def create_app() -> Flask:
                     "name": item_name,
                     "cost_per_unit": cost,
                     "units": units,
+                    "unit_label": unit_label,
                 }
                 proposal.budget_items.append(budget_item)
                 created_items += 1
@@ -1034,11 +1054,11 @@ def create_app() -> Flask:
         wb = Workbook()
         ws = wb.active
         ws.title = "Budget Template"
-        ws.append(["Task", "Item", "Cost/Unit", "Units"])
-        ws.append(["Scoping", "Initial meeting", 200, 6])
-        ws.append(["Scoping", "Data collection", 200, 20])
-        ws.append(["Analysis", "Forest valuation", 300, 40])
-        ws.append(["Results", "Report writing", 250, 30])
+        ws.append(["Task", "Item", "Units", "Number", "Cost/Unit"])
+        ws.append(["Scoping", "Initial meeting", "hours", 6, 200])
+        ws.append(["Scoping", "Data collection", "days", 20, 200])
+        ws.append(["Analysis", "Forest valuation", "hours", 40, 300])
+        ws.append(["Results", "Report writing", "lump", 1, 7500])
 
         buf = io.BytesIO()
         wb.save(buf)

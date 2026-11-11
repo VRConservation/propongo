@@ -191,7 +191,7 @@
             </div>
             <div class="modal-body">
                 <p style="margin-bottom:12px;color:var(--text-muted);font-size:13px;">
-                    {{ _('Upload an Excel file with columns:') }} <strong>{{ _('Task') }}, {{ _('Item') }}, {{ _('Cost/Unit') }}, {{ _('Units') }}</strong>
+                    {{ _('Upload an Excel file with columns:') }} <strong>{{ _('Task') }}, {{ _('Item') }}, {{ _('Units') }}, {{ _('Number') }}, {{ _('Cost/Unit') }}</strong>
                 </p>
                 <p style="margin-bottom:12px;font-size:13px;">
                     <a href="/api/budget-template" download style="color:var(--primary);">{{ _('Download template') }}</a> {{ _('to get started.') }}
@@ -266,6 +266,7 @@
     <script>
         window.I18N = {{ js_translations|tojson }};
         window.PROPOSAL_CURRENCY = {{ proposal.currency|tojson }};
+        window.PROPOSAL_UNIT_OPTIONS = {{ (budget_unit_choices(proposal) if proposal is defined else ['hours', 'days', 'lump'])|tojson }};
         function t(key) { return window.I18N[key] || key; }
     </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

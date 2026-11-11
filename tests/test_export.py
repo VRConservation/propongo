@@ -37,6 +37,24 @@ def test_export_html():
         assert resp.status_code == 200
 
 
+def test_export_timeline_section_has_no_page_breaks():
+    import re
+
+    p = Proposal(title="Timeline Break Test")
+    p.tasks = [{"id": "t1", "name": "Task A", "start_month": 1, "start_year": 2026, "duration_months": 3}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/export/html/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        match = re.search(r"\.timeline-section\s*\{([^}]*)\}", html)
+        assert match is not None
+        assert "page-break" not in match.group(1)
+
+
 def test_export_pdf():
     p = Proposal(title="PDF Export Test")
     p.tasks = [{"name": "Task A", "description": "Description A"}]

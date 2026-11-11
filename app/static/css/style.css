@@ -509,6 +509,12 @@ label.editable-label {
     font-weight: 500;
 }
 
+.budget-item-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+
 .budget-item-task {
     font-size: 12px;
     color: var(--text-muted);

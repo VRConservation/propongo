@@ -41,8 +41,6 @@
             padding: 40px 0;
         }
         .timeline-section {
-            page-break-before: always;
-            page-break-after: always;
             max-width: none;
             padding: 20px 20px;
         }
@@ -531,10 +529,11 @@
         <table style="font-size:8pt;border-collapse:collapse;">
             <thead>
                 <tr>
-                    <th style="text-align:left;padding:4px 6px;background:#f0f0f0;font-weight:600;">Item</th>
+                    <th style="text-align:left;padding:4px 6px;background:#f0f0f0;font-weight:600;">Task/Item</th>
+                    <th style="text-align:left;padding:4px 6px;background:#f0f0f0;font-weight:600;">Units</th>
+                    <th style="text-align:right;padding:4px 6px;background:#f0f0f0;font-weight:600;">Number</th>
                     <th style="text-align:right;padding:4px 6px;background:#f0f0f0;font-weight:600;">Cost/Unit</th>
-                    <th style="text-align:right;padding:4px 6px;background:#f0f0f0;font-weight:600;">Units</th>
-                    <th style="text-align:right;padding:4px 6px;background:#f0f0f0;font-weight:600;">Total</th>
+                    <th style="text-align:right;padding:4px 6px;background:#f0f0f0;font-weight:600;">Total ({{ proposal.currency }})</th>
                 </tr>
             </thead>
             <tbody>
@@ -546,35 +545,36 @@
                     {% endif %}
                 {% endfor %}
                 <tr>
-                    <td colspan="3" style="font-weight:600;padding:4px 6px;">{{ task.name }}</td>
-                    <td style="text-align:right;font-weight:600;padding:4px 6px;">{{ ns.total|money(proposal.currency) }}</td>
+                    <td colspan="4" style="font-weight:600;padding:4px 6px;">{{ task.name }}</td>
+                    <td style="text-align:right;font-weight:600;padding:4px 6px;">{{ ns.total|currency }}</td>
                 </tr>
                 {% for item in budget_items %}
                     {% if item.task_id|string == task.id|string %}
                 <tr>
                     <td style="padding:2px 6px 2px 20px;font-weight:400;">{{ item.name }}</td>
-                    <td style="text-align:right;padding:2px 6px;font-weight:400;">{{ item.cost_per_unit|money(proposal.currency) }}</td>
-                    <td style="text-align:right;padding:2px 6px;font-weight:400;">{{ item.units|int }}</td>
-                    <td style="text-align:right;padding:2px 6px;font-weight:400;">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</td>
+                    <td style="padding:2px 6px;font-weight:400;">{{ item.get('unit_label', '') }}</td>
+                    <td style="text-align:right;padding:2px 6px;font-weight:400;">{{ item.units|currency }}</td>
+                    <td style="text-align:right;padding:2px 6px;font-weight:400;">{{ item.cost_per_unit|currency }}</td>
+                    <td style="text-align:right;padding:2px 6px;font-weight:400;">{{ (item.cost_per_unit * item.units)|currency }}</td>
                 </tr>
                     {% endif %}
                 {% endfor %}
                 {% endfor %}
                 {% if proposal.show_budget_subtotal %}
                 <tr>
-                    <td colspan="3" style="font-weight:600;padding:4px 6px;border-top:1.5px solid #333;">Subtotal</td>
-                    <td style="text-align:right;font-weight:600;padding:4px 6px;border-top:1.5px solid #333;">{{ total_budget|money(proposal.currency) }}</td>
+                    <td colspan="4" style="font-weight:600;padding:4px 6px;border-top:1.5px solid #333;">Subtotal</td>
+                    <td style="text-align:right;font-weight:600;padding:4px 6px;border-top:1.5px solid #333;">{{ total_budget|currency }}</td>
                 </tr>
                 {% endif %}
                 {% if indirect_percent is defined and indirect_percent > 0 %}
                 <tr>
-                    <td colspan="3" style="padding:2px 6px;">Indirect ({{ "%.1f"|format(indirect_percent) }}%)</td>
-                    <td style="text-align:right;padding:2px 6px;">{{ indirect_amount|money(proposal.currency) }}</td>
+                    <td colspan="4" style="padding:2px 6px;">Indirect ({{ "%.1f"|format(indirect_percent) }}%)</td>
+                    <td style="text-align:right;padding:2px 6px;">{{ indirect_amount|currency }}</td>
                 </tr>
                 {% endif %}
                 <tr>
-                    <td colspan="3" style="font-weight:600;padding:4px 6px;">Total</td>
-                    <td style="text-align:right;font-weight:600;padding:4px 6px;">{{ total_with_indirect|money(proposal.currency) }}</td>
+                    <td colspan="4" style="font-weight:600;padding:4px 6px;">Total</td>
+                    <td style="text-align:right;font-weight:600;padding:4px 6px;">{{ total_with_indirect|currency }}</td>
                 </tr>
             </tbody>
         </table>
