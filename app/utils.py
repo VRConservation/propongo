@@ -163,11 +163,27 @@ def build_export_context(proposal) -> Dict[str, Any]:
         sy = bi.get("start_year") or proj_start_year
         bi_offset = (sy - proj_start_year) * 12 + (sm - proj_start_month)
         bi_dur = bi.get("duration_months") or 1
-        if tid not in task_bi_data:
-            task_bi_data[tid] = {"min_offset": bi_offset, "max_end": bi_offset + bi_dur}
+        bi_recurring = bi.get("recurring", False)
+        bi_interval = bi.get("recurring_interval") or 3
+
+        if bi_recurring:
+            # Span every recurring occurrence so the parent task bar covers the
+            # full range of its recurring budget items (not just the first).
+            first_offset = bi_offset
+            last_end = bi_offset + bi_dur
+            r_offset = bi_offset
+            while r_offset < timeline_total_months:
+                last_end = r_offset + bi_dur
+                r_offset += bi_interval
+            item_min, item_max = first_offset, last_end
         else:
-            task_bi_data[tid]["min_offset"] = min(task_bi_data[tid]["min_offset"], bi_offset)
-            task_bi_data[tid]["max_end"] = max(task_bi_data[tid]["max_end"], bi_offset + bi_dur)
+            item_min, item_max = bi_offset, bi_offset + bi_dur
+
+        if tid not in task_bi_data:
+            task_bi_data[tid] = {"min_offset": item_min, "max_end": item_max}
+        else:
+            task_bi_data[tid]["min_offset"] = min(task_bi_data[tid]["min_offset"], item_min)
+            task_bi_data[tid]["max_end"] = max(task_bi_data[tid]["max_end"], item_max)
 
     all_rows = []
     for t in tasks_with_timing:

@@ -26,6 +26,7 @@ Fixed <br>
 - Snippets repetition
 - Cover letter addition/removal and applicants box
 - Headings for sections vs. markdown within boxes
+- Timeline rendering and export (png, pdf, html)
 
 ## 1.7.0
 

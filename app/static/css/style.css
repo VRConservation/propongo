@@ -839,15 +839,14 @@ label.editable-label {
 }
 
 .preview-timeline-label {
-    min-width: 90px;
-    max-width: 90px;
+    min-width: 160px;
+    max-width: 260px;
     font-size: 10px;
     font-weight: 500;
     padding-right: 6px;
     flex-shrink: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    line-height: 1.25;
 }
 
 .preview-timeline-cells {
