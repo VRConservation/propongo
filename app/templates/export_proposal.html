@@ -44,8 +44,19 @@
             max-width: none;
             padding: 20px 20px;
         }
-        .budget-section {
-            page-break-after: always;
+        /* Budget tables may span pages; let them flow naturally instead of
+           forcing a break after the section. */
+        .budget-section tr {
+            break-inside: avoid;
+        }
+        .budget-section thead {
+            display: table-header-group;
+        }
+        /* A short budget description moves to the next page as a block rather
+           than leaving a couple of orphaned lines; a long one still breaks
+           normally. */
+        .budget-description-section {
+            break-inside: avoid;
         }
         .timeline-chart-bar-track {
             height: 16px;
@@ -158,11 +169,13 @@
             margin: 28px 0 12px 0;
             padding-bottom: 4px;
             border-bottom: 1px solid #ddd;
+            break-after: avoid;
         }
         h2.subsection-heading {
             font-size: 12pt;
             color: #333;
             margin: 16px 0 8px 0;
+            break-after: avoid;
         }
         p {
             margin-bottom: 10px;
@@ -392,6 +405,9 @@
                 {% if budget_items %}
                 <li><a href="#sec-budget">{{ section_titles.budget }}</a></li>
                 {% endif %}
+                {% if proposal.show_budget_description and proposal.budget_description %}
+                <li><a href="#sec-budget-description">{{ section_titles.budget_description }}</a></li>
+                {% endif %}
                 {% if proposal.qualifications %}
                 <li><a href="#sec-qualifications">{{ section_titles.qualifications }}</a></li>
                 {% endif %}
@@ -606,6 +622,13 @@
             </tbody>
         </table>
         {% endif %}
+    </div>
+    {% endif %}
+
+    {% if proposal.show_budget_description and proposal.budget_description %}
+    <div class="section-block budget-description-section">
+        <h1 class="section-heading" id="sec-budget-description">{{ section_titles.budget_description }}</h1>
+        <div class="md-content">{{ proposal.budget_description|md }}</div>
     </div>
     {% endif %}
 

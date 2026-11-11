@@ -37,6 +37,50 @@ def test_export_html():
         assert resp.status_code == 200
 
 
+def test_export_budget_description_when_included():
+    from flask import render_template
+    from app.utils import build_export_context
+
+    p = Proposal(title="Budget Description Export")
+    p.show_budget_description = True
+    p.budget_description = "Unique budget rationale body."
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        html = client.get(f"/export/html/{p.id}").data.decode()
+        markdown = client.get(f"/export/markdown/{p.id}").data.decode()
+
+    with app.test_request_context():
+        ctx = build_export_context(p)
+        ctx["for_pdf"] = True
+        ctx["map_static_data_uri"] = None
+        pdf_html = render_template("export_proposal.html", **ctx)
+
+    assert "Unique budget rationale body." in html
+    assert 'id="sec-budget-description"' in html
+    assert "Unique budget rationale body." in pdf_html
+    assert "Unique budget rationale body." in markdown
+
+
+def test_export_budget_description_omitted_when_unchecked():
+    p = Proposal(title="Budget Description Hidden")
+    p.show_budget_description = False
+    p.budget_description = "Hidden budget rationale body."
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        html = client.get(f"/export/html/{p.id}").data.decode()
+        markdown = client.get(f"/export/markdown/{p.id}").data.decode()
+
+    assert "Hidden budget rationale body." not in html
+    assert 'id="sec-budget-description"' not in html
+    assert "Hidden budget rationale body." not in markdown
+
+
 def test_export_timeline_section_has_no_page_breaks():
     import re
 
