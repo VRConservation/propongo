@@ -264,4 +264,4 @@ propongo/
 
 ## License
 
-MIT
+See the MIT license included in the repo.
