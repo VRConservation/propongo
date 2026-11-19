@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 1.8.0
+
 Added <br>
 
 - Budget unit changes ($'s, £s, and Euros)
