@@ -112,6 +112,17 @@ def _apply_item_schedule(data: dict, item: dict) -> None:
             item["recurring_interval"] = 3
 
 
+def _items_by_task(proposal) -> dict:
+    """Group budget items by their task id for the Scope tab."""
+    grouped = {}
+    for task in proposal.tasks:
+        grouped[task["id"]] = [
+            item for item in proposal.budget_items
+            if item.get("task_id") == task["id"]
+        ]
+    return grouped
+
+
 def create_app() -> Flask:
     """Create and configure the Flask application.
     
@@ -257,11 +268,13 @@ def create_app() -> Flask:
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return redirect(url_for("index"))
+
         return render_template(
             "base.html",
             proposal=proposal,
             tasks=proposal.tasks,
             budget_items=proposal.budget_items,
+            task_items=_items_by_task(proposal),
         )
 
     @app.route("/api/proposal/<proposal_id>", methods=["GET"])
@@ -442,11 +455,21 @@ def create_app() -> Flask:
 
     @app.route("/scope/<proposal_id>")
     def scope_tab(proposal_id: str) -> Tuple[str, int] | Tuple[Response, int]:
-        """Render the scope/editing tab for a proposal."""
+        """Render the scope/editing tab for a proposal.
+
+        Tasks and their budget items are entered together here; spend dates and
+        lead/recurring fields remain on the Budget and Timeline tabs.
+        """
         proposal = Proposal.load(proposal_id)
         if not proposal:
             return jsonify(ERROR_MESSAGES['PROPOSAL_NOT_FOUND']), 404
-        return render_template("scope.html", proposal=proposal, tasks=proposal.tasks)
+
+        return render_template(
+            "scope.html",
+            proposal=proposal,
+            tasks=proposal.tasks,
+            task_items=_items_by_task(proposal),
+        )
 
     @app.route("/map/<proposal_id>")
     def map_tab(proposal_id):
@@ -811,7 +834,6 @@ def create_app() -> Flask:
         task = {
             "id": uuid.uuid4().hex[:8],
             "name": data.get("name", ""),
-            "description": data.get("description", ""),
             "start_month": data.get("start_month", 1),
             "start_year": data.get("start_year", datetime.now().year),
             "duration_months": data.get("duration_months", 1),
@@ -1001,7 +1023,6 @@ def create_app() -> Flask:
                     new_task = {
                         "id": uuid.uuid4().hex[:8],
                         "name": task_name,
-                        "description": "",
                         "start_month": 1,
                         "start_year": datetime.now().year,
                         "duration_months": 12,

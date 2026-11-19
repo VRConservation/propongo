@@ -18,20 +18,17 @@ The Scope tab allows you to define the project summary and deliverables.
 1. **Funder / Program** — Enter the client or funding program name.
 2. **Project Summary** — Write a short Markdown description of the project.
 3. **Scope** — Describe the work to be done in detail.
-4. **Tasks / Deliverables** — Click **Add Task** and give each task a name and description. These tasks will be referenced in the Budget and Timeline tabs.
+4. **Tasks / Deliverables** — Click **Add Task** and give each task a name, then add its budget items right underneath: item name, cost per unit, number, and unit (including custom units). Tasks and items entered here flow through to the Budget and Timeline tabs.
 
 ![Scope tab](img/scope.png)
 
 !!! info "Markdown"
-    Markdown is supported in the summary, scope, and task description fields.
+    Markdown is supported in the summary and scope fields.
 
 ## 3. Budget
 
-1. Switch to the **Budget** tab.
-2. For each task, add budget items:
-   - Select the task from the dropdown.
-   - Enter item name, cost per unit, and number of units.
-   - Click **Add Item**.
+1. Switch to the **Budget** tab. Items added on the Scope tab are grouped here by task; you can also add more with the dropdown.
+2. For each item, set its **Spend dates** (start month/year and duration) so it is assigned to a budget year.
 3. Set **Indirect Costs** as a percentage (e.g., 15%).
 4. Optionally check **Show budget description** and add notes.
 

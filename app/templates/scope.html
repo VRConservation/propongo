@@ -6,7 +6,7 @@
             <div class="form-group">
                 <label for="client-name">{{ _('Funder') }}</label>
                 <input type="text" id="client-name" value="{{ proposal.client_name }}"
-                       placeholder="{{ _('Enter funder name...') }}"
+                       placeholder="{{ _('Enter funder name') }}"
                        hx-trigger="keyup changed delay:500ms, change"
                        hx-put="/api/proposal/{{ proposal.id }}"
                        hx-encoding="json"
@@ -15,7 +15,7 @@
             <div class="form-group" style="margin-bottom:0;">
                 <label for="applicant-contact">{{ _('Applicant') }}</label>
                 <textarea id="applicant-contact" rows="3"
-                          placeholder="{{ _('Enter applicant contact...') }}"
+                          placeholder="{{ _('Enter applicant contact') }}"
                           hx-trigger="keyup changed delay:500ms, change"
                           hx-put="/api/proposal/{{ proposal.id }}"
                           hx-encoding="json"
@@ -25,7 +25,7 @@
         <div class="form-group" style="flex:1;">
             <label for="proposal-subtitle">{{ _('Program') }}</label>
             <input type="text" id="proposal-subtitle" value="{{ proposal.subtitle }}"
-                   placeholder="{{ _('Enter program name...') }}"
+                   placeholder="{{ _('Enter program name') }}"
                    hx-trigger="keyup changed delay:500ms, change"
                    hx-put="/api/proposal/{{ proposal.id }}"
                    hx-encoding="json"
@@ -39,7 +39,7 @@
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'project_summary', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
         </label>
         <textarea id="project-summary" rows="5"
-                  placeholder="{{ _('Describe the project overview, goals, and approach...') }}"
+                  placeholder="{{ _('Summarize the project, goals, approach, timeline, and amount requested') }}"
                   hx-trigger="keyup changed delay:1000ms, change"
                   hx-put="/api/proposal/{{ proposal.id }}"
                   hx-encoding="json"
@@ -52,7 +52,7 @@
             <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'scope', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
         </label>
         <textarea id="project-scope" rows="5"
-                  placeholder="{{ _('Describe the scope of work, deliverables, and boundaries...') }}"
+                  placeholder="{{ _('Describe the scope of work, deliverables, approach/methodology') }}"
                   hx-trigger="keyup changed delay:1000ms, change"
                   hx-put="/api/proposal/{{ proposal.id }}"
                   hx-encoding="json"
@@ -60,7 +60,10 @@
     </div>
 
     <div class="form-group">
-        <label>{{ _('Tasks / Deliverables') }}</label>
+        <label class="editable-label">
+            <span class="section-title-text" data-section-key="tasks" data-default-title="{{ _('Tasks / Deliverables') }}" data-custom-title="{{ proposal.section_titles.get('tasks', '') }}">{{ section_title(proposal, 'tasks', _('Tasks / Deliverables')) }}</span>
+            <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'tasks', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
+        </label>
         <div id="task-list">
             {% for task in tasks %}
             <div class="task-card" data-task-id="{{ task.id }}">
@@ -78,26 +81,53 @@
                             hx-confirm="{{ _('Remove this task and its budget items?') }}"
                             hx-disinherit="*">&times;</button>
                 </div>
-                <textarea class="task-desc-input" rows="2"
-                          placeholder="{{ _('Task description...') }}"
-                          hx-trigger="keyup changed delay:1000ms, change"
-                          hx-put="/api/proposal/{{ proposal.id }}"
-                          hx-encoding="json"
-                          hx-vals='{"tasks": "JS(getUpdatedTasks())"}'>{{ task.description }}</textarea>
+                <div class="scope-task-items" data-task-id="{{ task.id }}">
+                    <span class="scope-items-label">{{ _('Budget Items') }}</span>
+                    <div class="scope-item-list">
+                        {% for item in task_items.get(task.id, []) %}
+                        <div class="budget-item-card scope-item-card" data-item-id="{{ item.id }}"
+                             data-task-id="{{ task.id }}"
+                             data-name="{{ item.name }}"
+                             data-cost="{{ item.cost_per_unit }}"
+                             data-units="{{ item.units }}"
+                             data-unit-label="{{ item.get('unit_label', '') }}">
+                            <div class="budget-item-info">
+                                <span class="budget-item-name">{{ item.name }}</span>
+                                <span class="budget-item-unit">{{ item.get('unit_label', '') }}</span>
+                            </div>
+                            <div class="budget-item-numbers">
+                                <span>{{ item.cost_per_unit|money(proposal.currency) }}/unit &times; {{ item.units|currency }} {{ _(item.get('unit_label') or 'units') }}</span>
+                                <span class="budget-item-total">{{ (item.cost_per_unit * item.units)|money(proposal.currency) }}</span>
+                            </div>
+                            <div class="budget-item-actions">
+                                <button class="btn-icon" onclick="editScopeBudgetItem('{{ proposal.id }}', this)" title="{{ _('Edit') }}">&#9998;</button>
+                                <button class="btn-icon btn-danger-icon" onclick="deleteScopeBudgetItem('{{ proposal.id }}', this)" title="{{ _('Delete') }}">&times;</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="scope-add-item">
+                        <input type="text" class="scope-item-name" placeholder="{{ _('Item name') }}">
+                        <input type="number" class="scope-item-cost" placeholder="{{ _('Cost/unit') }}" min="0" step="0.01">
+                        <input type="number" class="scope-item-units" placeholder="{{ _('Number') }}" min="0" step="1" value="1">
+                        <select class="scope-item-unit budget-unit-select"
+                                onfocus="this.dataset.previous=this.value"
+                                onchange="handleBudgetUnitChange(this, '{{ proposal.id }}')">
+                            {% for unit in budget_unit_choices(proposal) %}
+                            <option value="{{ unit }}" {% if loop.first %}selected{% endif %}>{{ _(unit) }}</option>
+                            {% endfor %}
+                            <option value="__custom__">{{ _('+ Add custom unit...') }}</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="addScopeBudgetItem('{{ proposal.id }}', this)">{{ _('Add') }}</button>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
 
-        <div class="add-task-form" style="flex-direction:column;gap:8px;">
-            <div style="display:flex;gap:8px;">
-                <input type="text" id="new-task-name" placeholder="{{ _('New task name...') }}" class="flex-grow">
-                <textarea id="new-task-desc" rows="2" placeholder="{{ _('Task description...') }}" class="flex-grow"
-                          style="resize:vertical;"></textarea>
-            </div>
-            <div>
-                <button class="btn btn-primary"
-                        onclick="addTask('{{ proposal.id }}')">{{ _('Add Task') }}</button>
-            </div>
+        <div class="add-task-form">
+            <input type="text" id="new-task-name" placeholder="{{ _('New task name') }}" class="flex-grow">
+            <button class="btn btn-primary" onclick="addTask('{{ proposal.id }}')">{{ _('Add Task') }}</button>
         </div>
     </div>
 </div>

@@ -70,7 +70,6 @@ def build_export_context(proposal) -> Dict[str, Any]:
         tasks_with_timing.append({
             "id": t.get("id", ""),
             "name": t.get("name", ""),
-            "description": t.get("description", ""),
             "lead_entity": t.get("lead_entity", ""),
             "start_month": t.get("start_month"),
             "start_year": t.get("start_year"),

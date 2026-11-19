@@ -163,7 +163,6 @@ function saveCurrentTabData(proposalId) {
             data.tasks.push({
                 id: card.dataset.taskId,
                 name: card.querySelector('.task-name-input').value,
-                description: card.querySelector('.task-desc-input').value,
             });
         });
     }
@@ -377,17 +376,62 @@ function deleteProposal(id) {
         });
 }
 
+function scopeItemAttr(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function scopeAddItemFormHTML(proposalId) {
+    return `
+        <div class="scope-add-item">
+            <input type="text" class="scope-item-name" placeholder="${t('Item name')}">
+            <input type="number" class="scope-item-cost" placeholder="${t('Cost/unit')}" min="0" step="0.01">
+            <input type="number" class="scope-item-units" placeholder="${t('Number')}" min="0" step="1" value="1">
+            <select class="scope-item-unit budget-unit-select"
+                    onfocus="this.dataset.previous=this.value"
+                    onchange="handleBudgetUnitChange(this, '${proposalId}')">
+                ${budgetUnitOptions('')}
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="addScopeBudgetItem('${proposalId}', this)">${t('Add')}</button>
+        </div>`;
+}
+
+function scopeBudgetItemCardHTML(proposalId, item, taskId) {
+    const unitLabel = item.unit_label || '';
+    return `
+        <div class="budget-item-card scope-item-card" data-item-id="${scopeItemAttr(item.id)}"
+             data-task-id="${scopeItemAttr(taskId)}"
+             data-name="${scopeItemAttr(item.name)}"
+             data-cost="${scopeItemAttr(item.cost_per_unit)}"
+             data-units="${scopeItemAttr(item.units)}"
+             data-unit-label="${scopeItemAttr(unitLabel)}">
+            <div class="budget-item-info">
+                <span class="budget-item-name">${escapeHtml(item.name)}</span>
+                <span class="budget-item-unit">${escapeHtml(unitLabel)}</span>
+            </div>
+            <div class="budget-item-numbers">
+                <span>${formatMoney(item.cost_per_unit)}/unit &times; ${item.units} ${escapeHtml(unitLabelText(unitLabel))}</span>
+                <span class="budget-item-total">${formatMoney(item.cost_per_unit * item.units)}</span>
+            </div>
+            <div class="budget-item-actions">
+                <button class="btn-icon" onclick="editScopeBudgetItem('${proposalId}', this)" title="${t('Edit')}">&#9998;</button>
+                <button class="btn-icon btn-danger-icon" onclick="deleteScopeBudgetItem('${proposalId}', this)" title="${t('Delete')}">&times;</button>
+            </div>
+        </div>`;
+}
+
 function addTask(proposalId) {
     const nameInput = document.getElementById('new-task-name');
-    const descInput = document.getElementById('new-task-desc');
     const name = nameInput.value.trim();
-    const description = descInput ? descInput.value.trim() : '';
     if (!name) return;
 
     fetch('/api/task/' + proposalId, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, description: description })
+        body: JSON.stringify({ name: name })
     })
     .then(r => r.json())
     .then(task => {
@@ -397,42 +441,163 @@ function addTask(proposalId) {
         card.dataset.taskId = task.id;
         card.innerHTML = `
             <div class="task-header">
-                <input type="text" class="task-name-input" value="${task.name}"
+                <input type="text" class="task-name-input" value="${scopeItemAttr(task.name)}"
                        placeholder="${t('Task name')}"
                        hx-trigger="keyup changed delay:500ms, change"
                        hx-put="/api/proposal/${proposalId}"
+                       hx-encoding="json"
                        hx-vals='{"tasks": "JS(getUpdatedTasks())"}'>
                 <button class="btn-icon btn-danger-icon"
                         hx-delete="/api/task/${proposalId}/${task.id}"
                         hx-target="closest .task-card"
                         hx-swap="outerHTML"
-                        hx-confirm="${t('Remove this task and its budget items?')}">&times;</button>
+                        hx-confirm="${t('Remove this task and its budget items?')}"
+                        hx-disinherit="*">&times;</button>
             </div>
-            <textarea class="task-desc-input" rows="2"
-                      placeholder="${t('Task description...')}"
-                      hx-trigger="keyup changed delay:1000ms, change"
-                      hx-put="/api/proposal/${proposalId}"
-                      hx-vals='{"tasks": "JS(getUpdatedTasks())"}'>${task.description || ''}</textarea>
+            <div class="scope-task-items" data-task-id="${task.id}">
+                <span class="scope-items-label">${t('Budget Items')}</span>
+                <div class="scope-item-list"></div>
+                ${scopeAddItemFormHTML(proposalId)}
+            </div>
         `;
         taskList.appendChild(card);
         htmx.process(card);
         nameInput.value = '';
-        if (descInput) descInput.value = '';
         nameInput.focus();
     });
 }
 
 function getUpdatedTasks() {
-    const cards = document.querySelectorAll('.task-card');
+    const cards = document.querySelectorAll('#task-list .task-card');
     const tasks = [];
     cards.forEach(card => {
         tasks.push({
             id: card.dataset.taskId,
             name: card.querySelector('.task-name-input').value,
-            description: card.querySelector('.task-desc-input').value,
         });
     });
     return tasks;
+}
+
+async function addScopeBudgetItem(proposalId, btn) {
+    const taskCard = btn.closest('.task-card');
+    const taskId = taskCard.dataset.taskId;
+    const nameInput = taskCard.querySelector('.scope-item-name');
+    const name = nameInput.value.trim();
+    if (!name) {
+        alert(t('Enter an item name.'));
+        nameInput.focus();
+        return;
+    }
+
+    const unitSelect = taskCard.querySelector('.scope-item-unit');
+    const payload = {
+        task_id: taskId,
+        name: name,
+        cost_per_unit: parseFloat(taskCard.querySelector('.scope-item-cost').value) || 0,
+        units: parseFloat(taskCard.querySelector('.scope-item-units').value) || 1,
+        unit_label: unitSelect.value === '__custom__' ? '' : unitSelect.value,
+    };
+
+    const resp = await fetch('/api/budget/' + proposalId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+        alert(t('Failed to save.'));
+        return;
+    }
+    const item = await resp.json();
+    taskCard.querySelector('.scope-item-list').insertAdjacentHTML(
+        'beforeend', scopeBudgetItemCardHTML(proposalId, item, taskId));
+    nameInput.value = '';
+    taskCard.querySelector('.scope-item-cost').value = '';
+    taskCard.querySelector('.scope-item-units').value = '1';
+    nameInput.focus();
+}
+
+async function deleteScopeBudgetItem(proposalId, btn) {
+    if (!confirm(t('Delete this budget item?'))) return;
+    const card = btn.closest('.scope-item-card');
+    const resp = await fetch(`/api/budget/${proposalId}/${card.dataset.itemId}`, { method: 'DELETE' });
+    if (resp.ok) card.remove();
+}
+
+function editScopeBudgetItem(proposalId, btn) {
+    const card = btn.closest('.scope-item-card');
+    if (card.querySelector('.scope-item-edit-form')) return;
+
+    const info = card.querySelector('.budget-item-info');
+    const numbers = card.querySelector('.budget-item-numbers');
+    const actions = card.querySelector('.budget-item-actions');
+    info.style.display = 'none';
+    numbers.style.display = 'none';
+    actions.style.display = 'none';
+
+    const form = document.createElement('div');
+    form.className = 'budget-item-edit-form scope-item-edit-form';
+    form.innerHTML = `
+        <div class="budget-edit-row">
+            <input type="text" class="edit-name" value="${scopeItemAttr(card.dataset.name)}" placeholder="${t('Item name')}">
+            <select class="edit-unit-label budget-unit-select"
+                    onfocus="this.dataset.previous=this.value"
+                    onchange="handleBudgetUnitChange(this, '${proposalId}')">${budgetUnitOptions(card.dataset.unitLabel)}</select>
+            <input type="number" class="edit-units" value="${scopeItemAttr(card.dataset.units)}" min="0" step="1" placeholder="${t('Number')}">
+            <input type="number" class="edit-cost" value="${scopeItemAttr(card.dataset.cost)}" min="0" step="0.01" placeholder="${t('Cost/unit')}">
+        </div>
+        <div class="budget-item-edit-actions">
+            <button class="btn btn-primary btn-sm" onclick="saveScopeBudgetItem('${proposalId}', this)">${t('Save')}</button>
+            <button class="btn btn-sm" onclick="cancelScopeBudgetItemEdit(this)">${t('Cancel')}</button>
+        </div>`;
+    card.insertBefore(form, actions);
+}
+
+async function saveScopeBudgetItem(proposalId, btn) {
+    const card = btn.closest('.scope-item-card');
+    const form = card.querySelector('.scope-item-edit-form');
+    const name = form.querySelector('.edit-name').value.trim();
+    if (!name) {
+        alert(t('Enter an item name.'));
+        return;
+    }
+    const unitSelect = form.querySelector('.edit-unit-label');
+    const payload = {
+        name: name,
+        cost_per_unit: parseFloat(form.querySelector('.edit-cost').value) || 0,
+        units: parseFloat(form.querySelector('.edit-units').value) || 1,
+        unit_label: unitSelect.value === '__custom__' ? '' : unitSelect.value,
+    };
+
+    const resp = await fetch(`/api/budget/${proposalId}/${card.dataset.itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+        alert(t('Failed to save.'));
+        return;
+    }
+
+    card.dataset.name = payload.name;
+    card.dataset.cost = payload.cost_per_unit;
+    card.dataset.units = payload.units;
+    card.dataset.unitLabel = payload.unit_label;
+    card.querySelector('.budget-item-info').innerHTML =
+        `<span class="budget-item-name">${escapeHtml(payload.name)}</span>` +
+        `<span class="budget-item-unit">${escapeHtml(payload.unit_label)}</span>`;
+    card.querySelector('.budget-item-numbers').innerHTML =
+        `<span>${formatMoney(payload.cost_per_unit)}/unit &times; ${payload.units} ${escapeHtml(unitLabelText(payload.unit_label))}</span>` +
+        `<span class="budget-item-total">${formatMoney(payload.cost_per_unit * payload.units)}</span>`;
+    cancelScopeBudgetItemEdit(btn);
+}
+
+function cancelScopeBudgetItemEdit(btn) {
+    const card = btn.closest('.scope-item-card');
+    card.querySelector('.scope-item-edit-form').remove();
+    card.querySelector('.budget-item-info').style.display = '';
+    card.querySelector('.budget-item-numbers').style.display = '';
+    card.querySelector('.budget-item-actions').style.display = '';
 }
 
 function openSaveAsModal() {

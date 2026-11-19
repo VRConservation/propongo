@@ -6,7 +6,6 @@ Task dict:
     {
         'id': str,                # UUID
         'name': str,              # Task name
-        'description': str,       # Task description
         'lead_entity': str,       # Organization responsible
         'start_month': int,       # Start month (1-12)
         'start_year': int,        # Start year
@@ -101,6 +100,7 @@ BUDGET_UNIT_DEFAULTS = ("hours", "days", "lump")
 SECTION_TITLE_KEYS = (
     "project_summary",
     "scope",
+    "tasks",
     "budget",
     "budget_by_year",
     "budget_description",
@@ -116,6 +116,7 @@ COVER_LETTER_TYPES = ("cover_letter", "loi")
 SECTION_TITLE_DEFAULTS = {
     "project_summary": "Project Summary",
     "scope": "Scope",
+    "tasks": "Tasks / Deliverables",
     "budget": "Budget",
     "budget_by_year": "Budget by Year",
     "budget_description": "Budget Description",

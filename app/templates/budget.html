@@ -205,7 +205,7 @@
                 <button type="button" class="btn-icon section-title-edit" onclick="openSectionTitleModal('{{ proposal.id }}', 'budget_description', this)" title="{{ _('Rename section') }}" aria-label="{{ _('Rename section') }}">&#9998;</button>
             </div>
             <textarea id="budget-description" rows="4"
-                      placeholder="{{ _('Add notes or descriptions for the budget...') }}"
+                      placeholder="{{ _('Describe or justify budget items') }}"
                       hx-trigger="keyup changed delay:1000ms, change"
                       hx-put="/api/proposal/{{ proposal.id }}"
                       hx-encoding="json"

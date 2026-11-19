@@ -434,27 +434,51 @@ label.editable-label {
     background: var(--surface);
 }
 
-.task-desc-input {
-    width: 100%;
-    border: 1px solid transparent;
-    font-size: 13px;
-    padding: 4px 8px;
-    background: transparent;
-}
-
-.task-desc-input:hover {
-    border-color: var(--border);
-}
-
-.task-desc-input:focus {
-    border-color: var(--primary);
-    background: var(--surface);
-}
-
 .add-task-form {
     display: flex;
     gap: 8px;
     margin-top: 12px;
+}
+
+.scope-task-items {
+    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 2px solid var(--border);
+}
+
+.scope-items-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.scope-item-card {
+    background: var(--surface-alt);
+}
+
+.scope-add-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.scope-add-item input,
+.scope-add-item select {
+    width: auto;
+    min-width: 90px;
+}
+
+.scope-add-item .scope-item-name {
+    min-width: 160px;
+    flex: 1;
+}
+
+.scope-item-edit-form {
+    background: var(--surface-alt);
 }
 
 .flex-grow {
@@ -1478,7 +1502,7 @@ label.editable-label {
     border-color: var(--border);
 }
 
-[data-theme="dark"] .task-name-input, [data-theme="dark"] .task-desc-input {
+[data-theme="dark"] .task-name-input {
     color: var(--text);
 }
 

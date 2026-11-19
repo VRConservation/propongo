@@ -155,6 +155,54 @@ def test_api_add_task():
         assert len(loaded.tasks) == 1
 
 
+def test_api_add_task_ignores_description():
+    p = Proposal(title="No Description Test")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.post(
+            f"/api/task/{p.id}",
+            json={"name": "Field Survey", "description": "Legacy description"},
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        assert "description" not in json.loads(resp.data)
+
+        loaded = Proposal.load(p.id)
+        assert "description" not in loaded.tasks[0]
+
+
+def test_scope_tab_shows_task_budget_items():
+    p = Proposal(title="Scope Workflow")
+    p.tasks = [{"id": "t1", "name": "Field Survey"}]
+    p.budget_items = [{
+        "id": "b1",
+        "task_id": "t1",
+        "name": "Field travel",
+        "cost_per_unit": 150,
+        "units": 4,
+        "unit_label": "days",
+    }]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        resp = client.get(f"/scope/{p.id}")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert 'data-item-id="b1"' in html
+        assert "Field travel" in html
+        assert "scope-item-unit" in html
+        assert "task-desc-input" not in html
+        assert "new-task-desc" not in html
+
+        editor_html = client.get(f"/editor/{p.id}").data.decode()
+        assert 'data-item-id="b1"' in editor_html
+
+
 def test_api_add_budget_item():
     p = Proposal(title="Budget Test")
     p.save()
@@ -916,6 +964,51 @@ def test_api_put_merges_and_clears_section_titles():
         )
         assert resp.status_code == 200
         assert resp.get_json()["section_titles"] == {"scope": "Our Scope"}
+
+
+def test_scope_tasks_heading_is_editable():
+    p = Proposal(title="Editable Tasks")
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        html = client.get(f"/scope/{p.id}").data.decode()
+        assert 'data-section-key="tasks"' in html
+        assert f"openSectionTitleModal('{p.id}', 'tasks', this)" in html
+
+        resp = client.put(
+            f"/api/proposal/{p.id}",
+            json={"section_titles": {"tasks": "Work Packages"}},
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        html = client.get(f"/scope/{p.id}").data.decode()
+        assert "Work Packages" in html
+        assert 'data-custom-title="Work Packages"' in html
+
+
+def test_scope_and_budget_placeholders_use_new_wording():
+    p = Proposal(title="Wording")
+    p.tasks = [{"id": "t1", "name": "Survey"}]
+    p.save()
+
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        scope_html = client.get(f"/scope/{p.id}").data.decode()
+        assert "Summarize the project, goals, approach, timeline, and amount requested" in scope_html
+        assert "Describe the scope of work, deliverables, approach/methodology" in scope_html
+        for placeholder in (
+            "Enter funder name", "Enter applicant contact", "Enter program name",
+            "New task name",
+        ):
+            assert f'placeholder="{placeholder}"' in scope_html
+            assert f'placeholder="{placeholder}..."' not in scope_html
+        assert "Describe the project overview" not in scope_html
+
+        budget_html = client.get(f"/budget/{p.id}").data.decode()
+        assert 'placeholder="Describe or justify budget items"' in budget_html
 
 
 def test_save_as_copies_new_fields_without_sharing_nested_data():
