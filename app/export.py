@@ -305,6 +305,21 @@ def export_timeline_png(proposal_id: str) -> Tuple[Response, int] | Response:
     page = pdf[0]
     bitmap = page.render(scale=2)
     pil = bitmap.to_pil()
+
+    # Trim surrounding white space so the PNG is a tight crop of the chart.
+    from PIL import Image, ImageChops
+
+    bg = Image.new(pil.mode, pil.size, (255, 255, 255, 255) if "A" in pil.mode else (255, 255, 255))
+    diff = ImageChops.difference(pil.convert("RGB"), bg.convert("RGB"))
+    bbox = diff.getbbox()
+    if bbox:
+        pad = 12
+        left = max(bbox[0] - pad, 0)
+        upper = max(bbox[1] - pad, 0)
+        right = min(bbox[2] + pad, pil.width)
+        lower = min(bbox[3] + pad, pil.height)
+        pil = pil.crop((left, upper, right, lower))
+
     png_path = os.path.join(Config.EXPORTS_DIR, f"timeline_{proposal_id}.png")
     pil.save(png_path, "PNG")
 

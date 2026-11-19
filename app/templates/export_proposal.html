@@ -485,20 +485,7 @@
         {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
         {% set quarter_names = ['Q1','Q2','Q3','Q4'] %}
 
-        {% if proposal.end_date and proposal.end_date|length >= 7 %}
-            {% set proj_end_month = proposal.end_date[5:7]|int %}
-            {% set proj_end_year = proposal.end_date[:4]|int %}
-            {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
-        {% else %}
-            {% set max_end = 0 %}
-            {% for r in all_rows %}
-                {% for bar in r.bars %}
-                {% set row_end = bar.offset + bar.duration %}
-                {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
-                {% endfor %}
-            {% endfor %}
-            {% set total_project_months = [max_end, 1]|max %}
-        {% endif %}
+        {% set total_project_months = timeline_total_months %}
 
         <div class="timeline-chart">
             {% set years_in_proj = ((proj_start_month - 1 + total_project_months - 1) // 12) + 1 %}

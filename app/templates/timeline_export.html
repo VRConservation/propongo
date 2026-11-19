@@ -7,42 +7,23 @@
     {% set proj_start_year = proposal.start_date[:4]|int if proposal.start_date and proposal.start_date|length >= 4 else 2025 %}
     {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
 
-    {% if proposal.end_date and proposal.end_date|length >= 7 %}
-        {% set proj_end_month = proposal.end_date[5:7]|int %}
-        {% set proj_end_year = proposal.end_date[:4]|int %}
-        {% set total_project_months = [(proj_end_year - proj_start_year) * 12 + (proj_end_month - proj_start_month) + 1, 1]|max %}
-    {% else %}
-        {% set max_end = 0 %}
-        {% for r in all_rows %}
-            {% for bar in r.bars %}
-            {% set row_end = bar.offset + bar.duration %}
-            {% if row_end > max_end %}{% set max_end = row_end %}{% endif %}
-            {% endfor %}
-        {% endfor %}
-        {% set total_project_months = [max_end, 1]|max %}
-    {% endif %}
+    {% set total_project_months = timeline_total_months %}
 
-    {% set label_w = 168 %}
-    {% set month_w = 36 %}
-    {% set pad = 14 %}
+    {% set label_w = 200 %}
+    {% set month_w = 40 %}
+    {% set pad = 16 %}
     {% set inner_w = label_w + total_project_months * month_w %}
     {% set chart_w = inner_w + 2 * pad %}
-    {% set chart_h = 2 * pad + 34 + 18 + 18 + (all_rows|length) * 19 + 6 %}
+    {% set chart_h = 2 * pad + 20 + (all_rows|length + 2) * 22 + 20 %}
     <style>
         @page { size: {{ chart_w }}px {{ chart_h }}px; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: #fff;
-            color: #333;
+            color: #1e293b;
         }
         .wrap { padding: {{ pad }}px; }
-        h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e3a5f;
-            margin-bottom: 12px;
-        }
         .timeline-chart {
             width: {{ inner_w }}px;
         }
@@ -53,13 +34,20 @@
         }
         .timeline-chart-label {
             min-width: 160px;
-            max-width: 160px;
-            font-size: 7pt;
+            max-width: {{ label_w }}px;
+            width: {{ label_w }}px;
+            font-size: 10px;
             font-weight: 500;
-            padding-right: 8px;
+            padding-right: 6px;
             flex-shrink: 0;
             white-space: normal;
             line-height: 1.25;
+            color: #1e293b;
+        }
+        .timeline-chart-row-indent .timeline-chart-label {
+            padding-left: 16px;
+            font-weight: 400;
+            color: #64748b;
         }
         .timeline-chart-cells {
             display: flex;
@@ -73,16 +61,18 @@
         }
         .timeline-chart-year-cell {
             text-align: center;
-            font-size: 7pt;
+            font-size: 11px;
             font-weight: 600;
-            color: #333;
-            padding: 2px 0;
+            color: #1e293b;
+            padding: 4px 0;
+            flex-shrink: 0;
         }
         .timeline-chart-month-cell {
-            flex: 1;
+            flex: 1 1 0;
+            min-width: 0;
             text-align: center;
-            font-size: 7pt;
-            color: #666;
+            font-size: 10px;
+            color: #64748b;
             padding: 2px 0;
         }
         .timeline-chart-month-cell-year-start {
@@ -100,7 +90,6 @@
 </head>
 <body>
     <div class="wrap">
-        <h2>Timeline</h2>
         <div class="timeline-chart">
             {% set years_in_proj = ((proj_start_month - 1 + total_project_months - 1) // 12) + 1 %}
             <div class="timeline-chart-row">
@@ -112,7 +101,7 @@
                     {% set year_end_m = [(y + 1) * 12 - (proj_start_month - 1), total_project_months]|min %}
                     {% set year_span = year_end_m - year_start_m %}
                     {% if year_span > 0 %}
-                    <div class="timeline-chart-year-cell" style="flex:{{ year_span }}">{{ abs_y }}</div>
+                    <div class="timeline-chart-year-cell" style="flex:{{ year_span }} 1 0">{{ abs_y }}</div>
                     {% endif %}
                     {% endfor %}
                 </div>
@@ -129,12 +118,12 @@
                 </div>
             </div>
             {% for r in all_rows %}
-            <div class="timeline-chart-row">
-                <div class="timeline-chart-label"{% if r.is_indent %} style="padding-left:16px"{% endif %}>{{ r.name }}</div>
+            <div class="timeline-chart-row{% if r.is_indent %} timeline-chart-row-indent{% endif %}">
+                <div class="timeline-chart-label">{{ r.name }}</div>
                 <div class="timeline-chart-cells timeline-chart-data-cells">
                     {% for bar in r.bars %}
-                    {% set left_pct = (bar.offset / total_project_months * 100)|round(1) if total_project_months > 0 else 0 %}
-                    {% set width_pct = (bar.duration / total_project_months * 100)|round(1) if total_project_months > 0 else 100 %}
+                    {% set left_pct = (bar.offset / total_project_months * 100) if total_project_months > 0 else 0 %}
+                    {% set width_pct = (bar.duration / total_project_months * 100) if total_project_months > 0 else 100 %}
                     <div class="timeline-chart-bar{% if r.is_indent %} timeline-chart-bar-indent{% endif %}" style="position:absolute;left:{{ left_pct }}%;width:{{ width_pct }}%"></div>
                     {% endfor %}
                 </div>

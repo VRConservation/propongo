@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 from urllib.parse import urlencode
 
 from .config import Config
-from .models import resolve_section_titles
+from .models import resolve_section_titles, item_is_scheduled
 
 logger = logging.getLogger(__name__)
 
@@ -130,12 +130,14 @@ def build_export_context(proposal) -> Dict[str, Any]:
                 if end > max_end:
                     max_end = end
         for bi in budget_with_timing:
+            if not item_is_scheduled(bi):
+                continue
             sm = bi.get("start_month") or proj_start_month
             sy = bi.get("start_year") or proj_start_year
             offset = (sy - proj_start_year) * 12 + (sm - proj_start_month)
-            dur = bi.get("duration_months") or 1
+            dur = max(int(bi.get("duration_months") or 1), 1)
             if bi.get("recurring"):
-                interval = bi.get("recurring_interval") or 3
+                interval = max(int(bi.get("recurring_interval") or 3), 1)
                 last = offset
                 while last < 120:
                     end = last + dur
@@ -156,15 +158,15 @@ def build_export_context(proposal) -> Dict[str, Any]:
 
     task_bi_data = {}
     for bi in budget_with_timing:
-        tid = bi.get("task_id", "")
-        if not tid:
+        tid = str(bi.get("task_id", ""))
+        if not tid or not item_is_scheduled(bi):
             continue
         sm = bi.get("start_month") or proj_start_month
         sy = bi.get("start_year") or proj_start_year
         bi_offset = (sy - proj_start_year) * 12 + (sm - proj_start_month)
-        bi_dur = bi.get("duration_months") or 1
+        bi_dur = max(int(bi.get("duration_months") or 1), 1)
         bi_recurring = bi.get("recurring", False)
-        bi_interval = bi.get("recurring_interval") or 3
+        bi_interval = max(int(bi.get("recurring_interval") or 3), 1)
 
         if bi_recurring:
             # Span every recurring occurrence so the parent task bar covers the
@@ -190,10 +192,10 @@ def build_export_context(proposal) -> Dict[str, Any]:
         sm = t.get("start_month") or proj_start_month
         sy = t.get("start_year") or proj_start_year
         offset = (sy - proj_start_year) * 12 + (sm - proj_start_month)
-        dur = t.get("duration_months") or 1
-        tid = t.get("id", "")
+        dur = max(int(t.get("duration_months") or 1), 1)
+        tid = str(t.get("id", ""))
         recurring = t.get("recurring", False)
-        interval = t.get("recurring_interval") or 3
+        interval = max(int(t.get("recurring_interval") or 3), 1)
 
         if tid in task_bi_data:
             offset = task_bi_data[tid]["min_offset"]
@@ -223,32 +225,33 @@ def build_export_context(proposal) -> Dict[str, Any]:
             })
 
         for bi in budget_with_timing:
-            if bi.get("task_id") == tid:
-                bi_sm = bi.get("start_month") or sm
-                bi_sy = bi.get("start_year") or sy
-                bi_offset = (bi_sy - proj_start_year) * 12 + (bi_sm - proj_start_month)
-                bi_dur = bi.get("duration_months") or 1
-                bi_recurring = bi.get("recurring", False)
-                bi_interval = bi.get("recurring_interval") or 3
-                if bi_recurring:
-                    bars = []
-                    br_offset = bi_offset
-                    while br_offset < timeline_total_months:
-                        bars.append({"offset": br_offset, "duration": bi_dur})
-                        br_offset += bi_interval
-                    all_rows.append({
-                        "name": bi.get("name", ""),
-                        "bars": bars,
-                        "is_indent": True,
-                        "lead_entity": "",
-                    })
-                else:
-                    all_rows.append({
-                        "name": bi.get("name", ""),
-                        "bars": [{"offset": bi_offset, "duration": bi_dur}],
-                        "is_indent": True,
-                        "lead_entity": "",
-                    })
+            if str(bi.get("task_id", "")) != tid or not item_is_scheduled(bi):
+                continue
+            bi_sm = bi.get("start_month") or sm
+            bi_sy = bi.get("start_year") or sy
+            bi_offset = (bi_sy - proj_start_year) * 12 + (bi_sm - proj_start_month)
+            bi_dur = max(int(bi.get("duration_months") or 1), 1)
+            bi_recurring = bi.get("recurring", False)
+            bi_interval = max(int(bi.get("recurring_interval") or 3), 1)
+            if bi_recurring:
+                bars = []
+                br_offset = bi_offset
+                while br_offset < timeline_total_months:
+                    bars.append({"offset": br_offset, "duration": bi_dur})
+                    br_offset += bi_interval
+                all_rows.append({
+                    "name": bi.get("name", ""),
+                    "bars": bars,
+                    "is_indent": True,
+                    "lead_entity": "",
+                })
+            else:
+                all_rows.append({
+                    "name": bi.get("name", ""),
+                    "bars": [{"offset": bi_offset, "duration": bi_dur}],
+                    "is_indent": True,
+                    "lead_entity": "",
+                })
 
     return {
         "proposal": proposal,
