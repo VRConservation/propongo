@@ -109,6 +109,8 @@ function initWordCounts() {
     });
 }
 
+let _textareaHeightObserver = null;
+
 function saveTextareaHeights() {
     document.querySelectorAll('#tab-content textarea[id]').forEach(el => {
         if (el.id && el.style.height) {
@@ -123,6 +125,21 @@ function restoreTextareaHeights() {
             const saved = localStorage.getItem('ta_height_' + el.id);
             if (saved) el.style.height = saved;
         }
+    });
+}
+
+function watchTextareaHeights() {
+    if (_textareaHeightObserver) {
+        _textareaHeightObserver.disconnect();
+        _textareaHeightObserver = null;
+    }
+    if (typeof ResizeObserver === 'undefined') return;
+    // Native textarea dragging does not fire a resize event, but it does
+    // change the element's box. Observe the box so a resize is saved even
+    // when the user reloads without switching tabs first.
+    _textareaHeightObserver = new ResizeObserver(() => saveTextareaHeights());
+    document.querySelectorAll('#tab-content textarea[id]').forEach(el => {
+        _textareaHeightObserver.observe(el);
     });
 }
 
@@ -305,6 +322,7 @@ async function switchTab(proposalId, tabName, btn) {
 
     initWordCounts();
     restoreTextareaHeights();
+    watchTextareaHeights();
 
     if (tabName === 'timeline') {
         autoInitGantt();
@@ -1131,6 +1149,7 @@ function upsertCoverLetterSection(proposalId, type, content) {
 }
 
 window.addEventListener('beforeunload', function() {
+    saveTextareaHeights();
     const match = window.location.pathname.match(/\/editor\/([^/]+)/);
     if (!match) return;
     const proposalId = match[1];
@@ -1362,10 +1381,11 @@ async function saveMapConfig(proposalId) {
 document.addEventListener('DOMContentLoaded', function() {
     initWordCounts();
     restoreTextareaHeights();
+    watchTextareaHeights();
 
-    document.addEventListener('resize', function(e) {
-        if (e.target.tagName === 'TEXTAREA' && e.target.id) {
-            localStorage.setItem('ta_height_' + e.target.id, e.target.style.height);
-        }
-    }, true);
+    if (typeof ResizeObserver === 'undefined') {
+        ['mouseup', 'touchend'].forEach(eventName => {
+            document.addEventListener(eventName, saveTextareaHeights, true);
+        });
+    }
 });
